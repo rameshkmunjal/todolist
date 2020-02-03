@@ -1,0 +1,23 @@
+<!--OTP page starts here-->
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+      <p class="error text-center">{{errorMessage}}</p><!--show error here-->
+      <!--input form to send OTP-->
+        <form class="input-form mb-4">
+          <h2 class="text-center text-white pt-2 pb-1">            
+            OTP
+          </h2>
+          
+          <div class="mt-4">
+            <input type="text"  name="otp" class="form-control" [(ngModel)] ="otp" placeholder="OTP" />
+          </div>
+          
+          <div class="d-flex justify-content-center mt-4 mb-3">
+            <button class="btn submitBtn" (click)="submitOTP()">Submit</button>
+          </div>
+        </form>
+      </div>
+  </div>
+  <!--OTP page ends here-->
+  
+  

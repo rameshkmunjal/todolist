@@ -1,0 +1,22 @@
+<!--page to input email to get OTP in email account-->
+<div class="row">
+  <div class="col-md-4 offset-md-4">
+    <p class="error text-center">{{errorMessage}}</p><!--error to show here-->
+    <!--input form-->
+      <form class="input-form mb-4">
+        <h2 class="my-nav-bg text-center pt-2 pb-3 mb-3">Recover Password</h2>
+        <p class="text-center text-white pt-2 pb-1 mt-3">
+          On submit - you will get otp in your email account
+        </p>
+        
+        <div class="mt-4">
+          <input type="text"  name="email" class="form-control" [(ngModel)] ="email" placeholder="E-mail" />
+        </div>        
+        
+        <div class="d-flex justify-content-center mt-4 mb-3">
+          <button class="btn submitBtn " (click)="demandOTP()">Submit</button>
+        </div>
+      </form>
+    </div>
+</div>
+<!--page ends here-->

@@ -1,0 +1,52 @@
+<div class="sub-item-box" *ngIf="itemName">
+    <div class="heading-btn text-center" >{{itemName}}</div>
+    <div class="input-btn input-group  mb-3">
+      <input type="text" class="form-control" (keydown)="createSubItemUsingKeypress($event)" [(ngModel)]="newSubItem" placeholder="Input Sub Item Name">
+      <div class="input-group-append">
+        <button class="addItemBtn" type="submit" (click)="createSubItem()">Add Sub Item</button>
+      </div>
+    </div> 
+    <!----->
+    <div *ngIf="subItems.length > 0 ; else infoText">
+        <div  *ngFor="let subItem of subItems"  class="list-btn"  >            
+            <span class="ml-3">{{subItem.subItemName}}</span>
+
+            <span class="pull-right mr-3">
+              <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteSubItem(subItem.subItemId)"></i>
+            </span>
+            <span class="pull-right reqBtn mr-3" (click)="changeSubItemStatus()">{{subItem.status}}</span>
+            <span class="pull-right reqBtn mr-3" (click)="showSubItemEditModal(subItem.subItemId, subItem.subItemName)">Edit</span>
+          </div>
+    </div> 
+    <ng-template #infoText>
+        <p>No sub-item to display</p>
+    </ng-template>           
+</div>
+<!------------------------------------------Modals--------------------------------------------->
+<div id="subItemEditModal">
+    <div class="mb-3" style="font-size:24px;">
+        <span class="pull-right mr-3">
+            <i class="fa fa-times-circle-o mb-3" aria-hidden="true" 
+             (click)="closeSubItemEditModal()"></i>
+        </span>
+    </div>
+      
+    <form class="full-width mt-3">
+        <h5 class="text-center"> Edit</h5>
+        <div class="full-width mt-2">
+          <label for="itemTitle">Item Name :</label>
+          <input type="text" name="itemName" value="{{itemName}}"  />
+        </div>
+        <div class="full-width">
+            <label for="subItemId">Sub Item Id :</label>
+            <input type="text" name="subItemId" value="{{subItemId}}" />
+        </div>
+        <div class="full-width">
+            <label for="SubItemName">Sub Item:</label>
+            <input type="text" name="subItemName" value="{{subItemName}}" [(ngModel)]="subItemName" />
+        </div>
+        <div class="full-width text-center">
+            <button id="editSubItemBtn" (click)="editSubItem(subItemId, subItemName)">Submit</button>
+        </div>
+    </form>  
+  </div>

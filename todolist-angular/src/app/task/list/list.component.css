@@ -1,0 +1,171 @@
+.pointer{
+    cursor:pointer;
+}
+.heading-btn{
+    cursor:pointer;
+    background:darkblue;
+    color:white;
+    font-weight: bold;
+    width:100%;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+.list-btn{
+    cursor:pointer;
+    background:white;
+    width:100%;
+    padding-top:5px;
+    padding-bottom:5px;
+    border-bottom:1px solid #777;
+    color:#777;
+    font-size:12px;
+
+}
+.list-btn:first-child{
+    margin-top:0px;
+    width:100%;
+}
+.input-btn:first-child{
+    margin-top:0px;
+}
+
+h5{
+    background:darkblue;
+    color:white;
+    padding-top:10px;
+    padding-bottom:10px;
+    margin:0px !important;
+}
+
+.reqBtn{
+    cursor:pointer;
+    font-size:9px;
+    font-weight:bold;
+    background:darkblue;
+    color:white;
+    border-radius:5px;
+    padding:2px 4px;    
+}
+.addItemBtn{
+    background:rgb(57, 81, 216);
+    color:white;
+    border:none;
+    padding-left:10px;
+    padding-right:10px;
+    font-weight:bold;
+}
+.col-md-2{
+    padding:0px !important;
+    background:white;    
+}
+
+.col-md-5{
+    border-right:1px solid #777;
+    border-left:1px solid #777;
+    background:white;
+    min-height:85vh;
+}
+
+.item-box{
+    height:50vh;
+    border-bottom:1px solid #777;
+    width:100%;
+    overflow:auto;
+}
+.sub-item-box{
+    height:auto;
+    border-bottom:1px solid #777;
+    width:100%;
+    overflow:auto;
+}
+/*------------------Modal realted---------------------------------*/
+
+
+form{
+    padding:10px;
+}
+label{
+    width:30%;
+}
+input{
+    width:70%;
+}
+#editListBtn{
+    background:darkblue;
+    color:white;
+    font-weight:bold;
+    border:none;
+    margin-top:10px;
+    padding:5px 10px;
+}
+/*--------------------------------------------------------------*/
+#friendship-message{
+    display:none;
+    width:30vw;
+    height:auto;
+    position:absolute;
+    top:20vh;
+    left:30vw;
+    z-index:1000;
+    background:white;
+    color:#777;
+    border:1px solid #777;
+    padding:10px 20px;
+    font-size:12px;
+}
+/*--------------------------------------------------------------*/
+@media screen and (max-width:768px){
+    #editListModal{
+        position: absolute;
+        top:10vh;
+        left:0vw;
+        width:100vw;
+        height:auto;
+        display:none;
+        z-index:1000;
+        background:rgb(57, 81, 216);
+        color:white; 
+    }
+    #subItemEditModal{
+        display:none; 
+        width:100vw;
+        height:auto;   
+        position:absolute;
+        top:10vh;
+        left:0vw;
+        z-index:1000;
+        background:rgb(57, 81, 216);
+        color:white; 
+    }
+    
+}
+@media screen and (min-width:768px){
+    #editListModal{
+        display:none;    
+        position:absolute;
+        width:30vw;
+        height:auto; 
+        top:20vh;
+        left:30vw;
+        z-index:1000;
+        background:rgb(57, 81, 216);
+        color:white;    
+    }
+    #subItemEditModal{
+        display:none; 
+        width:30vw;
+        height:auto;   
+        position:absolute;
+        top:20vh;
+        left:30vw;
+        z-index:1000;
+        background:rgb(57, 81, 216);
+        color:white;    
+    }
+    
+}
+
+.listName{
+    font-size:12px;
+    color:#777;
+}

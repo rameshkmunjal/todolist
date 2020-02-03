@@ -1,0 +1,29 @@
+<nav class="navbar navbar-fixed navbar-expand-md my-nav-bg navbar-dark"> 
+  <a class="navbar-brand" href="#">To-Do-List</a>   
+<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+  <span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse" id="collapsibleNavbar">
+  <ul class="navbar-nav ml-auto">
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['/login']">Login</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['/sign-up']">Sign-up</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" [routerLink]="['/forgot-password']">Forgot Password</a>
+    </li>    
+  </ul>
+</div>  
+</nav>
+
+
+<div class="row main pb-3">
+  <div class="col-12 text-center mt-4">
+    <h2 class="mt-3" style="color:blue;">Response Status : {{errorCode}} </h2>
+    <h4 style="color:red;">Error Message : {{errorMessage}} </h4>    
+  </div>
+</div>
+   
+

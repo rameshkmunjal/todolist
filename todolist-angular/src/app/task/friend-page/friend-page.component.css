@@ -1,0 +1,16 @@
+h5{
+    background:darkblue;
+    color:white;
+    padding-top:10px;
+    padding-bottom:10px;
+    margin:0px !important;
+}
+.col-md-6{
+    border-right:1px solid #777;
+    border-left:1px solid #777;
+    background:white;
+    min-height:85vh;
+}
+.main{
+    background:white;
+}

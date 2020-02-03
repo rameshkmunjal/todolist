@@ -1,0 +1,46 @@
+<!------------------this left sidebar will show lists--------------->        
+<div class="heading-btn text-center">{{fullName}} : All Lists</div>
+  <div class="input-btn input-group  mb-3" *ngIf="userId===pageOwnerId">
+      <input type="text" class="form-control" (keydown)="createListUsingKeypress($event)" [(ngModel)]="newList" placeholder="Input List Name">
+      <div class="input-group-append">
+        <button class="addItemBtn" type="submit" (click)="createList()">Add List</button>
+      </div>
+  </div> 
+<div class="container-fluid" *ngIf="allLists.length > 0 ; else infoText">
+  <div class="row" >
+      <div  *ngFor="let list of allLists"  class="list-btn"  >
+          <span class="ml-3"></span>
+          <span class="ml-3 listName" (click)="getItemsByListId(list.listId, userId, list.listName)">{{list.listName}}</span>              
+          <span class="pull-right mr-3">
+            <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.listId)"></i>        
+          </span>
+          <span class="pull-right reqBtn mr-3">Open</span>
+          <span class="pull-right reqBtn mr-3" (click)="showEditListModal(list.listId, list.listName)">Edit</span>
+      </div>
+  </div>
+  <ng-template #infoText>
+    <p>No List to display</p>
+  </ng-template>
+</div>
+                               
+<!-------------------------------------------------------------------------------------------------------------->
+<div id="editListModal">
+    <div class="mb-3" style="font-size:24px;">
+        <span class="pull-right mr-3">
+            <i class="fa fa-times-circle-o mb-3" aria-hidden="true" 
+             (click)="closeEditModal()"></i>
+        </span>
+    </div>
+  <form class="full-width">
+      <h5 class="text-center"> Edit</h5>
+      <div class="full-width mt-2">
+        <label for="listName">List Name :</label>
+        <input type="text" name="listName"  [(ngModel)]="listName" value="{{listName}}"  />
+      </div>      
+      
+      <div class="full-width text-center">
+          <button id="editListBtn" (click)="editList(listId)">Submit</button>
+      </div>
+  </form>  
+</div>
+<!----------------------------------------------------------------------------------------->
