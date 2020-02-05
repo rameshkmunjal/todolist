@@ -10,22 +10,24 @@ require('./../models/user');
 const UserModel=mongoose.model('User');
 require('./../models/list');
 const ListModel=mongoose.model('List');
-require('./../models/item');
-const ItemModel=mongoose.model('Itm');
+require('./../models/listitem');
+const ItemModel=mongoose.model('listitem');
 require('./../models/subitem');
 const SubItemModel=mongoose.model('subItem');
+require('./../models/notification');
+const NotificationModel=mongoose.model('notification');
+//NotificationModel
 //---------------------------------------------------------------------------------------------
 //function - to get all lists 
 let getAllLists=(data, allListsCB)=>{
     //console.log(data.userId);
-    ListModel.find({'changeId':data.userId})
+    ListModel.find({'creatorId':data.userId, 'isActive':true})
         .exec((err, allLists)=>{
             if(err){
                 //console.log(err);
                 let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                 allListsCB(apiResponse);
-            } else if(check.isEmpty(allLists)){
-                //console.log("Line No. 19 - No List Data found");
+            } else if(check.isEmpty(allLists)){                
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 allListsCB(apiResponse);
             } else {
@@ -38,12 +40,14 @@ let getAllLists=(data, allListsCB)=>{
 //---------------------------------------------------------------------------------------------
 //function - to create list 
 let createList=(data, listData)=>{
+    let randomId=shortId.generate();
     let newList=new ListModel({
-        listId:data.listId,        
+        listId:randomId,        
         listName:data.listName,
-        changeOn:Date.now(),
-        changeId:data.creatorId,
-        changeBy:data.createdBy           
+        createdOn:Date.now(),
+        creatorId:data.creatorId,
+        createdBy:data.createdBy,
+        originId:randomId                   
     })
 //saving in DB
     newList.save((err, list)=>{
@@ -62,114 +66,216 @@ let createList=(data, listData)=>{
 }
 //--------------------------------------------------------------------------------------------------------
 //function - to edit list
-let editList=(data, editListCB)=>{    
-    ListModel.findOne({'listId':data.listId})
-        .exec((err, newList)=>{
+let editList=(data, editListCB)=>{
+    console.log(data);
+    let saveOldList=()=>{
+        return new Promise((resolve, reject)=>{
+        ListModel.findOne({'originId':data.listId, 'isActive':true})
+         .exec((err, oldList)=>{
             if(err){
                 //console.log(err);
                 let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
-                editListCB(apiResponse);
-            } else if(check.isEmpty(newList)){
+                reject(apiResponse);
+            } else if(check.isEmpty(oldList)){
                 //console.log("No Data found");
                 let apiResponse=response.generate(true, "No data found", 404, null);
-                editListCB(apiResponse);
-            } else {       
-                newList.listName=data.listName;                      
-                newList.changeOn=Date.now();    
-                newList.changeId=data.modifierId;
-                newList.chaneBy=data.modifierName;                                     
-            } 
-            //to save - edited list 
-            newList.save((err, updatedList)=>{
+                reject(apiResponse);
+            } else {                
+                oldList.isActive=false;                                   
+            
+                oldList.save((err, oldListData)=>{
                     if(err){
                         //console.log(err);
-                        let apiResponse=response.generate(true, "Save action after Edit failed after deletion", 500, null);
-                        editListCB(apiResponse);
-                    } else { 
-                        let apiResponse=response.generate(false, "List edited successfully", 200, updatedList);                   
-                        editListCB(apiResponse);
-                    }
-            })
-        })    
+                        let apiResponse=response.generate(true, "Save old list action failed", 500, null);
+                        reject(apiResponse);
+                    } else {                         
+                        resolve(oldListData);
+                    }//else ended                        
+                })//save method ended
+            } //else of exec method ended
+        })//exec method ended
+    })//Promise ended
 }
-//---------------------------------------------------------------------------------------------------------
+    
+    let createNewList=(oldListData)=>{
+        return new Promise((resolve, reject)=>{
+            let newList=new ListModel({ 
+                listId:shortId.generate(),               
+                listName:data.listName,
+                createdOn:oldListData.createdOn,
+                creatorId:oldListData.creatorId,
+                createdBy:oldListData.createdBy,
+                changeOn:Date.now(),                
+                changeBy:data.changeName,
+                personId:data.userId,
+                originId:oldListData.originId
+            })
+
+            newList.save((err, savedList)=>{
+                if(err){
+                    console.log(err);
+                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);                   
+                    reject(apiResponse);
+                } else {
+                    let editedList=savedList.toObject();
+                    delete editedList._id;
+                    delete editedList.__v;
+                    resolve(editedList);
+                }
+            })
+        })        
+    }
+    
+    saveOldList(data, editListCB)
+        .then(createNewList)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "List edited successfully", 200, resolve);                   
+            editListCB(apiResponse);
+        })
+        .catch((err)=>{                               
+            editListCB(err);
+        })
+}
+//----------------------------------------------------------------------------------------------------------
 //function - to delete list 
-let deleteList=(listId, listData)=>{    
-    ListModel.findOneAndRemove({listId:listId.listId})
+let deleteList=(data, listData)=>{    
+    ListModel.findOne({'originId':data.listId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
                 //console.log(err);
                 let apiResponse=response.generate(true, "Delete action failed : some error", 500, null);
                 listData(apiResponse);
             } else if(check.isEmpty(result)){
-                //console.log("No  data found");
+                // console.log("No  data found");
                 let apiResponse=response.generate(true, "No  data found", 404, null);
                 listData(apiResponse);
             } else {
-                let apiResponse=response.generate(false, "List Deleted Successfully", 200, result);
-                listData(apiResponse);
+                result.isActive=false;
+                result.save((err, deletedList)=>{
+                    if(err){
+                        console.log(err);
+                    } else {
+                        console.log(deletedList);
+                        let list=deletedList.toObject();
+                        delete list._id;
+                        delete list.__v;                        
+                        let apiResponse=response.generate(false, "List Deleted Successfully", 200, list);
+                        listData(apiResponse);
+                    }
+                })
+                
             }
         })
 }
 //----------------------------------------------------------------------------------------------------------
 //function - to create item
-let createItem=(data, itemCB)=>{    
+let createItem=(data, itemCB)=>{
+    let randomId=shortId.generate(); 
+    console.log(randomId);
+
     let newItem=new ItemModel({
-        itemId:shortId.generate(),
+        itemId:randomId,
         itemName:data.itemName,        
-        changeOn:Date.now(),
-        changeBy:data.changeBy,
-        changeId:data.changeId,
-        listId:data.listId
+        createdOn:Date.now(),
+        createdBy:data.createdBy,
+        creatorId:data.creatorId,
+        listId:data.listId, 
+        originId:randomId        
     });
+    console.log(newItem);
     //save - item created in DB
-    newItem.save((err, updatedList)=>{
+    newItem.save((err, newItem)=>{
         if(err){
-            //console.log(err);
-            let apiResponse=response.generate(true, "Save action failed after deletion", 500, null);
+            console.log(err);
+            let apiResponse=response.generate(true, "Create Item : Save action failed", 500, null);
             itemCB(apiResponse);
         } else {
-            let apiResponse=response.generate(false, "Data saved after deletion successfully", 200, updatedList);
+            let item=newItem.toObject();
+            delete item._id;
+            delete item.__v;
+            delete item.changeOn;
+            delete item.changeBy;
+            
+            let apiResponse=response.generate(false, "Data created successfully", 200, item);
             itemCB(apiResponse);            
         }
     })            
 }
 //------------------------------------------------------------------------------------------------------
 //function - to edit item
-let editItem=(data, editItemCB)=>{    
-    ItemModel.findOne({'itemId':data.itemId})
-        .exec((err, newList)=>{
-            if(err){
-                //console.log(err);
-                let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
-                editItemCB(apiResponse);
-            } else if(check.isEmpty(newList)){
-                //console.log("No Data found");
+let editItem=(data, editItemCB)=>{
+    let saveOldItem=()=>{
+        return new Promise((resolve, reject)=>{
+          ItemModel.findOne({'originId':data.itemId, 'isActive':true})
+            .exec((err, oldItem)=>{
+            if(err){                
+                let apiResponse=response.generate(true, "Edit action failed", 500, null);
+                reject(apiResponse);
+            } else if(check.isEmpty(oldItem)){                
                 let apiResponse=response.generate(true, "No data found", 404, null);
-                editItemCB(apiResponse);
-            } else {       
-                newList.itemName=data.itemName;                      
-                newList.changeOn=Date.now();    
-                newList.changeId=data.modifierId;
-                newList.chaneBy=data.modifierName;                                     
-            } 
-            //save - edited item in DB
-            newList.save((err, updatedList)=>{
+                reject(apiResponse);
+            } else {
+                oldItem.isActive=false;
+                oldItem.save((err, oldItemData)=>{
                     if(err){
-                        //console.log(err);
-                        let apiResponse=response.generate(true, "Save action after Edit failed after deletion", 500, null);
-                        editItemCB(apiResponse);
-                    } else { 
-                        let apiResponse=response.generate(false, "Item edited successfully", 200, updatedList);                   
-                        editItemCB(apiResponse);
+                        console.log(err);
+                        let apiResponse=response.generate(true, "Save in Edit action failed", 500, null);
+                        reject(apiResponse);
+                    } else {
+                        resolve(oldItemData);
                     }
+                })//save ended
+              }//else ended
+          })//exec ended
+    })//Promise ended
+} //saveOldItem ended  
+
+    let createNewItem=(oldItemData)=>{
+        return new  Promise((resolve, reject)=>{
+            let newItem=new ItemModel({
+                itemId:shortId.generate(),                
+                itemName:data.itemName,
+                listId:data.listId,
+                createdOn:oldItemData.createdOn,
+                createdBy:oldItemData.createdBy,
+                creatorId:oldItemData.creatorId,
+                changeOn:Date.now(),                
+                changeBy:data.changeName,
+                personId:data.userId,
+                originId:oldItemData.originId
+            })//new method ended
+
+            newItem.save((err, item)=>{
+                if(err){
+                    console.log(err);
+                    let apiResponse=response.generate(true, "Edit action failed", 500, null);
+                    reject(apiResponse);
+                } else {
+                    let obj=item.toObject();
+                    delete obj.__v;
+                    delete obj._id;                   
+                    resolve(obj);
+                }
             })
-        })    
+        })
+    }
+
+    saveOldItem(data, editItemCB)
+        .then(createNewItem)
+        .then((resolve)=>{             
+            let apiResponse=response.generate(false, "Item edited successfully", 200, resolve);                   
+            editItemCB(apiResponse);
+        })
+        .catch((err)=>{                               
+            editItemCB(err);
+        })
+            
+                      
 }
-//---------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------
 //function - to delete item
 let deleteItem=(data, itemData)=>{
-    ItemModel.findOneAndRemove({'itemId':data.itemId})
+    ItemModel.findOne({'originId':data.itemId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
                 //console.log(err);
@@ -180,23 +286,33 @@ let deleteItem=(data, itemData)=>{
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 itemData(apiResponse);
             } else {
-                let apiResponse=response.generate(false, "Item Deleted successfully", 200, result);
-                itemData(apiResponse);                
+                result.isActive=false;
+                result.save((err, deletedItem)=>{
+                    if(err){
+                        console.log(err);
+                    } else {
+                        let apiResponse=response.generate(false, "Item Deleted successfully", 200, deletedItem);
+                        itemData(apiResponse);
+                    }                    
+                })                               
             }
         })
 }
 //-------------------------------------------------------------------------------------------------------
 //function - to get items using list id
-let getItemsByListId=(data, allItemsCB)=>{    
-    ItemModel.find({listId:data.listId})
+let getItemsByListId=(data, allItemsCB)=>{
+    console.log("data in getItemByListId : "+ JSON.stringify(data));    
+    ItemModel.find({'listId':data.listId, 'isActive':true})
         .exec((err, allItems)=>{
             if(err){                
                 let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
                 allItemsCB(apiResponse)
-            } else if(check.isEmpty(allItems)){                
+            } else if(check.isEmpty(allItems)){
+                console.log("no data found - due to origin id");                
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 allItemsCB(apiResponse);
             } else {
+                console.log("no data found - no problem of  origin id");
                 let apiResponse=response.generate(false, "All items of list fetched successfully", 200, allItems)
                 apiResponse.socketLoginId=data.userId;
                 apiResponse.listName=data.listName;
@@ -206,25 +322,32 @@ let getItemsByListId=(data, allItemsCB)=>{
 }
 //----------------------------------------------------------------------------------------------------------
 //function - to create sub item
-let createSubItem=(data, subItemCB)=>{    
+let createSubItem=(data, subItemCB)=>{ 
+     let randomId=shortId.generate();  
     let newSubItem=new SubItemModel({
-        subItemId:shortId.generate(),
+        subItemId:randomId,
         subItemName:data.subItemName,    
-        changeOn:Date.now(),
-        changeBy:data.changeBy,
-        changeId:data.changeId,
-        listId:data.listId,
+        createdOn:Date.now(),
+        createdBy:data.createdBy,
+        creatorId:data.creatorId,        
         itemId:data.itemId,
-        itemName:data.itemName
+        originId:randomId       
     });
     // to save created sub item in DB
     newSubItem.save((err, updatedList)=>{
-        if(err){
-            //console.log(err);
+        if(err){ 
+            console.log(err);           
             let apiResponse=response.generate(true, "Save action failed after sub item creation", 500, null);
             subItemCB(apiResponse);
         } else {
-            let apiResponse=response.generate(false, "Sub Item created successfully", 200, updatedList);
+            let newSubItem=updatedList.toObject();
+            delete newSubItem._id;
+            delete newSubItem._v;
+            delete newSubItem._id;
+            delete newSubItem.changeOn;            
+            delete newSubItem.changeBy;
+
+            let apiResponse=response.generate(false, "Sub Item created successfully", 200, newSubItem);
             subItemCB(apiResponse);
         }
     })            
@@ -233,40 +356,79 @@ let createSubItem=(data, subItemCB)=>{
 //function - to edit item 
 let editSubItem=(data, editSubItemCB)=>{
     //console.log(data);
-    SubItemModel.findOne({'subItemId':data.subItemId})
-        .exec((err, newList)=>{
-            if(err){
-                //console.log(err);
+    let saveOldSubItem=()=>{
+        return new Promise((resolve, reject)=>{
+            SubItemModel.findOne({'subItemId':data.subItemId, 'isActive':true})
+             .exec((err, oldSubItem)=>{
+            if(err){                
                 let apiResponse=response.generate(true, "Edit action failed : Some Error", 500, null);
-                editSubItemCB(apiResponse);
-            } else if(check.isEmpty(newList)){
-                //console.log("EditSubItem : No Data found");
+                reject(apiResponse);
+            } else if(check.isEmpty(oldSubItem)){                
                 let apiResponse=response.generate(true, "EditSubItem : No Data found", 404, null);
-                editSubItemCB(apiResponse)
+                reject(apiResponse)
             } else {  
-                //console.log(newList);     
-                newList.subItemName=data.subItemName;                      
-                newList.changeOn=Date.now();    
-                newList.changeId=data.modifierId;
-                newList.chaneBy=data.modifierName;                                     
-            } 
-            //save edited sub item in DB
-            newList.save((err, updatedList)=>{
+                oldSubItem.isActive=false;                                  
+            
+                oldSubItem.save((err, subItemData)=>{
                     if(err){
                         //console.log(err);
                         let apiResponse=response.generate(true, "Save action failed : Sub Item edition", 500, null);                   
-                        editSubItemCB(apiResponse);
+                        reject(apiResponse);
                     } else { 
-                        let apiResponse=response.generate(false, "Sub Item edited successfully", 200, updatedList);                   
-                        editSubItemCB(apiResponse);
+                        resolve(subItemData);
                     }
-            })
+                })//save method ended
+            }//else ended
+        })//exec
+    })//Promise ended
+}   
+    let createNewSubItem=(subItemData)=>{
+        return new Promise((resolve, reject)=>{            
+                let newSubItem= new SubItemModel({
+                    subItemId:shortId.generate(),                    
+                    subItemName:data.subItemName,
+                    itemId:data.itemId,
+                    createdOn:subItemData.createdOn,
+                    creatorId:subItemData.creatorId,
+                    createdBy:subItemData.createdBy,
+                    changeOn:Date.now(),                    
+                    changeBy:data.changeName,
+                    personId:subItemData.userId,
+                    originId:subItemData.originId
+                })
+
+                newSubItem.save((err, editedSubItem)=>{
+                    if(err){
+                        console.log(err);
+                        let apiResponse=response.generate(true, "Create sub item action failed", 500, null);
+                        reject(apiResponse);
+                    } else {
+                        let editedData=editedSubItem.toObject();
+                        delete editedData.__v;
+                        delete editedData._id;
+                        resolve(editedData);
+                    }//else ended
+                })//save method ended                   
+        })//Promise ended
+    }//createNewSubItem ended
+
+    saveOldSubItem(data, editSubItemCB)
+        .then(createNewSubItem)
+        .then((resolve)=>{
+            console.log(resolve);
+            let apiResponse=response.generate(false, "sub item edited successfully", 200, resolve);
+            editSubItemCB(apiResponse);
+        })
+        .catch((err)=>{
+            console.log(err);
+            let apiResponse=response.generate(true, "sub item edit action failed", 500, null);
+            editSubItemCB(apiResponse);
         })
 }
 //---------------------------------------------------------------------------------------------------------------
 //function - to delete sub item 
 let deleteSubItem=(data, subItemData)=>{    
-    SubItemModel.findOneAndRemove({'subItemId':data.subItemId})
+    SubItemModel.findOne({'originId':data.subItemId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
                 //console.log(err);
@@ -278,8 +440,17 @@ let deleteSubItem=(data, subItemData)=>{
                 subItemData(apiResponse);
             } else {
                 //console.log(result);
-                let apiResponse=response.generate(false, "Sub Item deleted successfully", 200, result);
-                subItemData(apiResponse);
+                result.isActive=false;
+                result.save((err, delData)=>{
+                    if(err){
+                        let apiResponse=response.generate(true, "Deletion failed : Some Error", 500, null);
+                        subItemData(apiResponse);
+                    } else{
+                        let apiResponse=response.generate(false, "Sub Item deleted successfully", 200, delData);
+                        subItemData(apiResponse);
+                    }
+                })
+                
             }   
         })
 }
@@ -287,8 +458,8 @@ let deleteSubItem=(data, subItemData)=>{
 //function - to get sub items using item id
 let getSubItemsByItemId=(data, allSubItemsCB)=>{
     //console.log("in getSubItemsByItemId function");
-    //console.log(data.itemId);
-    SubItemModel.find({'itemId':data.itemId})
+    console.log(data);
+    SubItemModel.find({'itemId':data.itemId, 'isActive':true})
         .exec((err, allSubItems)=>{
             if(err){
                 //console.log(err);
@@ -403,6 +574,58 @@ let showFriendList=(userId, friendListCB)=>{
             }
         })
 }
+//-------------------------------------Notification function--------------------------------------------------
+let createNotification=(data, notificationCB)=>{
+    let newNotice=new NotificationModel({
+        id:shortId.generate(),
+        type:data.type,
+        action:data.action,
+        typeId:data.typeId,
+        message:data.message,
+        sendId:data.sendId,
+        sendName:data.sendName
+    })
+
+    newNotice.save((err, saveNotice)=>{
+        if(err){
+            console.log(err);
+            let apiResponse=response.generate(true, "Notification creation failed", 500, null);
+            notificationCB(apiResponse);
+        } else {
+            console.log(saveNotice);
+            let notice=saveNotice.toObject();
+            delete notice._id;
+            delete notice.__v;
+            let apiResponse=response.generate(false, "Notification creation successful", 200, saveNotice);
+            notificationCB(apiResponse); 
+        }
+    })
+}
+//-----------------------------------------------------------------------------------------------------------
+/*
+let changeStatus=(data, changeStatusCB)=>{
+    let model;
+    if(data.type==="list"){
+        model=ListModel;        
+    } else if(data.type==="item"){
+        model=ItemModel;
+    } else if(data.type==="subitem"){
+        model=SubItemModel;
+    }
+    model.find()
+        .exec((err, result)=>{
+            if(err){
+                console.log(err);
+            } else if(check.isEmpty(result)){
+                console.log("No Data found");
+            } else {
+                console.log("You hit right");
+                console.log(result);
+            }
+        })
+
+}
+*/
 //------------------------------------exporting functions------------------------------------------------------
 module.exports={
     getAllLists:getAllLists,
@@ -421,6 +644,9 @@ module.exports={
     getSubItemsByItemId:getSubItemsByItemId, 
 
     acceptFriendRequest:acceptFriendRequest,
-    showFriendList:showFriendList
+    showFriendList:showFriendList,
+
+    createNotification:createNotification
+    //changeStatus:changeStatus
 }
 //-----------------------------------------------End of file---------------------------------------------

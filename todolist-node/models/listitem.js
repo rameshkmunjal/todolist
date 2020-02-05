@@ -10,16 +10,16 @@ const ItemSchema=new Schema({
     creatorId:{type:String, default:''},//only on create - login id
     createdBy:{type:String, default:''},//only on create - login name
     //only on edit
-    changeOn:{type:Date, default:''},    
-    changeBy:{type:String, default:''},  //edit or delete - login name  
-    personId:{type:String, default:''},//id of user - who made change
+    changeOn:{type:Date},    
+    changeBy:{type:String},  //edit or delete - login name  
+    personId:{type:String},//id of user - who made change
     isActive:{type:Boolean, default:true}, //set all other false and then new record true
     status:{type:String, default:'open'},//to be changed by user - as - done 
     
     originId:{type:String, default:''}//always remains same in edit/delete
 })
 
-mongoose.model('Itm', ItemSchema);
+mongoose.model('listitem', ItemSchema);
 //
 
 

@@ -40,6 +40,7 @@ export class ItemsComponent implements OnInit {
     this.getAllItems();
     this.getListDetails();
     this.vacateItemBox();
+    this.getCreateItemMessage();
     this.getEditItemMessage();
     this.getDeleteItemMessage()
     
@@ -89,23 +90,16 @@ export class ItemsComponent implements OnInit {
 //-----------------------------------------------------------------------------------------
 public createItem(){
   if(!this.newItem){
-    this.errorMessage="Please enter task item";
+    this.errorMessage="Please input item name";
   }else if(this.newItem){
-    let data={
-      listId:this.listId,
+    let data={      
       itemName:this.newItem,
-      changeBy:this.fullName,
-      changeId:this.userId
+      listId:this.listId,
+      createdBy:this.fullName,
+      creatorId:this.userId
     }
     console.log(data);     
-    this.SocketService.addNewItem(data);
-    let d={
-      listId:this.listId,
-      userId:this.userId
-    }
-    
-    this.SocketService.getItemsByListId(d); 
-    this.newItem="";     
+    this.SocketService.createItem(data);
   }    
 }
 
@@ -114,49 +108,58 @@ public createItemUsingKeypress: any = (event: any) => {
     this.createItem();
   }  
 }
-//---------------------------------------------------------------------------------------------------
+
+
+public getCreateItemMessage():any{
+  console.log("getCreateMessage called");
+  this.SocketService.getCreateItemMessage().subscribe(
+    apiResponse=>{
+      if(apiResponse.status===200){
+        console.log(apiResponse);
+        this.msgObj=apiResponse.data;
+        this.sendInputForNotification(this.msgObj, "create", "created");
+        this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId}); 
+        this.newItem=""; 
+      } else{
+        console.log(apiResponse);
+        this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
+      }
+    }, 
+    (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      })
+}
+//-----------------------------------------------------------------------------------------------------
 
   public editItem(itemId){
     $("#editItemModal").hide(2000);    
     console.log("item id is :"+itemId);
     console.log("item name : "+this.itemName);
-    let data={
-      listId:this.listId,      
+    let data={            
       itemId:this.itemId,
       itemName:this.itemName,
-      modifierId:this.userId,
-      modeifierName:this.fullName      
+      userId:this.userId,
+      changeName:this.fullName, 
+      listId:this.listId      
     }
     console.log(data);
     this.SocketService.editItem(data);        
   }
   //------------------------------------------------
-  public deleteItem(id){
-    let data={
-      itemId:id,
-      listId:this.listId
-    }
-    console.log(data);
-    this.SocketService.deleteItem(data);
-    let d={
-      userId:this.userId,
-      listId:this.listId
-    }
-    this.SocketService.getItemsByListId(d);
+  public deleteItem(id){    
+    this.SocketService.deleteItem({itemId:id, listId:this.listId});
   }
   //----------------------------------------------------------------
   public getDeleteItemMessage():any{
-    console.log("getEditMessage called");
+    console.log("getDeleteItemMessage called");
     this.SocketService.getDeleteItemMessage().subscribe(
       apiResponse=>{
         console.log(apiResponse);
+        this.msgObj=apiResponse.data;  
         this.msgObj=apiResponse.data;
-        
-        let data={
-          itemId:apiResponse.data.itemId,
-          userId:this.userId
-        }
-        this.SocketService.getSubItemsByItemId(data);
+        this.sendInputForNotification(this.msgObj, "delete", "deleted");      
+        this.SocketService.getItemsByListId({userId:this.userId,listId:this.listId});
       }
     )
   }
@@ -180,16 +183,19 @@ public getEditItemMessage():any{
   this.SocketService.getEditItemMessage().subscribe(
     apiResponse=>{
       console.log(apiResponse);
-      this.msgObj=apiResponse.data;
-      this.itemName=apiResponse.data.itemName;
-      
-      let data={
-        listId:apiResponse.data.listId,
-        userId:this.userId
+      if(apiResponse.status===200){
+        this.itemName=apiResponse.data.itemName;
+        this.msgObj=apiResponse.data;        
+        this.sendInputForNotification(this.msgObj, "edit", "edited");
+        this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
+      } else {
+        console.log(apiResponse);
+        this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
       }
-      this.SocketService.getItemsByListId(data);        
-    }
-  )
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
 }
 //------------------------------------------------------------------------------------------------
   public showEditModal(itemId, itemName){
@@ -221,4 +227,38 @@ public showSubItems(itemId, itemName){
   this.SocketService.sendItemDetailsToSubItemBox(d); 
 }
 //--------------------------------------------------------------------------------------------------------
+public sendInputForNotification(data,action, happened){
+  let temp={
+    type:"item",
+    action:action,
+    typeId:data.itemId,
+    message:"Item "+data.itemName+" in List "+ this.listName +" is "+ happened + " by " +this.fullName,
+    sendId:this.userId,
+    sendName:this.fullName
+  }
+  this.SocketService.sendCurrentNotification(temp);
+}
+//------------------------------------------------------------------------------------------------
+/*
+public getChangeStatus(){
+  this.SocketService.getChangeStatus().subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+    }, (error)=>{
+      console.log(error);
+    }
+  )
+}
+
+
+public changeStatus(originId){
+  console.log(originId);
+  let data={
+    type:"item",
+    originId:originId
+  }
+  this.SocketService.changeStatus(data);
+}
+*/
+//------------------------------------------------------------------------------------------
 }

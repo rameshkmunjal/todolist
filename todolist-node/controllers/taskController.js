@@ -7,6 +7,8 @@ const check=require('./../libs/checkLib');
 //including model
 require('./../models/list');
 const ListModel=mongoose.model('List');
+require('./../models/notification');
+const NotificationModel=mongoose.model('notification');
 
 
 
@@ -28,7 +30,29 @@ let getListById=(req, res)=>{
         })//exec method ending
 }//function ended
 
+let getAllNotifications=(req, res)=>{
+    
+    NotificationModel.find()
+        .exec((err, allData)=>{
+            console.log("inside exec method");
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
+                res.send(apiResponse);
+            } else if(check.isEmpty(allData)){
+                console.log("Data Not found");
+                let apiResponse=response.generate(true, "No Data found", 404, null);
+                res.send(apiResponse);
+            } else {
+                console.log(allData);
+                let apiResponse=response.generate(false, "All notifications fetched successfully", 200, allData);
+                res.send(apiResponse);
+            }
+        })
+
+}
+
 module.exports={
-    //getAllLists:getAllLists,
+    getAllNotifications:getAllNotifications,
     getListById:getListById
 }

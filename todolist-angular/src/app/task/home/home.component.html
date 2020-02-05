@@ -1,11 +1,34 @@
 <!----------------------navbar starts here------------------------------->
-<app-task-nav (contactsRequested)="onNavigate($event)"></app-task-nav>
+<nav class="navbar navbar-fixed navbar-expand-lg my-nav-bg navbar-dark"> 
+    <a class="navbar-brand" href="#">To-Do-List</a>
+    <span class="text-white">Welcome : {{fullName}}</span>   
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="collapsibleNavbar">
+    <ul class="navbar-nav ml-auto">
+        <li class="nav-item">
+            <a class="nav-link"> 
+              <i class="fa fa-user-o" (click)="showContactList()" aria-hidden="true"></i>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link"> 
+              <i class="fa fa-bell" (click)="showAllNotifications()" aria-hidden="true"></i>
+            </a>
+          </li>
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="['/log-out']">Logout</a>
+      </li>       
+    </ul>
+  </div>  
+  </nav>
 <!----------------------navbar ends here------------------------------->
 <div class="container-fluid info-bar">
     <div class="row">
       <!------------------------------------------------------------>
       <div class="col-md-12 text-center p-2">
-          <span>Last Action : list was created by sjlfsjlsjljfsljf</span><span class="reqBtn ml-3">Undo</span>
+          <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLatestChange()">Undo</span>
       </div>
     </div>
 </div>
@@ -32,7 +55,7 @@
   </div>
 </div>
 
-<!------------------------------------Modal-------------------------------------->
+<!-----------------------Contacts Modal-------------------------------------->
 <div id="contacts-modal" >
   <div class="heading-btn mb-0 pb-0 mt-0 pt-0" *ngIf="userList.length > 0">
       <span class="pull-right mt-0" (click)="closeContactsModal()">&times;</span>
@@ -43,3 +66,21 @@
       </p>       
   </div>
 </div>
+<!--------------------------------Notification Modal-------------------------------------->
+
+<div id="notification-modal" >  
+      <p class="pull-right mt-0 closeBtn" (click)="closeCurrentNotifModal()">&times;</p>
+    <p>{{latestNotification}}</p> 
+</div>
+<!---------------------------------------------------------------------------------------->
+<!---->
+<div id="all-notification-modal">  
+    <p class="pull-right mt-0 closeBtn" (click)="closeNotificationModal()">&times;</p>
+    <div *ngIf="notificationList.length > 0">
+        <div class="notification-message" *ngFor="let item of notificationList">
+            <p>{{item.message}}</p>
+        </div>
+    </div>   
+</div>
+<!---------------------------------------------------------------------------------------->
+

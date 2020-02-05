@@ -7,24 +7,24 @@
       </div>
     </div> 
     <div *ngIf="items.length > 0 ">
-        <div  *ngFor="let item of items"  class="list-btn"  >
+        <div  *ngFor="let item of items"  class="list-btn">
             
             <span class="ml-3 " (click)="showSubItems(item.itemId, item.itemName)">{{item.itemName}}</span>
 
             <span class="pull-right mr-3">
-              <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteItem(item.itemId)"></i>
+              <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteItem(item.originId)"></i>
             </span>
-            <span class="pull-right reqBtn mr-3" (click)="changeItemStatus()">{{item.status}}</span>
-            <span class="pull-right reqBtn mr-3" (click)="showEditModal(item.itemId, item.itemName)">Edit</span>
+            <span class="pull-right reqBtn mr-3" >{{item.status}}</span>
+            <span class="pull-right reqBtn mr-3" (click)="showEditModal(item.originId, item.itemName)">Edit</span>
           </div>
     </div>            
 </div>
-<!--
+<!---
 <ng-template #infoText>
   <p class="text-center message-para">{{message}}</p>
 </ng-template>
 -->
-<!------------------------------------------------------------------------------------------------------------->
+<!------------------------------------------------(click)="changeStatus(item.originId)"------------------------------------------------------------->
 <div id="editItemModal">
     <div class="mb-3" style="font-size:24px;">
         <span class="pull-right mr-3">
@@ -33,17 +33,7 @@
         </span>
     </div>
   <form class="full-width">
-      <h5 class="text-center"> Edit</h5>
-      <!--
-      <div class="full-width mt-2">
-        <label for="listName">List Name :</label>
-        <input type="text" name="listName" value="{{listName}}"  />
-      </div>
-      <div class="full-width">
-          <label for="itemId">Item Id :</label>
-          <input type="text" name="itemId" value="{{itemId}}" />
-      </div>
-      -->
+      <h5 class="text-center"> Edit</h5>      
       <div class="full-width">
           <label for="itemName">Item Name :</label>
           <input type="text" name="itemName" value="{{itemName}}" [(ngModel)]="itemName" />

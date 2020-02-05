@@ -6,24 +6,25 @@
         <button class="addItemBtn" type="submit" (click)="createList()">Add List</button>
       </div>
   </div> 
-<div class="container-fluid" *ngIf="allLists.length > 0 ; else infoText">
-  <div class="row" >
+<div class="container-fluid" >
+  <div class="row" *ngIf="allLists.length > 0 ; else infoText">
       <div  *ngFor="let list of allLists"  class="list-btn"  >
           <span class="ml-3"></span>
-          <span class="ml-3 listName" (click)="getItemsByListId(list.listId, userId, list.listName)">{{list.listName}}</span>              
+          <span class="ml-3 listName" (click)="getItemsByListId(list.originId, userId, list.listName)">{{list.listName}}</span>              
           <span class="pull-right mr-3">
-            <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.listId)"></i>        
+            <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.originId)"></i>        
           </span>
-          <span class="pull-right reqBtn mr-3">Open</span>
-          <span class="pull-right reqBtn mr-3" (click)="showEditListModal(list.listId, list.listName)">Edit</span>
-      </div>
+          <span class="pull-right reqBtn mr-3" >Open</span>
+          <span class="pull-right reqBtn mr-3" (click)="showEditListModal(list.originId, list.listName)">Edit</span>
+      </div>      
   </div>
   <ng-template #infoText>
-    <p>No List to display</p>
+    <p class="text-center">No List to display</p>
   </ng-template>
+  
 </div>
                                
-<!-------------------------------------------------------------------------------------------------------------->
+<!---------------------------------------------------------(click)="changeStatus(list.originId)"------------------------------------------------------>
 <div id="editListModal">
     <div class="mb-3" style="font-size:24px;">
         <span class="pull-right mr-3">

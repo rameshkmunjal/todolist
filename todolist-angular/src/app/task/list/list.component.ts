@@ -53,10 +53,11 @@ export class ListComponent implements OnInit {
     this.getAllListsMessage();
     this.getCreateListMessage() ;
     this.getEditListMessage();
-    this.getDeleteListMessage(); 
+    this.getDeleteListMessage();
+    //this.getChangeStatus(); 
   }
-//-----------------------------------function definitions------------------------------------------------
-//function calls - involving DB operations
+//------------------------------------function definitions------------------------------------------------
+//function - create list - involving DB operations
 public createList=()=>{
   console.log(this.newList);
   let data={
@@ -65,11 +66,10 @@ public createList=()=>{
     createdBy:this.fullName
   }
   console.log(data);
-
-  this.SocketService.createList(data);
+  this.SocketService.createList(data);  
   this.newList="";
 }
-
+//function - when enter key is pressed - create list
 public createListUsingKeypress: any = (event: any) => {
   if (event.keyCode === 13) { // 13 is keycode of enter.
     this.createList();
@@ -78,15 +78,17 @@ public createListUsingKeypress: any = (event: any) => {
 //-----------------------------------------------------------------------------------------------
 //function - to edit list
 public editList(listId){
+  console.log(listId);
   $("#editListModal").hide(2000);
   this.listId=listId;
+  console.log(this.listId);
   console.log(this.listName);
   
   let data={
     listId:listId,
     listName:this.listName,      
-    modifierId:this.userId,
-    modeifierName:this.fullName      
+    changeId:this.userId,
+    changeName:this.fullName      
   }
   //console.log(data);
   this.SocketService.editList(data);        
@@ -94,17 +96,13 @@ public editList(listId){
 //-------------------------------------------------------------------------------------------------------
 //function - to delete list
 public deleteList(id){
-  let data={      
+  let data={
+    userId:this.userId,      
     listId:id
   }
   console.log(data);
-  this.SocketService.deleteList(data);
-  let d={
-    userId:this.userId,
-    listId:id
-  }
-  
-  this.SocketService.getItemsByListId(d);
+  this.SocketService.deleteList(data);  
+  this.SocketService.getItemsByListId(data);
 }
 //--------------------------------------------------------------------------------------
 //function - to get items using list id
@@ -139,6 +137,11 @@ public getAllListsMessage():any{
           this.listName="";
         } else {
           console.log(data);
+          if(data.status===404){
+            this.allLists=[];
+          } else{
+            this.router.navigate(['/error-page', data.status, data.message]);
+          }          
         }        
       },
       error=>{
@@ -155,8 +158,11 @@ public getCreateListMessage(){
       data=>{
         console.log(data);
         this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-      }
-    )
+        this.msgObj=data.data;        
+        console.log(this.msgObj);
+        this.sendInputForNotification(this.msgObj, "create", "created");
+        //this.SocketService.sendAllNotifications();
+      })
 }  
 //-----------------------------------------------------------------------------------------------------
 //function - to get result of successful event of edit list
@@ -164,13 +170,15 @@ public getEditListMessage():any{
     console.log("getEditListMessage called");
     this.SocketService.getEditListMessage().subscribe(
       apiResponse=>{
-        if(apiResponse===200){
+        if(apiResponse.status===200){
           console.log(apiResponse);
           this.msgObj=apiResponse.data;        
           console.log(this.msgObj); 
+          this.sendInputForNotification(this.msgObj, "edit", "edited");
           this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
         } else {
           console.log(apiResponse);
+          this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
         }
       }, (err)=>{
           console.log(err);            
@@ -178,7 +186,7 @@ public getEditListMessage():any{
       }
     )
   }
-  //-----------------------------------------------------------------------------------------------
+  //------------------------------------------------------------------------------------------------
   //function - to get result of successful event of delete list
   public getDeleteListMessage():any{
     console.log("getDeleteMessage called");
@@ -187,9 +195,11 @@ public getEditListMessage():any{
         console.log(apiResponse);
         if(apiResponse.status===200){
           this.msgObj=apiResponse.data;
+          this.sendInputForNotification(this.msgObj, "delete", "deleted");
           this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
         } else {
           console.log(apiResponse);
+          this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
         }
         }, (err)=>{
           console.log(err);            
@@ -211,6 +221,7 @@ public getEditListMessage():any{
   //-------------------------------functions - relating modal-----------------------------------------  
   public showEditListModal(listId, listName){
     console.log(listId);
+    console.log(listName);
     this.listId=listId;
     this.listName=listName;
     $("#editListModal").show();
@@ -220,5 +231,39 @@ public getEditListMessage():any{
     $("#editListModal").hide(2000); 
   }   
   //------------------------------------------------------------------------------
+public sendInputForNotification(data,action, happened){
+  let temp={
+    type:"list",
+    action:action,
+    typeId:data.originId,
+    message:"List "+data.listName+" is "+ happened + " by " +this.fullName,
+    sendId:this.userId,
+    sendName:this.fullName
+  }
+  this.SocketService.sendCurrentNotification(temp);
+}
+//--------------------------------------------------------------------------------------
+/*
+public getChangeStatus(){
+  this.SocketService.getChangeStatus().subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+    }, (error)=>{
+      console.log(error);
+    }
+  )
+}
+
+
+public changeStatus(originId){
+  console.log(originId);
+  let data={
+    type:"list",
+    originId:originId
+  }
+  this.SocketService.changeStatus(data);
+}
+*/
+//------------------------------------------------------
 //end of class definition
 }

@@ -68,12 +68,13 @@ let setServer=(server)=>{
             console.log(data);
     
             functionLib.getAllLists(data, function(allListsCB){
-                console.log("all lists data fetched");
-                console.log(allListsCB);
+                //console.log("all lists data fetched");
+                //console.log(allListsCB);
                            
                 myIo.emit('get-all-lists-message', allListsCB);
             })
-        })//create-task event ended
+        })
+        //*******create list event listener***********
         socket.on('create-list', (data)=>{
             console.log(data);            
             data.listId=shortId.generate();            
@@ -83,8 +84,11 @@ let setServer=(server)=>{
                 console.log(listData);
                            
                 myIo.emit('create-list-message', listData);
+                myIo.emit('vacate-item-box', "Select List to show items");
+                myIo.emit('vacate-sub-item-box', "Select Item to show sub-items"); 
             })
-        })//create-task event ended
+        })
+        //**************edit list - event listener*********/
         socket.on('edit-list', (data)=>{
             console.log(data);
             functionLib.editList(data, function(editListCB){
@@ -92,10 +96,10 @@ let setServer=(server)=>{
                 myIo.emit('edit-list-message', editListCB);
             })
         })
-
-        socket.on('delete-list', (listId)=>{            
-            console.log("delete-list event is being handled  : " + JSON.stringify(listId)) ;
-            functionLib.deleteList(listId, function(listData){
+        //***************delete list event listener****************/
+        socket.on('delete-list', (data)=>{            
+            //console.log("delete-list event is being handled  : " + JSON.stringify(data)) ;
+            functionLib.deleteList(data, function(listData){
                 console.log("list deleted");
                 console.log(listData);                           
                 myIo.emit('delete-list-message', listData);
@@ -113,14 +117,16 @@ let setServer=(server)=>{
             myIo.emit('get-item-details-in-sub-item-box', data);
         })
 //-----------------------------------------------------------------------------------------------
+//*******************create-item event listener********************/
         socket.on('add-new-item', (data)=>{ 
-            console.log("handing add-new-item event");           
+            console.log("handling add-new-item event");           
             console.log(data);
             functionLib.createItem(data, function(itemCB){
                 console.log(itemCB);
+                myIo.emit('create-item-message', itemCB);
             })
         })
-
+//*******************edit-item event listener********************/
         socket.on('edit-item', (data)=>{ 
             console.log("handing edit-item event");           
             console.log(data);
@@ -130,7 +136,7 @@ let setServer=(server)=>{
                 myIo.emit('edit-item-message', editItemCB);
             })
         })
-
+//*******************delete-item event listener********************/
         socket.on('delete-item', (data)=>{            
             console.log("delete-item event is being handled  : " + data.itemId) ;
             functionLib.deleteItem(data, function(itemData){
@@ -138,9 +144,9 @@ let setServer=(server)=>{
                 console.log(itemData);                           
                 myIo.emit('delete-item-message', itemData);
             })
-        })//create-task event ended
+        })//delete item event ended
         
-
+//********************items-by-list-id*****event listener*************/
         socket.on('items-by-list-id', (data)=>{
             console.log("inside items-by-list-id  : "+JSON.stringify(data));
             functionLib.getItemsByListId(data, function(allItemsCB){
@@ -149,15 +155,16 @@ let setServer=(server)=>{
                 myIo.emit('vacate-sub-item-box', "Select Item to show sub-items"); 
             })
         })
-
+//*********************add-new-sub-item event listener**************/
         socket.on('add-new-sub-item', (data)=>{            
             console.log("handing add-new-sub-item event");           
             console.log(data);
             functionLib.createSubItem(data, function(subItemCB){
                 console.log(subItemCB);
+                myIo.emit('create-sub-item-message', subItemCB);
             })
         })
-
+//**********************edit sub item event listener******************/
         socket.on('edit-sub-item', (data)=>{            
             console.log("handing edit-sub-item event");           
             console.log(data);
@@ -180,11 +187,20 @@ let setServer=(server)=>{
             console.log("inside sub-items-by-item-id  : "+data);
             
             functionLib.getSubItemsByItemId(data, function(allSubItemsCB){                
-                console.log(allSubItemsCB);
+                //console.log(allSubItemsCB);
                 myIo.emit('get-all-sub-items', allSubItemsCB);
             })
             
         })
+        //-------------------------changeStatus-----------------------------------------------
+        /*
+        socket.on('change-status', (data)=>{
+            console.log(data);
+            functionLib.changeStatus(data, function(changeStatusCB){
+                myIo.emit('get-change-status', changeStatusCB);
+            })
+        })
+        */
         //---------------------friend related events listening---------------------------------
         socket.on('send-friend-request', (data)=>{
             myIo.emit('msg-to-friend', data);
@@ -210,6 +226,32 @@ let setServer=(server)=>{
             myIo.emit('get-friend-details', data);
             myIo.emit('vacate-item-box', "Select List to show items");
             myIo.emit('vacate-sub-item-box', "Select Item to show sub-items");            
+        })
+        //---------------------------Notifications--------------------------------------------
+        socket.on("send-current-notification", (data)=>{
+            console.log(data);
+            functionLib.createNotification(data, function(notificationCB){
+                myIo.emit('get-current-notification', notificationCB);
+            })                      
+        })
+/*
+        socket.on("send-all-notifications", (data)=>{
+            console.log(data);
+            functionLib.getAllNotifications(data,  function(allNoteCB){
+                console.log("all data fetched");
+                console.log(allNoteCB);
+                myIo.emit('get-all-notifications', allNoteCB);
+            })
+        })
+        */
+        socket.on("show-all-notifications", (data)=>{
+            console.log(data);            
+            myIo.emit('show-notifications', data);
+            
+        })
+        socket.on('send-notifications-array', (data)=>{
+            console.log(data);
+            myIo.emit('get-notification-array', data);
         })
         //-------------------disconnect socket - function defined------------------------------
         socket.on('disconnect', ()=>{

@@ -184,7 +184,28 @@ input{
     right:0vw;
     z-index:10000;
     background:white;
+    color:#777;
+}
+#notification-modal{
+    display:none; 
+    width:25vw;
+    height:auto;   
+    position:absolute;
+    top:20vh;
+    left:30vw;
+    z-index:10001;
+    background:white;
+    color:#777;
+    border:1px solid #777;
+    text-align:center;
+    padding:10px 20px;
+}
+
+.closeBtn{
+    background:darkblue;
     color:white;
+    cursor:pointer;
+    padding:0px 5px;
 }
 
 .userBox{
@@ -196,4 +217,21 @@ input{
 }
 .contactName{
     color:#777;
+}
+#all-notification-modal{
+    display:none; 
+    width:25vw;
+    height:auto;   
+    position:absolute;
+    top:8vh;
+    right:0vw;
+    z-index:10001;
+    background:white;
+    color:#777;    
+    text-align:center;
+    padding:10px 20px;
+    font-size:10px;
+}
+.notification-message{
+    border-bottom:1px solid #777;
 }

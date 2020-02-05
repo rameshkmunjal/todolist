@@ -16,6 +16,8 @@ let setRouter=(app)=>{
    // app.post(baseUrl+'/create', taskController.createTask);
     //app.put(baseUrl+"/editTask/:taskId", taskController.editTask);
     //app.post(baseUrl+"/deleteTask", taskController.deleteTask);
+    app.get(baseUrl+'/:authToken/allNotifications', taskController.getAllNotifications);
+    
 }
 
 module.exports={

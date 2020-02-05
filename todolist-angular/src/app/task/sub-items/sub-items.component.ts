@@ -43,6 +43,7 @@ export class SubItemsComponent implements OnInit {
     this.getFriendDetails();
     this.getAllSubItems();
     this.vacateSubItemBox();
+    this.getCreateSubItemMessage();
     this.getEditSubItemMessage();
     this.getDeleteSubItemMessage();
   }
@@ -80,15 +81,15 @@ public createSubItem(){
   }else if(this.newSubItem){
     let data={            
       subItemName:this.newSubItem,
-      changeBy:this.fullName,
-      changeId:this.userId,
+      createdBy:this.fullName,
+      creatorId:this.userId,
       userId:this.userId,      
       itemId:this.itemId      
     }
     console.log(data);     
     this.SocketService.addNewSubItem(data);    
-    this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});  
-    this.newSubItem="";     
+    //this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});  
+    //this.newSubItem="";     
   }    
 }
 
@@ -104,29 +105,48 @@ public editSubItem(subItemId, subItemName){
   let data={    
     subItemId:subItemId,
     subItemName:subItemName,
+    itemId:this.itemId,
     userId:this.userId,    
-    modifierId:this.userId,
-    modeifierName:this.fullName      
+    changeId:this.userId,
+    changeName:this.fullName      
   }
+  console.log(data);
   this.SocketService.editSubItem(data);      
 }
 //-----------------------------------------------------------------------------------------------
-public deleteSubItem(id){
-  let data={
-    subItemId:id,
-    itemId:this.itemId
-  }
-  console.log(data);
-  this.SocketService.deleteSubItem(data);
+public deleteSubItem(id){  
+  this.SocketService.deleteSubItem({subItemId:id, itemId:this.itemId});
 }
 //--------------------------------------------------------------------------------------------------
+public getCreateSubItemMessage():any{
+  console.log("getCreateSubItemMessage called");
+  this.SocketService.getCreateSubItemMessage().subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      if(apiResponse.status===200){
+        this.msgObj=apiResponse.data;        
+        this.sendInputForNotification(this.msgObj, "create", "created");        
+        this.SocketService.getSubItemsByItemId({itemId:apiResponse.data.itemId,userId:this.userId});
+        this.newSubItem="";
+      } else {
+        console.log(apiResponse);
+        this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
+      }
+             
+    }, (err)=>{
+        console.log(err);            
+        this.router.navigate(['/error-page', err.error.status, err.error.message]);
+    }
+  )
+}
 public getEditSubItemMessage():any{
   console.log("getEditSubItemMessage called");
   this.SocketService.getEditSubItemMessage().subscribe(
     apiResponse=>{
       console.log(apiResponse);
       if(apiResponse.status===200){
-        this.msgObj=apiResponse.data;
+        this.msgObj=apiResponse.data;        
+        this.sendInputForNotification(this.msgObj, "edit", "edited");
         this.subItemName=apiResponse.data.subItemName;
       
         let data={
@@ -135,9 +155,9 @@ public getEditSubItemMessage():any{
         }
         this.SocketService.getSubItemsByItemId(data);
       } else {
-
-      }
-             
+        console.log(apiResponse);
+        this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
+      }             
     }, (err)=>{
         console.log(err);            
         this.router.navigate(['/error-page', err.error.status, err.error.message]);
@@ -150,13 +170,9 @@ public getDeleteSubItemMessage():any{
   this.SocketService.getDeleteSubItemMessage().subscribe(
     apiResponse=>{
       console.log(apiResponse);
-      this.msgObj=apiResponse.data;
-      
-      let data={
-        itemId:apiResponse.data.itemId,
-        userId:this.userId
-      }
-      this.SocketService.getSubItemsByItemId(data);
+      this.msgObj=apiResponse.data;        
+        this.sendInputForNotification(this.msgObj, "delete", "deleted");    
+      this.SocketService.getSubItemsByItemId({itemId:apiResponse.data.itemId, userId:this.userId});
     }
   )
 }
@@ -192,6 +208,19 @@ public getAllSubItems(){
       }
     )
   }
+  //--------------------------------------------------------------------------------------------------------
+public sendInputForNotification(data,action, happened){
+  let temp={
+    type:"subItem",
+    action:action,
+    typeId:data.subItemId,
+    message:"Sub-Item "+data.subItemName+" in Item "+ this.itemName +" is "+ happened + " by " +this.fullName,
+    sendId:this.userId,
+    sendName:this.fullName
+  }
+  this.SocketService.sendCurrentNotification(temp);
+}
+//------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 public showSubItemEditModal(subItemId, subItemName){
   $("#subItemEditModal").show();
@@ -203,4 +232,26 @@ public closeSubItemEditModal(){
   $("#subItemEditModal").hide(2000); 
 }
 //-----------------------------------------------------------------------------------------
+/*
+public getChangeStatus(){
+  this.SocketService.getChangeStatus().subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+    }, (error)=>{
+      console.log(error);
+    }
+  )
+}
+
+
+public changeStatus(originId){
+  console.log(originId);
+  let data={
+    type:"subitem",
+    originId:originId
+  }
+  this.SocketService.changeStatus(data);
+}
+*/
+//------------------------------------------------------------------------------------
 }
