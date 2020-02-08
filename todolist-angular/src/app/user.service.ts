@@ -62,6 +62,7 @@ public matchOTP(userId, otp):Observable<any>{
         .set('password', password);
       return this.http.post(`${this.url}/resetPassword/${email}`, params);
   }
+//-----------------------------------------------------------------------------------
 //function - to get list of all users
   public getFriendList(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/getfriendlist/${userId}`);
@@ -70,6 +71,7 @@ public matchOTP(userId, otp):Observable<any>{
   public getNonFriendContacts(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/contacts/${userId}`);
   }
+//-----------------------------------------------------------------------------------
 //function - to logout
   public logoutFunction(authToken, userId):Observable<any>{
     console.log(userId);

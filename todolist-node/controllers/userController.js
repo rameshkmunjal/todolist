@@ -414,6 +414,7 @@ let getNonFriendContacts=(req, res)=>{
 
     let getFriends=()=>{
         return new Promise((resolve, reject)=>{
+            console.log(req.params.userId);
             UserModel.findOne({userId:req.params.userId})
                 .exec((err, userData)=>{
                     if(err){
@@ -439,13 +440,12 @@ let getNonFriendContacts=(req, res)=>{
                 //console.log(err);
                 let apiResponse=response.generate(true, "Some error occurred", 500, null);
                 reject(apiResponse);
-            } else if(check.isEmpty(users)){
-                //console.log("data not found");
+            } else if(check.isEmpty(users)){                
                 let apiResponse=response.generate(true, "No Data Found", 404, null);
                 reject(apiResponse);
             } else {
                 //console.log(friends);
-                //console.log(users);
+                console.log(users);
                 let contactsArr=[];
                 //console.log(friends);
 
@@ -454,14 +454,13 @@ let getNonFriendContacts=(req, res)=>{
                         users.splice(i, 1);
                     }                    
                 }
-               // console.log(users);
-
-                for(let i=0; i<users.length; i++){
+               
+                for(let i=0; i< users.length; i++){
                     for(let j=0; j<friends.length; j++){
                         if(users[i].userId===friends[j].friendId){
                             console.log("Matched");
-                            users.splice(i, 1);
-                            i--;
+                            users.splice(i, 1);                            
+                            i--;                            
                         }
                     }
                 }

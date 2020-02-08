@@ -7,11 +7,17 @@
   </button>
   <div class="collapse navbar-collapse" id="collapsibleNavbar">
     <ul class="navbar-nav ml-auto">
-        <li class="nav-item">
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="['/home']"> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="['/lists']"> Lists</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link"> 
               <i class="fa fa-user-o" (click)="showContactList()" aria-hidden="true"></i>
             </a>
-          </li>
+          </li>                       
           <li class="nav-item">
             <a class="nav-link"> 
               <i class="fa fa-bell" (click)="showAllNotifications()" aria-hidden="true"></i>
@@ -28,14 +34,14 @@
     <div class="row">
       <!------------------------------------------------------------>
       <div class="col-md-12 text-center p-2">
-          <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLatestChange()">Undo</span>
+          <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
       </div>
     </div>
 </div>
 
-<div class="container-fluid abc main">
+<div class="container-fluid home-container main">
   <div class="row">
-    <!------------------------------------------------------------>
+    <!------------------------------------------------------------->
       <div class="col-md-4 box">          
         <app-list></app-list>
       </div>
@@ -57,13 +63,16 @@
 
 <!-----------------------Contacts Modal-------------------------------------->
 <div id="contacts-modal" >
-  <div class="heading-btn mb-0 pb-0 mt-0 pt-0" *ngIf="userList.length > 0">
-      <span class="pull-right mt-0" (click)="closeContactsModal()">&times;</span>
+  <div class="mb-0 pb-0 mt-0 pt-0" *ngIf="userList.length > 0">
+      <span class="pull-right mt-0 closeBtn" (click)="closeContactsModal()">&times;</span>
     <h5 class="text-center">Contacts</h5>
-      <p class="userBox m-0"  *ngFor="let user of userList">
-        <span class="contactName" (click)="sendFriendRequest(user.userId)">{{user.fullName}}</span>
-        <span class="pull-right reqBtn mr-3">Send Friend Request</span> 
-      </p>       
+      <div class="userBox m-0"  *ngFor="let user of userList | slice:0:9">
+        <span class="contactName" >{{user.fullName}}</span>
+        <span class="pull-right reqBtn mr-3" (click)="sendFriendRequest(user.id, user.fullName)">Send Friend Request</span> 
+      </div>
+      <div class="pt-2 bottom-line-box">
+        <p class="bottom-line" >See All</p>
+      </div>       
   </div>
 </div>
 <!--------------------------------Notification Modal-------------------------------------->
@@ -75,12 +84,23 @@
 <!---------------------------------------------------------------------------------------->
 <!---->
 <div id="all-notification-modal">  
-    <p class="pull-right mt-0 closeBtn" (click)="closeNotificationModal()">&times;</p>
-    <div *ngIf="notificationList.length > 0">
-        <div class="notification-message" *ngFor="let item of notificationList">
+    <span class="pull-right mt-0 closeBtn" (click)="closeNotificationModal()">&times;</span>
+    <h5 class="text-center">Notifications</h5>
+    <div *ngIf="notificationList.length > 0 ">
+        <div class="notification-message" *ngFor="let item of notificationList | slice:0:9">
             <p>{{item.message}}</p>
+        </div>
+        <div class="pt-2 bottom-line-box">
+          <a class="bottom-line" [routerLink]="['/notifications']">See All</a>
         </div>
     </div>   
 </div>
 <!---------------------------------------------------------------------------------------->
+<div id="friendship-modal" >  
+  <div class="text-center">{{message}}</div>
+  <div class="d-flex justify-content-between mt-3">
+      <span class="reqBtn" (click)="declineFriendRequest()">Decline</span>
+      <span class="reqBtn" (click)="acceptFriendRequest()">Accept</span>
+  </div>
+</div>
 

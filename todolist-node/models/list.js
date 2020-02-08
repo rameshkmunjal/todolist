@@ -16,7 +16,8 @@ const ListSchema=new Schema({
     isActive:{type:Boolean, default:true}, //set all other false and then new record true
     status:{type:String, default:'open'},//to be changed by user - as - done
     
-    originId:{type:String, default:''}
+    originId:{type:String, default:''},
+    refkey:{type:String, default:''}
 })
 
 mongoose.model('List', ListSchema);

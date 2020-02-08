@@ -33,6 +33,8 @@ let getAllLists=(data, allListsCB)=>{
             } else {
                 //console.log("Matching data found");
                 let apiResponse=response.generate(false, "All Lists Data fetched successfully", 200, allLists);
+                apiResponse.socketLoginId=data.userId;
+                //console.log(apiResponse);
                 allListsCB(apiResponse);
             }
         })
@@ -47,9 +49,11 @@ let createList=(data, listData)=>{
         createdOn:Date.now(),
         creatorId:data.creatorId,
         createdBy:data.createdBy,
-        originId:randomId                   
+        originId:randomId,
+        refkey:randomId                  
     })
 //saving in DB
+console.log(newList);
     newList.save((err, list)=>{
         if(err){
             //console.log(err);
@@ -59,7 +63,10 @@ let createList=(data, listData)=>{
             let listObj=list.toObject();
             delete listObj._id;
             delete listObj.__v; 
+            listObj.type="list";
+            listObj.action="create";
             let apiResponse=response.generate(false, "List created successfully", 200, listObj);
+            console.log(apiResponse);
             listData(apiResponse);
         }
     })
@@ -67,7 +74,7 @@ let createList=(data, listData)=>{
 //--------------------------------------------------------------------------------------------------------
 //function - to edit list
 let editList=(data, editListCB)=>{
-    console.log(data);
+    //console.log(data);
     let saveOldList=()=>{
         return new Promise((resolve, reject)=>{
         ListModel.findOne({'originId':data.listId, 'isActive':true})
@@ -108,7 +115,8 @@ let editList=(data, editListCB)=>{
                 changeOn:Date.now(),                
                 changeBy:data.changeName,
                 personId:data.userId,
-                originId:oldListData.originId
+                originId:oldListData.originId,
+                refkey:oldListData.listId
             })
 
             newList.save((err, savedList)=>{
@@ -120,6 +128,10 @@ let editList=(data, editListCB)=>{
                     let editedList=savedList.toObject();
                     delete editedList._id;
                     delete editedList.__v;
+                    editedList.action=data.action;
+                    editedList.type=data.type;
+                    //console.log("**************************");
+                    //console.log(editedList);
                     resolve(editedList);
                 }
             })
@@ -157,8 +169,10 @@ let deleteList=(data, listData)=>{
                     } else {
                         console.log(deletedList);
                         let list=deletedList.toObject();
+                        list.type="list";
                         delete list._id;
-                        delete list.__v;                        
+                        delete list.__v; 
+                        list.action="delete";                       
                         let apiResponse=response.generate(false, "List Deleted Successfully", 200, list);
                         listData(apiResponse);
                     }
@@ -195,6 +209,8 @@ let createItem=(data, itemCB)=>{
             delete item.__v;
             delete item.changeOn;
             delete item.changeBy;
+            item.type="item";
+            item.action="create";
             
             let apiResponse=response.generate(false, "Data created successfully", 200, item);
             itemCB(apiResponse);            
@@ -253,7 +269,9 @@ let editItem=(data, editItemCB)=>{
                 } else {
                     let obj=item.toObject();
                     delete obj.__v;
-                    delete obj._id;                   
+                    delete obj._id;
+                    obj.type="item";
+                    obj.action="edit";                   
                     resolve(obj);
                 }
             })
@@ -263,7 +281,8 @@ let editItem=(data, editItemCB)=>{
     saveOldItem(data, editItemCB)
         .then(createNewItem)
         .then((resolve)=>{             
-            let apiResponse=response.generate(false, "Item edited successfully", 200, resolve);                   
+            let apiResponse=response.generate(false, "Item edited successfully", 200, resolve);
+            //console.log(apiResponse);                   
             editItemCB(apiResponse);
         })
         .catch((err)=>{                               
@@ -287,11 +306,17 @@ let deleteItem=(data, itemData)=>{
                 itemData(apiResponse);
             } else {
                 result.isActive=false;
+                
                 result.save((err, deletedItem)=>{
                     if(err){
                         console.log(err);
                     } else {
-                        let apiResponse=response.generate(false, "Item Deleted successfully", 200, deletedItem);
+                        let delItem=deletedItem.toObject();
+                        delete delItem.__v;
+                        delete delItem._id;
+                        delItem.type="item";
+                        delItem.action="delete";
+                        let apiResponse=response.generate(false, "Item Deleted successfully", 200, delItem);
                         itemData(apiResponse);
                     }                    
                 })                               
@@ -301,18 +326,18 @@ let deleteItem=(data, itemData)=>{
 //-------------------------------------------------------------------------------------------------------
 //function - to get items using list id
 let getItemsByListId=(data, allItemsCB)=>{
-    console.log("data in getItemByListId : "+ JSON.stringify(data));    
+    //console.log("data in getItemByListId : "+ JSON.stringify(data));    
     ItemModel.find({'listId':data.listId, 'isActive':true})
         .exec((err, allItems)=>{
             if(err){                
-                let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
+                let apiResponse=response.generate(true, "Items fetching by listId failed", 500, null);
                 allItemsCB(apiResponse)
             } else if(check.isEmpty(allItems)){
-                console.log("no data found - due to origin id");                
+                //console.log("no data found - due to origin id");                
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 allItemsCB(apiResponse);
             } else {
-                console.log("no data found - no problem of  origin id");
+                //console.log("no data found - no problem of  origin id");
                 let apiResponse=response.generate(false, "All items of list fetched successfully", 200, allItems)
                 apiResponse.socketLoginId=data.userId;
                 apiResponse.listName=data.listName;
@@ -346,6 +371,8 @@ let createSubItem=(data, subItemCB)=>{
             delete newSubItem._id;
             delete newSubItem.changeOn;            
             delete newSubItem.changeBy;
+            newSubItem.type="subItem";
+            newSubItem.action="create";
 
             let apiResponse=response.generate(false, "Sub Item created successfully", 200, newSubItem);
             subItemCB(apiResponse);
@@ -406,6 +433,8 @@ let editSubItem=(data, editSubItemCB)=>{
                         let editedData=editedSubItem.toObject();
                         delete editedData.__v;
                         delete editedData._id;
+                        editedData.action="edit";
+                        editedData.type="subItem";
                         resolve(editedData);
                     }//else ended
                 })//save method ended                   
@@ -420,9 +449,8 @@ let editSubItem=(data, editSubItemCB)=>{
             editSubItemCB(apiResponse);
         })
         .catch((err)=>{
-            console.log(err);
-            let apiResponse=response.generate(true, "sub item edit action failed", 500, null);
-            editSubItemCB(apiResponse);
+            
+            editSubItemCB(err);
         })
 }
 //---------------------------------------------------------------------------------------------------------------
@@ -441,12 +469,18 @@ let deleteSubItem=(data, subItemData)=>{
             } else {
                 //console.log(result);
                 result.isActive=false;
+                
                 result.save((err, delData)=>{
                     if(err){
                         let apiResponse=response.generate(true, "Deletion failed : Some Error", 500, null);
                         subItemData(apiResponse);
                     } else{
-                        let apiResponse=response.generate(false, "Sub Item deleted successfully", 200, delData);
+                        let delSubItem=delData.toObject();
+                        delete delSubItem.__v;
+                        delete delSubItem._id;
+                        delSubItem.type="subItem";
+                        delSubItem.action="delete";
+                        let apiResponse=response.generate(false, "Sub Item deleted successfully", 200, delSubItem);
                         subItemData(apiResponse);
                     }
                 })
@@ -479,10 +513,10 @@ let getSubItemsByItemId=(data, allSubItemsCB)=>{
 //--------------------------------------------------------------------------------------------------------------------
 //function - to accept friend request
 let acceptFriendRequest=(data, friendCB)=>{
-    //append friend data in user data
+    //append friend request sender data in receiver/acceptor user data
     let appendFriendData=()=>{        
         return new Promise((resolve, reject)=>{
-            UserModel.findOne({'userId':data.friendId})
+            UserModel.findOne({'userId':data.receiverId})
                 .exec((err, friendDetails)=>{
                     if(err){
                         //console.log(err);
@@ -493,10 +527,10 @@ let acceptFriendRequest=(data, friendCB)=>{
                         let apiResponse=response.generate(true, "No Data Found", 404, null);                
                         reject(apiResponse);
                     } else {
-                        let fullName=friendDetails.firstName+" "+friendDetails.lastName;
+                        let receiverName=friendDetails.firstName+" "+friendDetails.lastName;
                         let temp={
-                            friendId:data.userId,
-                            fullName:data.fullName
+                            friendId:data.senderId,
+                            friendName:data.senderName
                         }
                         friendDetails.friends.push(temp);
 
@@ -507,8 +541,8 @@ let acceptFriendRequest=(data, friendCB)=>{
                             } else {
                                 console.log(frndDetails);                                
                                 let friend={
-                                    friendId:data.friendId,
-                                    fullName:fullName
+                                    friendId:frndDetails.userId,
+                                    friendName:frndDetails.firstName+" "+frndDetails.lastName
                                 }
                                 resolve(friend);
                             }
@@ -517,10 +551,10 @@ let acceptFriendRequest=(data, friendCB)=>{
                 })
         })
     }
-
+//append friend request acceptor/receiver data in sender/requestor user data
     let appendUserData=(friend)=>{
         return new Promise((resolve, reject)=>{
-            UserModel.findOne({'userId':data.userId})
+            UserModel.findOne({'userId':data.senderId})
                 .exec((err, userDetails)=>{
                     if(err){                        
                         let apiResponse=response.generate(true, "Some Error Occurred", 500, null); 
@@ -535,8 +569,15 @@ let acceptFriendRequest=(data, friendCB)=>{
                                 let apiResponse=response.generate(true, "Some Error Occurred", 500, null); 
                                 reject(apiResponse);
                             } else {                                
-                                userData.friend=friend;
-                                resolve(userData);
+                                userData.friend=friend;                                
+                                let acceptanceData={
+                                    senderId:userData.userId,
+                                    senderName:userData.firstName+" "+userData.lastName,
+                                    receiverId:friend.friendId,
+                                    reciverName:friend.friendName
+                                }
+                                //userData.acceptanceData=acceptanceData;
+                                resolve(acceptanceData);
                             }
                         })
                     }
@@ -557,25 +598,11 @@ let acceptFriendRequest=(data, friendCB)=>{
         });    
 }
 //----------------------------------------------------------------------------------------------------------------
-//function - to show friend list
-let showFriendList=(userId, friendListCB)=>{
-    UserModel.findOne({'userId':userId})
-        .exec((err, user)=>{
-            if(err){                
-                let apiResponse=response.generate(true, "friend list creation failed", 500, null);
-                friendListCB(apiResponse);
-            } else if(check.isEmpty(user)){                
-                let apiResponse=response.generate(true, "No Data found", 404, null);
-                friendListCB(apiResponse);
-            } else {
-                let friendsArr=user.friends;
-                let apiResponse=response.generate(false, "Friend List fetched successfully", 200, friendsArr);
-                friendListCB(apiResponse);
-            }
-        })
-}
+
 //-------------------------------------Notification function--------------------------------------------------
 let createNotification=(data, notificationCB)=>{
+    console.log("***********");
+    console.log("Create Notification -- " + data);
     let newNotice=new NotificationModel({
         id:shortId.generate(),
         type:data.type,
@@ -602,30 +629,129 @@ let createNotification=(data, notificationCB)=>{
     })
 }
 //-----------------------------------------------------------------------------------------------------------
-/*
-let changeStatus=(data, changeStatusCB)=>{
-    let model;
-    if(data.type==="list"){
-        model=ListModel;        
-    } else if(data.type==="item"){
-        model=ItemModel;
-    } else if(data.type==="subitem"){
-        model=SubItemModel;
-    }
-    model.find()
+
+let changeStatusList=(data, changeStatusListCB)=>{     
+    //console.log("line 615" + model);
+    ListModel.findOne({'originId':data.originId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
                 console.log(err);
+                let apiResponse=response.generate(true, "Status Change Failed", 500, null);
+                changeStatusListCB(apiResponse);
             } else if(check.isEmpty(result)){
                 console.log("No Data found");
+                let apiResponse=response.generate(true, "No Data  Found", 404, null);
+                changeStatusListCB(apiResponse);
             } else {
-                console.log("You hit right");
-                console.log(result);
+                //console.log(result);
+                
+                if(result.status==="open"){
+                    result.status="done";
+                } else if(result.status==="done"){
+                    result.status="open";
+                }
+
+                result.save((err, record)=>{
+                    if(err){
+                        let apiResponse=response.generate(true, "Save Action Failed : Status Change", 500, null);
+                        changeStatusListCB(apiResponse);
+                    } else {
+                        console.log(record);
+                        let recordChanged=record.toObject();
+                        delete recordChanged.__v;
+                        delete recordChanged._id;
+                        recordChanged.type=data.type;
+                        console.log(recordChanged);
+                        let apiResponse=response.generate(false, "Status Change Successful", 200, recordChanged);
+                        changeStatusListCB(apiResponse);
+                    }
+                })            
             }
         })
-
 }
-*/
+//------------------------------------------------------------------------------------------------------------
+let changeStatusItem=(data, changeStatusItemCB)=>{     
+    //console.log("line 615" + model);
+    ItemModel.findOne({'originId':data.originId, 'isActive':true})
+        .exec((err, result)=>{
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Status Change Failed", 500, null);
+                changeStatusItemCB(apiResponse);
+            } else if(check.isEmpty(result)){
+                console.log("No Data found");
+                let apiResponse=response.generate(true, "No Data  Found", 404, null);
+                changeStatusItemCB(apiResponse);
+            } else {
+                console.log(result);
+                
+                if(result.status==="open"){
+                    result.status="done";
+                } else if(result.status==="done"){
+                    result.status="open";
+                }
+
+                result.save((err, record)=>{
+                    if(err){
+                        let apiResponse=response.generate(true, "Save Action Failed : Status Change", 500, null);
+                        changeStatusItemCB(apiResponse);
+                    } else {
+                        console.log(record);
+                        let recordChanged=record.toObject();
+                        delete recordChanged.__v;
+                        delete recordChanged._id;
+                        recordChanged.type=data.type;
+                        console.log(recordChanged);
+                        let apiResponse=response.generate(false, "Status Change Successful", 200, recordChanged);
+                        changeStatusItemCB(apiResponse);
+                    }
+                })            
+            }
+        })
+}
+//-------------------------------------------------------------------------------------------------------------------
+let changeStatusSubItem=(data, changeStatusSubItemCB)=>{     
+    //console.log("line 615" + model);
+    SubItemModel.findOne({'originId':data.originId, 'isActive':true})
+        .exec((err, result)=>{
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Status Change Failed", 500, null);
+                changeStatusSubItemCB(apiResponse);
+            } else if(check.isEmpty(result)){
+                console.log("No Data found");
+                let apiResponse=response.generate(true, "No Data  Found", 404, null);
+                changeStatusSubItemCB(apiResponse);
+            } else {
+                console.log(result);
+                
+                if(result.status==="open"){
+                    result.status="done";
+                } else if(result.status==="done"){
+                    result.status="open";
+                }
+
+                result.save((err, record)=>{
+                    if(err){
+                        let apiResponse=response.generate(true, "Save Action Failed : Status Change", 500, null);
+                        changeStatusSubItemCB(apiResponse);
+                    } else {
+                        console.log(record);
+                        let recordChanged=record.toObject();
+                        delete recordChanged.__v;
+                        delete recordChanged._id;
+                        recordChanged.type=data.type;
+                        console.log(recordChanged);
+                        let apiResponse=response.generate(false, "Status Change Successful", 200, recordChanged);
+                        changeStatusSubItemCB(apiResponse);
+                    }
+                })            
+            }
+        })
+}
+//------------------------------------------------------------------------------------------------------------
+
+
 //------------------------------------exporting functions------------------------------------------------------
 module.exports={
     getAllLists:getAllLists,
@@ -644,9 +770,11 @@ module.exports={
     getSubItemsByItemId:getSubItemsByItemId, 
 
     acceptFriendRequest:acceptFriendRequest,
-    showFriendList:showFriendList,
+    //showFriendList:showFriendList,
 
-    createNotification:createNotification
-    //changeStatus:changeStatus
+    createNotification:createNotification,
+    changeStatusList:changeStatusList,
+    changeStatusItem:changeStatusItem,
+    changeStatusSubItem:changeStatusSubItem    
 }
 //-----------------------------------------------End of file---------------------------------------------

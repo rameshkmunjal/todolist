@@ -5,41 +5,41 @@
       <div class="input-group-append">
         <button class="addItemBtn" type="submit" (click)="createItem()">Add Item</button>
       </div>
-    </div> 
-    <div *ngIf="items.length > 0 ">
-        <div  *ngFor="let item of items"  class="list-btn">
-            
-            <span class="ml-3 " (click)="showSubItems(item.itemId, item.itemName)">{{item.itemName}}</span>
+    </div>
+
+    <div *ngIf="items.length > 0; else infoText ">
+        <div  *ngFor="let item of items"  class="list-btn">            
+            <span class="ml-3 light-color-text" (click)="showSubItems(item.itemId, item.itemName)">{{item.itemName}}</span>
 
             <span class="pull-right mr-3">
               <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteItem(item.originId)"></i>
             </span>
-            <span class="pull-right reqBtn mr-3" >{{item.status}}</span>
+            <span class="pull-right reqBtn mr-3"
+            [ngClass]="{'reqBtn': item.status == 'open', 'doneBtn': item.status == 'done' }"
+                (click)="changeStatus(item.originId)" >{{item.status}}</span>
             <span class="pull-right reqBtn mr-3" (click)="showEditModal(item.originId, item.itemName)">Edit</span>
-          </div>
-    </div>            
+        </div>
+    </div> 
+    <ng-template #infoText>
+        <p class="text-center message-para">{{message}}</p>
+    </ng-template>           
 </div>
-<!---
-<ng-template #infoText>
-  <p class="text-center message-para">{{message}}</p>
-</ng-template>
--->
-<!------------------------------------------------(click)="changeStatus(item.originId)"------------------------------------------------------------->
+<!------------------------------------------------------------------------------------------------------------->
 <div id="editItemModal">
-    <div class="mb-3" style="font-size:24px;">
+    <div class="mb-3" style="font-size:18px;">
         <span class="pull-right mr-3">
             <i class="fa fa-times-circle-o mb-3" aria-hidden="true" 
              (click)="closeEditModal()"></i>
         </span>
     </div>
-  <form class="full-width">
+  <form class="full-width mt-3">
       <h5 class="text-center"> Edit</h5>      
-      <div class="full-width">
+      <div class="full-width mt-3">
           <label for="itemName">Item Name :</label>
           <input type="text" name="itemName" value="{{itemName}}" [(ngModel)]="itemName" />
       </div>
       <div class="full-width text-center">
-          <button id="editItemBtn" (click)="editItem(itemId, itemName)">Submit</button>
+          <button class="editBtn" (click)="editItem(itemId)">Submit</button>
       </div>
   </form>  
 </div>

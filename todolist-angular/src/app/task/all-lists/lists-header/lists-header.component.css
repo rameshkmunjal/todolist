@@ -1,0 +1,10 @@
+.activeBtn{
+    background:black;
+    color:white;
+}
+.headerBtn{
+    background:rgb(167, 30, 30);
+    color:white;
+    padding:10px 20px ;
+    cursor:pointer;
+}

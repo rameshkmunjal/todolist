@@ -1,6 +1,6 @@
-<!------------------this left sidebar will show lists--------------->        
+<!------------------this left sidebar will show lists---------------->        
 <div class="heading-btn text-center">{{fullName}} : All Lists</div>
-  <div class="input-btn input-group  mb-3" *ngIf="userId===pageOwnerId">
+  <div class="input-btn input-group  mb-3">
       <input type="text" class="form-control" (keydown)="createListUsingKeypress($event)" [(ngModel)]="newList" placeholder="Input List Name">
       <div class="input-group-append">
         <button class="addItemBtn" type="submit" (click)="createList()">Add List</button>
@@ -10,11 +10,13 @@
   <div class="row" *ngIf="allLists.length > 0 ; else infoText">
       <div  *ngFor="let list of allLists"  class="list-btn"  >
           <span class="ml-3"></span>
-          <span class="ml-3 listName" (click)="getItemsByListId(list.originId, userId, list.listName)">{{list.listName}}</span>              
+          <span class="ml-3 light-color-text" (click)="getItemsByListId(list.originId, userId, list.listName)">{{list.listName}}</span>              
           <span class="pull-right mr-3">
             <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.originId)"></i>        
           </span>
-          <span class="pull-right reqBtn mr-3" >Open</span>
+          <span class="pull-right reqBtn mr-3" 
+            [ngClass]="{'reqBtn': list.status == 'open', 'doneBtn': list.status == 'done' }"
+            (click)="changeStatus(list.originId)" >{{list.status}}</span>
           <span class="pull-right reqBtn mr-3" (click)="showEditListModal(list.originId, list.listName)">Edit</span>
       </div>      
   </div>
@@ -40,7 +42,7 @@
       </div>      
       
       <div class="full-width text-center">
-          <button id="editListBtn" (click)="editList(listId)">Submit</button>
+          <button class="editBtn" (click)="editList(listId)">Submit</button>
       </div>
   </form>  
 </div>

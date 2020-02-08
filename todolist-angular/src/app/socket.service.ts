@@ -30,89 +30,6 @@ public onlineUserList():Observable<any>{
     })
   })
 }
-//------------------------------------------------------------------------------------------
-public getCreateListMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('create-list-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-//-------------------------------------------------------------------------------------------
-//getDeleteListMessage()
-public getDeleteListMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('delete-list-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public getCreateItemMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('create-item-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public getEditItemMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('edit-item-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-public getDeleteItemMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('delete-item-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public getEditListMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('edit-list-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public getCreateSubItemMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('create-sub-item-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public getEditSubItemMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('edit-sub-item-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public getDeleteSubItemMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('delete-sub-item-message', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-//delete-item-message
 //---------------------------------------------------------------------------------------
 public getAllListsMessage():Observable<any>{
   return Observable.create((observer)=>{
@@ -131,16 +48,6 @@ public getAllItems():Observable<any>{
   })
 } 
 //
-public vacateItemBox():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('vacate-item-box', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-
-}
-
 public getAllSubItems():Observable<any>{
   return Observable.create((observer)=>{
     this.socket.on('get-all-sub-items', (data)=>{
@@ -149,6 +56,15 @@ public getAllSubItems():Observable<any>{
     })
   })
 } 
+public vacateItemBox():Observable<any>{
+  return Observable.create((observer)=>{
+    this.socket.on('vacate-item-box', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })
+}
+
 public vacateSubItemBox():Observable<any>{
   return Observable.create((observer)=>{
     this.socket.on('vacate-sub-item-box', (data)=>{
@@ -158,37 +74,31 @@ public vacateSubItemBox():Observable<any>{
   })
 }
 //---------------------------------------------------------------------------------------
-public getMessageFromFriend():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('msg-to-friend', (data)=>{
+public messageByUserId = (userId) => {
+  console.log(userId);
+  return Observable.create((observer) => {      
+    this.socket.on(userId, (data) => {
       console.log(data);
       observer.next(data);
-    })
-  })
-}
+    }); // end Socket
+  }); // end Observable
+} // end chatByUserId
+//----------------------------------------------------------------------------------------
 
-public getFriendList():Observable<any>{
+public getUserDetails():Observable<any>{
   return Observable.create((observer)=>{
-    this.socket.on('get-friend-list', (data)=>{
+    this.socket.on('get-user-details', (data)=>{
       console.log(data);
       observer.next(data);
     })
-  })
+  })    
 }
-public getFriendDetails():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-friend-details', (data)=>{
-      console.log(data);
-      observer.next(data);
-    })
-  })
-    
-}
+//---------------------------------------------------------------------------------------
 public getListDetails():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-list-details-in-item-box', (listName)=>{
-      console.log(listName);
-      observer.next(listName);
+  return Observable.create((observer)=>{    
+    this.socket.on('get-list-details-in-item-box', (data)=>{
+      console.log(data);
+      observer.next(data);
     })
   })
 }
@@ -200,16 +110,31 @@ public getItemDetails():Observable<any>{
     })
   })
 }
-/*
-public getChangeStatus():Observable<any>{
+//---------------------------------------------------------------------------------------------------
+public getChangeStatusList():Observable<any>{
   return Observable.create((observer)=>{
-    this.socket.on('get-change-status', (data)=>{
+    this.socket.on('get-change-status-list', (data)=>{
       console.log(data);
       observer.next(data);
     })
   })
 }
-*/
+public getChangeStatusItem():Observable<any>{
+  return Observable.create((observer)=>{
+    this.socket.on('get-change-status-item', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })
+}
+public getChangeStatusSubItem():Observable<any>{
+  return Observable.create((observer)=>{
+    this.socket.on('get-change-status-sub-item', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })
+}
 //-------------------------------Notifications--------------------------------------------
 public getCurrentNotification():Observable<any>{
   return Observable.create((observer)=>{
@@ -219,10 +144,15 @@ public getCurrentNotification():Observable<any>{
     })
   })
 }
-
-
-
-
+//------------------------------------------------------------------------------------------
+public getSuccessMessage():Observable<any>{  
+  return Observable.create((observer)=>{
+    this.socket.on('get-success-message', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })
+}
 //------------events to be emiitted-------------------------------------------------------
 public setUser(authToken){
   this.socket.emit('set-user', authToken);
@@ -235,90 +165,68 @@ public getAllLists(data){
   console.log(data);
   this.socket.emit('get-all-lists', data);
 }
-public createList(data){
+public createTask(data){
   console.log(data);
-  this.socket.emit('create-list', data);
+  this.socket.emit('create-task', data);
 }
-public editList(data){
+public editTask(data){
   console.log(data);
-  this.socket.emit('edit-list', data);
+  this.socket.emit('edit-task', data);
 }
-public deleteList(data){
+public deleteTask(data){
   console.log(data);
-  this.socket.emit('delete-list', data);
-}
-public sendListDetailsToItemBox(data){
-  console.log(data);
-  this.socket.emit('send-list-details-to-item-box', data)
-}
-//-----------item realted events emitted---------------------
-public createItem(data){
-  console.log(data);
-  this.socket.emit('add-new-item', data);
+  this.socket.emit('delete-task', data);
 }
 
-public editItem(data){
-  console.log(data);
-  this.socket.emit('edit-item', data);
-}
-public deleteItem(data){
-  console.log(data);
-  this.socket.emit('delete-item', data);
-}
-public getItemsByListId(data){
-  console.log(data);
+//-----------item realted events emitted---------------------
+
+public getItemsByListId(data){  
+  console.log("Get Items By List Id -- " + JSON.stringify(data));
   this.socket.emit('items-by-list-id', data);
-}
-public sendItemDetailsToSubItemBox(data){
-  console.log(data);
-  this.socket.emit('send-item-details-to-sub-item-box', data)
 }
 public getSubItemsByItemId(data){
   console.log(data);
   this.socket.emit('sub-items-by-item-id', data);  
 }
-public addNewSubItem(data){
+//-----------------------------------------------------------------------------------------------------
+public sendListDetailsToItemBox(data){
   console.log(data);
-  this.socket.emit('add-new-sub-item', data);
+  this.socket.emit('send-list-details-to-item-box', data)
 }
-public editSubItem(data){
+public sendItemDetailsToSubItemBox(data){
   console.log(data);
-  this.socket.emit('edit-sub-item', data);
-}
-public deleteSubItem(data){
-  console.log(data);
-  this.socket.emit('delete-sub-item', data);
+  this.socket.emit('send-item-details-to-sub-item-box', data)
 }
 //----------------------------------------------------------
 public changeStatus(data){
   console.log(data);
   this.socket.emit('change-status', data);
 }
+//----------------------------------------------------------------
+public undoLastChange(data){
+  console.log(data);
+  if(data.action==="delete"){
+    this.socket.emit('undo-delete', data);
+  } else if (data.action==="create"){
+    this.socket.emit('undo-create', data);
+  } else if(data.action==="edit"){
+    this.socket.emit('undo-edit', data);
+  }  
+}
 //-----------friend realted events emitted---------------------
 public sendFriendRequest(data){
   console.log(data);
   this.socket.emit('send-friend-request', data);
 }
-public showFriendList(userId){
-  console.log(userId);
-  this.socket.emit('show-friend-list', userId);
-}
-public sendFriendDetails(data){
-  console.log(data);
-  this.socket.emit('send-friend-details', data);
-}
-
 public acceptFriendRequest(data){
   console.log(data);
   this.socket.emit('accept-friend-request', data);
 }
-
-public includeUserAsFriend(data){
-  console.log("include user as friend called");
+//------------------------------------------------------------------
+public sendUserDetails(data){
   console.log(data);
-  this.socket.emit("accept-friend-request", data);
+  this.socket.emit('send-user-details', data);
 }
-
 //---------------------------------Notifications-----------------------------------------------
 public sendCurrentNotification(data){
   console.log(data);
@@ -332,6 +240,5 @@ public showNotifications(){
 public sendNotifArray(data){
   this.socket.emit('send-notifications-array', data);
 }
-
 //----------------------------------------------------------------------------------------------
 }

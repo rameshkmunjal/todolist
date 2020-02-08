@@ -24,22 +24,12 @@ export class FriendListComponent implements OnInit {
     private SocketService:SocketService
   ) { }
 
-  ngOnInit() {    
+  ngOnInit() {
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.userId=this.UserService.getUserFromLocalStorage().userId;
-    
-    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
-    this.getFriendList(this.authToken, this.userId);
-    
+    this.getFriendList(this.authToken, this.userId);   
   }
-
-    public moveToFriendPage(friendId, friendFullName){
-    let data={
-      userId:friendId,
-      fullName:friendFullName
-    }
-    this.SocketService.sendFriendDetails(data);
-  }
+    
 
   public getFriendList(authToken, userId):any{
     this.UserService.getFriendList(authToken, userId).subscribe(
@@ -54,35 +44,16 @@ export class FriendListComponent implements OnInit {
       }
     )
   }
-  
-
-
-
-
-
-
-
-
-/*
-  
-
-  public moveToFriendPage(friendId){
-    console.log("moveToFriendPage clicked"); 
-    console.log(friendId);       
-    this.friendSelected.emit(friendId);
+//---------------------------------------------------------------------------------
+public moveToFriendPage(friendId, friendFullName){
+  let data={
+    userId:friendId,
+    fullName:friendFullName,
+    pageType:"friend"
   }
+  this.SocketService.sendUserDetails(data);
+}
+//--------------------------------------------------------------------------------------  
 
-  public acceptFriendRequest(userId, friendId){
-    console.log(userId+"  :  "+friendId);
-    let data={
-      userId:userId,      
-      friendId:friendId
-    }
-    this.SocketService.acceptFriendRequest(data);
-  }
-
-  
-*/
-  //--------------------------------------------------------------------
 
 }

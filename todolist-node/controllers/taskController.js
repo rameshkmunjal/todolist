@@ -32,9 +32,9 @@ let getListById=(req, res)=>{
 
 let getAllNotifications=(req, res)=>{
     
-    NotificationModel.find()
+    NotificationModel.find({'isActive':true})
         .exec((err, allData)=>{
-            console.log("inside exec method");
+            console.log("inside exec method in getAllNotifications");
             if(err){
                 console.log(err);
                 let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
@@ -44,7 +44,7 @@ let getAllNotifications=(req, res)=>{
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 res.send(apiResponse);
             } else {
-                console.log(allData);
+                //console.log(allData);
                 let apiResponse=response.generate(false, "All notifications fetched successfully", 200, allData);
                 res.send(apiResponse);
             }

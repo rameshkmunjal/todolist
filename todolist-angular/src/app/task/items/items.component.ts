@@ -5,6 +5,7 @@ import {Router} from '@angular/router';
 import { SocketService } from 'src/app/socket.service';
 import { UserService } from 'src/app/user.service';
 import * as $ from 'jquery';
+import { UtilityService } from 'src/app/utility.service';
 
 @Component({
   selector: 'app-items',
@@ -14,6 +15,9 @@ import * as $ from 'jquery';
 export class ItemsComponent implements OnInit {
   public userId:string;
   public fullName:string;
+  public pageOwnerId:string;
+  public pageOwnerName:string;
+  public pageType:string;
 
   public items:any=[];
   public itemId:string;
@@ -30,60 +34,70 @@ export class ItemsComponent implements OnInit {
   constructor(
     private SocketService:SocketService,
     private UserService:UserService,
+    private Utility:UtilityService,
     private router:Router
   ) { }
 
-  ngOnInit() {
+  ngOnInit() { 
     this.userId=this.UserService.getUserFromLocalStorage().userId;
     this.fullName=this.UserService.getUserFromLocalStorage().fullName;
-    this.getFriendDetails();
+    this.pageOwnerId=this.userId;   
+    this.getUserDetails();
     this.getAllItems();
     this.getListDetails();
-    this.vacateItemBox();
-    this.getCreateItemMessage();
-    this.getEditItemMessage();
-    this.getDeleteItemMessage()
+    this.vacateItemBox();    
+    this.getChangeStatusItem();
+    this.getSuccessMessage();
     
   }
   //----------------------------------------------------------------
-  public getFriendDetails(){
-    this.SocketService.getFriendDetails().subscribe(
+  
+  public getUserDetails(){
+    this.SocketService.getUserDetails().subscribe(
       data=>{
         this.userId=data.id;
-        this.fullName=data.fullName;        
+        this.fullName=data.fullName; 
+        this.pageType="friend"       
       }
     )   
   }
+  
 //----------------------------------------------------------------------------------
   public getAllItems(){
     this.SocketService.getAllItems().subscribe(
-      apiResponse=>{     
+      apiResponse=>{ 
+        console.log("Get All Items response -- " + JSON.stringify(apiResponse));    
         if(apiResponse.status===200){
-          //if(apiResponse.socketLoginId===this.userId){
-          this.items=apiResponse.data;
-          console.log(this.items);
-        } else {
-          this.items=[];
-          console.log("There is no items in this list");
-          
-        }        
-      }, (err)=>{
-        console.log(err);            
-        this.router.navigate(['/error-page', err.error.status, err.error.message]);
-      }
-    )
+          console.log("comparing userIds in item.compoent  "+ this.userId + " : "+apiResponse.socketLoginId);
+          //if(apiResponse.socketLoginId===this.pageOwnerId && this.listId===apiResponse.data[0].listId){
+            this.items=apiResponse.data;
+            //console.log(this.items);
+            //this.items=this.Utility.arrangeListsByDescendingOrder(this.items);
+          } else {
+            this.items=[];
+            console.log("There is no items in this list");          
+          }//else closed
+               
+        }, (err)=>{
+          console.log(err);            
+          this.router.navigate(['/error-page', err.error.status, err.error.message]);
+        })
   }
 
   public getListDetails(){
     this.SocketService.getListDetails().subscribe(
       data=>{
-        console.log(data); 
-        this.listName=data.listName; 
-        this.listId=data.listId;  
-        this.userId=data.userId;  
-        this.SocketService.getItemsByListId(data);      
+        console.log(data);
+        console.log(this.userId+"  :  "+data.userId)
+        
+          this.listName=data.listName; 
+          this.listId=data.listId;  
+          this.userId=data.userId; 
+          this.fullName=data.fullName; 
+          this.SocketService.getItemsByListId(data);
+                      
       }, (err)=>{
-        console.log(err);
+        //console.log(err);
       }
     )
   }
@@ -96,10 +110,11 @@ public createItem(){
       itemName:this.newItem,
       listId:this.listId,
       createdBy:this.fullName,
-      creatorId:this.userId
+      creatorId:this.userId,
+      type:"item"
     }
-    console.log(data);     
-    this.SocketService.createItem(data);
+    //console.log(data);     
+    this.SocketService.createTask(data);
   }    
 }
 
@@ -110,98 +125,41 @@ public createItemUsingKeypress: any = (event: any) => {
 }
 
 
-public getCreateItemMessage():any{
-  console.log("getCreateMessage called");
-  this.SocketService.getCreateItemMessage().subscribe(
-    apiResponse=>{
-      if(apiResponse.status===200){
-        console.log(apiResponse);
-        this.msgObj=apiResponse.data;
-        this.sendInputForNotification(this.msgObj, "create", "created");
-        this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId}); 
-        this.newItem=""; 
-      } else{
-        console.log(apiResponse);
-        this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
-      }
-    }, 
-    (error)=>{
-      console.log(error);
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-      })
-}
 //-----------------------------------------------------------------------------------------------------
 
   public editItem(itemId){
     $("#editItemModal").hide(2000);    
-    console.log("item id is :"+itemId);
-    console.log("item name : "+this.itemName);
+    
     let data={            
       itemId:this.itemId,
       itemName:this.itemName,
       userId:this.userId,
       changeName:this.fullName, 
-      listId:this.listId      
+      listId:this.listId,
+      type:"item"     
     }
-    console.log(data);
-    this.SocketService.editItem(data);        
+    //console.log(data);
+    this.SocketService.editTask(data);        
   }
   //------------------------------------------------
   public deleteItem(id){    
-    this.SocketService.deleteItem({itemId:id, listId:this.listId});
+    this.SocketService.deleteTask({itemId:id, listId:this.listId, type:"item"});
   }
   //----------------------------------------------------------------
-  public getDeleteItemMessage():any{
-    console.log("getDeleteItemMessage called");
-    this.SocketService.getDeleteItemMessage().subscribe(
-      apiResponse=>{
-        console.log(apiResponse);
-        this.msgObj=apiResponse.data;  
-        this.msgObj=apiResponse.data;
-        this.sendInputForNotification(this.msgObj, "delete", "deleted");      
-        this.SocketService.getItemsByListId({userId:this.userId,listId:this.listId});
-      }
-    )
-  }
-//---------------------------------------------------------------------------------------
   public vacateItemBox(){
     this.SocketService.vacateItemBox().subscribe(
       data=>{
         this.items=[];
-        this.listName="";
-        console.log(data);
+        this.listName="";        
         this.message=data;
       }, (err)=>{
         console.log(err);
       }
     )
   }
-  
-//----------------------------------------------------------------------------------------------
-public getEditItemMessage():any{
-  console.log("getEditMessage called");
-  this.SocketService.getEditItemMessage().subscribe(
-    apiResponse=>{
-      console.log(apiResponse);
-      if(apiResponse.status===200){
-        this.itemName=apiResponse.data.itemName;
-        this.msgObj=apiResponse.data;        
-        this.sendInputForNotification(this.msgObj, "edit", "edited");
-        this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
-      } else {
-        console.log(apiResponse);
-        this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
-      }
-    }, (error)=>{
-      console.log(error);
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    })
-}
 //------------------------------------------------------------------------------------------------
   public showEditModal(itemId, itemName){
-    this.vacateItemBox();
-    console.log(this.listId +"  :  "+ this.listName);
-    console.log(itemId+" : "+itemName);
+    //this.vacateItemBox();    
     this.itemName=itemName;
     this.itemId=itemId;
     $("#editItemModal").show();    
@@ -212,7 +170,7 @@ public getEditItemMessage():any{
   }
 //-----------------------------------------------------------------------------------------------------
 public showSubItems(itemId, itemName){
-  console.log(itemId+" : "+itemName);  
+  //console.log(itemId+" : "+itemName);  
   this.itemName=itemName;
   this.itemId=itemId;
   let data={
@@ -222,7 +180,8 @@ public showSubItems(itemId, itemName){
   this.SocketService.getSubItemsByItemId(data); 
   let d={
     itemId:itemId,
-    itemName:itemName
+    itemName:itemName, 
+    userId:this.userId
   }
   this.SocketService.sendItemDetailsToSubItemBox(d); 
 }
@@ -232,6 +191,7 @@ public sendInputForNotification(data,action, happened){
     type:"item",
     action:action,
     typeId:data.itemId,
+    originId:data.originId,
     message:"Item "+data.itemName+" in List "+ this.listName +" is "+ happened + " by " +this.fullName,
     sendId:this.userId,
     sendName:this.fullName
@@ -239,26 +199,50 @@ public sendInputForNotification(data,action, happened){
   this.SocketService.sendCurrentNotification(temp);
 }
 //------------------------------------------------------------------------------------------------
-/*
-public getChangeStatus(){
-  this.SocketService.getChangeStatus().subscribe(
-    apiResponse=>{
-      console.log(apiResponse);
-    }, (error)=>{
-      console.log(error);
+
+public getChangeStatusItem(){
+  this.SocketService.getChangeStatusItem().subscribe(
+    data=>{
+      if(data.status===200){
+      //console.log(apiResponse);
+      this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
+      this.getAllItems();
+    }else {
+      this.router.navigate(['/error-page', data.status, data.message]);
+    } 
+   }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
   )
 }
-
-
 public changeStatus(originId){
-  console.log(originId);
+  //console.log(originId);
   let data={
     type:"item",
     originId:originId
   }
   this.SocketService.changeStatus(data);
 }
-*/
-//------------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------------
+public getSuccessMessage():any{
+  this.SocketService.getSuccessMessage().subscribe(
+    data=>{
+      if(data.status===200){       
+        if(data.data.type==="item"){
+          console.log("success message in item component");
+          console.log(this.listId, this.userId);
+          this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
+          this.getAllItems();
+          this.newItem="";
+        }      
+    } else {
+      this.router.navigate(['/error-page', data.status, data.message]);
+    } 
+   }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//-------------------------------------------------------------------------
 }

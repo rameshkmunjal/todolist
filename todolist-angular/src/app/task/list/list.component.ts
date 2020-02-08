@@ -15,13 +15,16 @@ import * as $ from 'jquery';
   styleUrls: ['./list.component.css']
 })
 
-export class ListComponent implements OnInit {  
-  public authToken:string;
+export class ListComponent implements OnInit { 
+  
   public userList:any=[];
-  public pageOwnerId:string;
+  
   public userId:string;
   public userName:string;
   public fullName:string;
+
+  public pageOwnerId:string;
+  public pageOwnerName:string;
 
   public errorMessage:string;
   public msgObj:any;
@@ -43,30 +46,40 @@ export class ListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.userId=this.UserService.getUserFromLocalStorage().userId;
-    this.pageOwnerId=this.userId;
-    this.fullName=this.UserService.getUserFromLocalStorage().fullName;    
-    
-    this.getFriendDetails();  
+    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
+    //this.getUserDetails();  
     this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-    this.getAllListsMessage();
-    this.getCreateListMessage() ;
-    this.getEditListMessage();
-    this.getDeleteListMessage();
-    //this.getChangeStatus(); 
+    this.getAllListsMessage();    
+    this.getChangeStatus();
+    this.getSuccessMessage(); 
   }
+  //-------------------------------------------------------------------------------------------
+  //function - user details send by home page
+  /*
+  public getUserDetails(){
+    this.SocketService.getUserDetails().subscribe(
+      data=>{
+        this.userId=data.userId;
+        this.fullName=data.fullName;
+        console.log(this.userId+" : "+this.fullName);
+        this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+      }
+    )   
+  }
+  */
 //------------------------------------function definitions------------------------------------------------
 //function - create list - involving DB operations
 public createList=()=>{
-  console.log(this.newList);
+  //console.log(this.newList);
   let data={
     listName:this.newList,
     creatorId:this.userId,
-    createdBy:this.fullName
+    createdBy:this.fullName,
+    type:"list"
   }
-  console.log(data);
-  this.SocketService.createList(data);  
+  //console.log(data);
+  this.SocketService.createTask(data);  
   this.newList="";
 }
 //function - when enter key is pressed - create list
@@ -78,30 +91,31 @@ public createListUsingKeypress: any = (event: any) => {
 //-----------------------------------------------------------------------------------------------
 //function - to edit list
 public editList(listId){
-  console.log(listId);
+  //console.log(listId);
   $("#editListModal").hide(2000);
-  this.listId=listId;
-  console.log(this.listId);
-  console.log(this.listName);
+  this.listId=listId;  
   
   let data={
     listId:listId,
     listName:this.listName,      
     changeId:this.userId,
-    changeName:this.fullName      
+    changeName:this.fullName,
+    type:"list",
+    action:"edit"     
   }
   //console.log(data);
-  this.SocketService.editList(data);        
+  this.SocketService.editTask(data);        
 }
 //-------------------------------------------------------------------------------------------------------
 //function - to delete list
 public deleteList(id){
   let data={
     userId:this.userId,      
-    listId:id
+    listId:id,
+    type:"list"
   }
-  console.log(data);
-  this.SocketService.deleteList(data);  
+  
+  this.SocketService.deleteTask(data);  
   this.SocketService.getItemsByListId(data);
 }
 //--------------------------------------------------------------------------------------
@@ -110,33 +124,39 @@ public getItemsByListId(listId, userId, listName){
   let d={
     listId:listId,
     listName:listName,
-    userId:userId
+    userId:this.userId,
+    fullName:this.fullName
   }
+  console.log(d);
   this.SocketService.sendListDetailsToItemBox(d);
      
   let data={
     listId:listId,
-    userId:userId,
-    listName:listName
+    listName:listName,
+    userId:this.userId
   }
-  console.log(data);
+  //console.log(data);
   this.SocketService.getItemsByListId(data);
 }
 //--------------------------functions to get messages through socket listeners-------------------------------------------
 public getAllListsMessage():any{
-    console.log("home component :: getAllListsMessage called");
+    //console.log("home component :: getAllListsMessage called");
     this.SocketService.getAllListsMessage().subscribe(
       data=>{
         if(data.status===200){
           console.log(data);
-          this.allLists=data.data;
-          console.log(this.allLists);
-          this.allLists=this.Utility.arrangeListsByDescendingOrder(this.allLists);
-          console.log(this.allLists);
-          this.errorMessage="";
-          this.listName="";
+          console.log("comparing userIds :"+ this.userId +" : "+data.socketLoginId)
+          if(data.socketLoginId===this.userId){
+            this.allLists=data.data;
+            //console.log(this.allLists);
+            this.allLists=this.Utility.arrangeListsByDescendingOrder(this.allLists);
+            //console.log(this.allLists);
+            this.errorMessage="";
+            this.listName="";
+          }
+          
         } else {
-          console.log(data);
+          //console.log(data);
           if(data.status===404){
             this.allLists=[];
           } else{
@@ -145,83 +165,17 @@ public getAllListsMessage():any{
         }        
       },
       error=>{
-        console.log(error);            
+        //console.log(error);            
         this.router.navigate(['/error-page', error.error.status, error.error.message]);
         this.allLists=[];
       }
     )
   }  
 //--------------------------------------------------------------------------------------------------
-//function - to get result of successful event of create list  
-public getCreateListMessage(){
-    this.SocketService.getCreateListMessage().subscribe(
-      data=>{
-        console.log(data);
-        this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-        this.msgObj=data.data;        
-        console.log(this.msgObj);
-        this.sendInputForNotification(this.msgObj, "create", "created");
-        //this.SocketService.sendAllNotifications();
-      })
-}  
-//-----------------------------------------------------------------------------------------------------
-//function - to get result of successful event of edit list
-public getEditListMessage():any{
-    console.log("getEditListMessage called");
-    this.SocketService.getEditListMessage().subscribe(
-      apiResponse=>{
-        if(apiResponse.status===200){
-          console.log(apiResponse);
-          this.msgObj=apiResponse.data;        
-          console.log(this.msgObj); 
-          this.sendInputForNotification(this.msgObj, "edit", "edited");
-          this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-        } else {
-          console.log(apiResponse);
-          this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
-        }
-      }, (err)=>{
-          console.log(err);            
-          this.router.navigate(['/error-page', err.error.status, err.error.message]);                   
-      }
-    )
-  }
-  //------------------------------------------------------------------------------------------------
-  //function - to get result of successful event of delete list
-  public getDeleteListMessage():any{
-    console.log("getDeleteMessage called");
-    this.SocketService.getDeleteListMessage().subscribe(
-      apiResponse=>{
-        console.log(apiResponse);
-        if(apiResponse.status===200){
-          this.msgObj=apiResponse.data;
-          this.sendInputForNotification(this.msgObj, "delete", "deleted");
-          this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-        } else {
-          console.log(apiResponse);
-          this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
-        }
-        }, (err)=>{
-          console.log(err);            
-          this.router.navigate(['/error-page', err.error.status, err.error.message]);        
-      })
-  }
-  //-------------------------------------------------------------------------------------------
-  //function - to get result of successful event of get friend details
-  public getFriendDetails(){
-    this.SocketService.getFriendDetails().subscribe(
-      data=>{
-        this.userId=data.userId;
-        this.fullName=data.fullName;
-        console.log(this.userId+" : "+this.fullName);
-        this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-      }
-    )   
-  }
   //-------------------------------functions - relating modal-----------------------------------------  
   public showEditListModal(listId, listName){
-    console.log(listId);
-    console.log(listName);
+    //console.log(listId);
+    //console.log(listName);
     this.listId=listId;
     this.listName=listName;
     $("#editListModal").show();
@@ -231,23 +185,43 @@ public getEditListMessage():any{
     $("#editListModal").hide(2000); 
   }   
   //------------------------------------------------------------------------------
-public sendInputForNotification(data,action, happened){
+public sendInputForNotification(data){
+  console.log("SendInputForNotifications" + data);
+  let message="";
+  let happened="";
+  if(data.action=="create"){
+    happened="created";
+    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`; 
+  } else if(data.action=="edit"){
+    happened="edited";
+    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`;
+  } else if(data.action=="delete"){
+    happened="deleted";
+    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`;
+  }else{
+    happened = "changed";
+    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`;
+  }
   let temp={
-    type:"list",
-    action:action,
-    typeId:data.originId,
-    message:"List "+data.listName+" is "+ happened + " by " +this.fullName,
+    type:data.type,
+    action:data.action,
+    typeId:data.listId,
+    originId:data.originId,
+    message:message,
     sendId:this.userId,
     sendName:this.fullName
   }
+  //console.log(temp);
   this.SocketService.sendCurrentNotification(temp);
 }
 //--------------------------------------------------------------------------------------
-/*
+
 public getChangeStatus(){
-  this.SocketService.getChangeStatus().subscribe(
+  this.SocketService.getChangeStatusList().subscribe(
     apiResponse=>{
       console.log(apiResponse);
+      this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+      this.getAllListsMessage();
     }, (error)=>{
       console.log(error);
     }
@@ -256,14 +230,36 @@ public getChangeStatus(){
 
 
 public changeStatus(originId){
-  console.log(originId);
+  //console.log(originId);
   let data={
     type:"list",
     originId:originId
   }
   this.SocketService.changeStatus(data);
 }
-*/
+
+
+//-------------------------------------------------------
+public getSuccessMessage():any{
+  this.SocketService.getSuccessMessage().subscribe(
+    data=>{
+      console.log(data);
+      if(data.status===200){
+        if(data.data.type==="list"){
+          this.sendInputForNotification(data.data);
+          this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+          this.getAllListsMessage();
+        }
+      } else {
+        this.router.navigate(['/error-page', data.status, data.message]);
+      }
+      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+
 //------------------------------------------------------
 //end of class definition
 }

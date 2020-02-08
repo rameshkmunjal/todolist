@@ -9,12 +9,14 @@
     <!----->
     <div *ngIf="subItems.length > 0 ; else infoText">
         <div  *ngFor="let subItem of subItems"  class="list-btn"  >            
-            <span class="ml-3">{{subItem.subItemName}}</span>
+            <span class="ml-3 light-color-text">{{subItem.subItemName}}</span>
 
             <span class="pull-right mr-3">
               <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteSubItem(subItem.originId)"></i>
             </span>
-            <span class="pull-right reqBtn mr-3" >{{subItem.status}}</span>
+            <span class="pull-right reqBtn mr-3" 
+                [ngClass]="{'reqBtn': subItem.status == 'open', 'doneBtn': subItem.status == 'done' }"
+                (click)="changeStatus(subItem.originId)"                >{{subItem.status}}</span>
             <span class="pull-right reqBtn mr-3" (click)="showSubItemEditModal(subItem.originId, subItem.subItemName)">Edit</span>
           </div>
     </div> 

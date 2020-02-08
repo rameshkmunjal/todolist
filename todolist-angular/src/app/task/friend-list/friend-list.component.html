@@ -1,7 +1,7 @@
 <div class="sidebar"  *ngIf="friendList.length > 0">
   <h5 class="text-center">Friend List</h5>
   <div class="frndName" *ngFor="let friend of friendList" >      
-      <span class="pointer" (click)="moveToFriendPage(friend.friendId, friend.fullName)">{{friend.fullName}}</span>       
+      <span class="pointer" (click)="moveToFriendPage(friend.friendId, friend.fullName)">{{friend.friendName}}</span>       
       <!--
       
       --> 
