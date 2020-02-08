@@ -6,7 +6,7 @@ import {Observable} from 'rxjs';
   providedIn: 'root'
 })
 export class TaskService {
-  private url:string="http://localhost:3000/api/v1/todolist";
+  private url:string="http://18.188.89.46:3000/api/v1/todolist";
 
   constructor(private http:HttpClient) { }
   
