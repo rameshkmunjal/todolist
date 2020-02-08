@@ -43,14 +43,13 @@ export class SubItemsComponent implements OnInit {
   ngOnInit() {
     this.userId=this.UserService.getUserFromLocalStorage().userId;
     this.fullName=this.UserService.getUserFromLocalStorage().fullName;
-    //this.pageOwnerId=this.userId;
-    //this.pageOwnerName=this.fullName;
-    //this.getUserDetails();
+    
     this.getItemDetails();    
     this.getAllSubItems();
     this.vacateSubItemBox();    
     this.getChangeStatusSubItem();
     this.getSuccessMessage();
+    this.getUndoSuccessMessage();
   }
 //-----------------------------------------------------------------------------------------
 /*
@@ -230,4 +229,22 @@ public getSuccessMessage():any{
 }
 
 //------------------------------------------------------
+public getUndoSuccessMessage():any{
+  this.SocketService.getUndoSuccessMessage().subscribe(
+    data=>{
+      if(data.status===200){       
+        if(data.data.type==="subItem"){          
+          this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});
+          this.getAllSubItems();
+          this.newSubItem="";
+        }      
+    } else {
+      this.router.navigate(['/error-page', data.status, data.message]);
+    } 
+   }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//----------------------------------------------------------------------------
 }
