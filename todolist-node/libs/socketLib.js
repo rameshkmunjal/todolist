@@ -97,11 +97,9 @@ let setServer=(server)=>{
             })
 
 
-        socket.on('items-by-list-id', (data)=>{
-            console.log("Items by ListId called for "+ socket.id);
-            console.log("inside items-by-list-id  : "+JSON.stringify(data));
+        socket.on('items-by-list-id', (data)=>{            
             functionLib.getItemsByListId(data, function(allItemsCB){
-                //console.log(allItemsCB);                
+                console.log("allItemsCB result "+ JSON.stringify(allItemsCB));                
                 myIo.emit('get-all-items', allItemsCB);
                // myIo.emit('vacate-sub-item-box', "Select Item to show sub-items"); 
             })
@@ -201,25 +199,16 @@ socket.on('edit-task', (data)=>{
         socket.on('undo-delete', (data)=>{
             console.log(data);
             if(data.type==="list"){                
-                listLib.undoDeleteList(data, function(undoChangeListCB){
-                    console.log("callback successful"); 
-                    let apiResponse=undoChangeListCB;
-                    console.log(apiResponse);                   
-                    myIo.emit('get-success-message', apiResponse);
+                listLib.undoDeleteList(data, function(undoChangeListCB){                                     
+                    myIo.emit('undo-success-message', undoChangeListCB);
                 })        
             } else if(data.type==="item"){                
-                itemLib.undoDeleteItem(data, function(undoChangeItemCB){
-                    console.log("callback successful"); 
-                    let apiResponse=undoChangeItemCB;
-                    console.log(apiResponse);                   
-                    myIo.emit('get-success-message', apiResponse);
+                itemLib.undoDeleteItem(data, function(undoChangeItemCB){                                     
+                    myIo.emit('undo-success-message', undoChangeItemCB);
                 })        
             } else if(data.type==="subItem"){                
-                subItemLib.undoDeleteSubItem(data, function(undoChangeSubItemCB){
-                    console.log("callback successful"); 
-                    let apiResponse=undoChangeSubItemCB;
-                    console.log(apiResponse);                   
-                    myIo.emit('get-success-message', apiResponse);
+                subItemLib.undoDeleteSubItem(data, function(undoChangeSubItemCB){                                      
+                    myIo.emit('undo-success-message', undoChangeSubItemCB);
                 })        
             }          
         }) 
@@ -228,16 +217,16 @@ socket.on('edit-task', (data)=>{
             console.log(data);
             if(data.type==="list"){                
                 listLib.undoCreateList(data, function(undoCreateListCB){                                      
-                    myIo.emit('get-success-message', undoCreateListCB);
+                    myIo.emit('undo-success-message', undoCreateListCB);
                 })        
             } else if(data.type==="item"){                
                 itemLib.undoCreateItem(data, function(undoCreateItemCB){
                     console.log("callback successful");                                       
-                    myIo.emit('get-success-message', undoCreateItemCB);
+                    myIo.emit('undo-success-message', undoCreateItemCB);
                 })        
             } else if(data.type==="subItem"){                
                 subItemLib.undoCreateSubItem(data, function(undoCreateSubItemCB){                                      
-                    myIo.emit('get-success-message', undoCreateSubItemCB);
+                    myIo.emit('undo-success-message', undoCreateSubItemCB);
                 })        
             }          
         }) 
@@ -246,15 +235,15 @@ socket.on('edit-task', (data)=>{
             console.log(data);
             if(data.type==="list"){                
                 listLib.undoEditList(data, function(undoEditListCB){                                      
-                    myIo.emit('get-success-message', undoEditListCB);
+                    myIo.emit('undo-success-message', undoEditListCB);
                 })        
             } else if(data.type==="item"){                
                 itemLib.undoEditItem(data, function(undoEditItemCB){                                      
-                    myIo.emit('get-success-message', undoEditItemCB);
+                    myIo.emit('undo-success-message', undoEditItemCB);
                 })        
             } else if(data.type==="subItem"){                
                 subItemLib.undoEditSubItem(data, function(undoEditSubItemCB){                                      
-                    myIo.emit('get-success-message', undoEditSubItemCB);
+                    myIo.emit('undo-success-message', undoEditSubItemCB);
                 })        
             }          
         })
@@ -284,7 +273,7 @@ socket.on('edit-task', (data)=>{
         })
         //---------------------------Notifications--------------------------------------------
         socket.on("send-current-notification", (data)=>{
-            //console.log(data);
+            console.log(data);
             functionLib.createNotification(data, function(notificationCB){
                 myIo.emit('get-current-notification', notificationCB);
             })                      

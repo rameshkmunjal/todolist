@@ -602,7 +602,7 @@ let acceptFriendRequest=(data, friendCB)=>{
 //-------------------------------------Notification function--------------------------------------------------
 let createNotification=(data, notificationCB)=>{
     console.log("***********");
-    console.log("Create Notification -- " + data);
+    console.log("Create Notification -- " + JSON.stringify(data));
     let newNotice=new NotificationModel({
         id:shortId.generate(),
         type:data.type,

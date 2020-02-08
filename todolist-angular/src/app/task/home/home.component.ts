@@ -58,7 +58,8 @@ export class HomeComponent implements OnInit {
     //this.sendUserDetails(this.userId, this.fullName);
     ///this.getFriendList();
     this.getMessageFromAUser();
-    this.getSuccessMessage();  
+    this.getSuccessMessage(); 
+    this.getUndoSuccessMessage(); 
     this.getCurrentNotification();  
     this.getAllNotifications(); 
          
@@ -100,6 +101,18 @@ public moveToHomePage(){
     this.SocketService.undoLastChange(this.lastChangeObj);
      
   }
+  //-------------------------------Success Message for socket calls------------------------------  
+  public getUndoSuccessMessage():any{
+    this.SocketService.getUndoSuccessMessage().subscribe(
+      data=>{
+        console.log(data);  
+        //this.getAllNotifications();
+      }, (error)=>{
+        console.log(error);
+      }
+    )
+  }  
+
   //------------------------------------Contacts----------------------------------------------  
   public showContactList(){
     console.log(this.pageOwnerId);

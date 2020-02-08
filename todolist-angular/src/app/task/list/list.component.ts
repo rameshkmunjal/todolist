@@ -143,18 +143,13 @@ public getAllListsMessage():any{
     //console.log("home component :: getAllListsMessage called");
     this.SocketService.getAllListsMessage().subscribe(
       data=>{
-        if(data.status===200){
-          console.log(data);
-          console.log("comparing userIds :"+ this.userId +" : "+data.socketLoginId)
+        if(data.status===200 ){
           if(data.socketLoginId===this.userId){
-            this.allLists=data.data;
-            //console.log(this.allLists);
-            this.allLists=this.Utility.arrangeListsByDescendingOrder(this.allLists);
-            //console.log(this.allLists);
+            this.allLists=data.data;           
+            this.allLists=this.Utility.arrangeListsByDescendingOrder(this.allLists);            
             this.errorMessage="";
             this.listName="";
-          }
-          
+          }         
         } else {
           //console.log(data);
           if(data.status===404){
@@ -189,6 +184,7 @@ public sendInputForNotification(data){
   console.log("SendInputForNotifications" + data);
   let message="";
   let happened="";
+  console.log(this.fullName);
   if(data.action=="create"){
     happened="created";
     message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`; 
@@ -211,7 +207,7 @@ public sendInputForNotification(data){
     sendId:this.userId,
     sendName:this.fullName
   }
-  //console.log(temp);
+  console.log(temp);
   this.SocketService.sendCurrentNotification(temp);
 }
 //--------------------------------------------------------------------------------------
@@ -245,10 +241,10 @@ public getSuccessMessage():any{
     data=>{
       console.log(data);
       if(data.status===200){
-        if(data.data.type==="list"){
-          this.sendInputForNotification(data.data);
-          this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-          this.getAllListsMessage();
+        if(data.data.type==="list" && data.data.creatorId===this.userId){          
+            this.sendInputForNotification(data.data);
+            this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+            this.getAllListsMessage();                    
         }
       } else {
         this.router.navigate(['/error-page', data.status, data.message]);
@@ -261,5 +257,25 @@ public getSuccessMessage():any{
 }
 
 //------------------------------------------------------
+public getUndoSuccessMessage():any{
+  this.SocketService.getUndoSuccessMessage().subscribe(
+    data=>{
+      console.log(data);
+      if(data.status===200){
+        if(data.data.type==="list" && data.data.creatorId===this.userId){          
+            this.sendInputForNotification(data.data);
+            this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+            this.getAllListsMessage();                    
+        }
+      } else {
+        this.router.navigate(['/error-page', data.status, data.message]);
+      }
+      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//------------------------------------------------------------------------------
 //end of class definition
 }

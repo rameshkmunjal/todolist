@@ -24,7 +24,8 @@ let captureInfo=(message, origin, importance)=>{
         origin:origin, 
         level:importance
     }
-    logger.info(errorInfo);
+
+    logger.info(infoMessage);
     return infoMessage;
 }//end captureInfo
 

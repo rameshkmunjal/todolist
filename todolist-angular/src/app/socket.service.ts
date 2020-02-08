@@ -153,6 +153,15 @@ public getSuccessMessage():Observable<any>{
     })
   })
 }
+//getUndoSuccessMessage()
+public getUndoSuccessMessage():Observable<any>{  
+  return Observable.create((observer)=>{
+    this.socket.on('undo-success-message', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })
+}
 //------------events to be emiitted-------------------------------------------------------
 public setUser(authToken){
   this.socket.emit('set-user', authToken);

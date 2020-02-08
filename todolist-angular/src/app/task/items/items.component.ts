@@ -48,6 +48,7 @@ export class ItemsComponent implements OnInit {
     this.vacateItemBox();    
     this.getChangeStatusItem();
     this.getSuccessMessage();
+    this.getUndoSuccessMessage();
     
   }
   //----------------------------------------------------------------
@@ -230,8 +231,7 @@ public getSuccessMessage():any{
     data=>{
       if(data.status===200){       
         if(data.data.type==="item"){
-          console.log("success message in item component");
-          console.log(this.listId, this.userId);
+          
           this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
           this.getAllItems();
           this.newItem="";
@@ -245,4 +245,24 @@ public getSuccessMessage():any{
   )
 }
 //-------------------------------------------------------------------------
+public getUndoSuccessMessage():any{
+  this.SocketService.getUndoSuccessMessage().subscribe(
+    data=>{
+      if(data.status===200){       
+        if(data.data.type==="item"){          
+          this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
+          this.getAllItems();
+          this.newItem="";
+        }      
+    } else {
+      this.router.navigate(['/error-page', data.status, data.message]);
+    } 
+   }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//---------------------------------------------------------------
+
+
 }

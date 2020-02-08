@@ -92,39 +92,9 @@ let undoCreateList=(data, undoCreateListCB)=>{
 //---------------------------------------------------------------------------------------------
 
 let undoDeleteList=(data, undoChangeListCB)=>{
-    console.log("inside undoChangeList");
-    let undoList=()=>{
-        return new Promise((resolve, reject)=>{
-            ListModel.findOne({'listId':data.typeId})
-            .exec((err, result)=>{
-            if(err){
-                console.log(err);
-                let apiResponse=response.generate(true, "Undo failed : undoChangeList", 500, null);
-                reject(apiResponse);
-            } else if(check.isEmpty(result)){
-                //console.log("No Data found");
-                let apiResponse=response.generate(true, "No Data found : undoChangeList : undoList", 404, null);
-                reject(apiResponse);
-            } else {
-                result.isActive=true;
-                result.save((err, savedRecord)=>{
-                    if(err){
-                        console.log(err);
-                        let apiResponse=response.generate(true, "Undo failed : undoChangeList", 500, null);
-                        reject(apiResponse);
-                    } else {
-                        console.log("list changed and saved ");
-                        console.log(savedRecord);
-                        resolve(savedRecord);
-                    }//else ended
-                })//save ended
-             }//else ended
-         })//exec ended
-      })//Promise ended
-    }//undoList function ended
-
-    let undoNotfication=(listRecord)=>{
-        console.log(listRecord);
+    console.log("inside undoDeleteList");
+    let undoNotification=(data)=>{
+        //console.log(listRecord);
         return new Promise((resolve, reject)=>{
             NotificationModel.findOne({id:data.id})
                 .exec((err, result)=>{
@@ -143,6 +113,7 @@ let undoDeleteList=(data, undoChangeListCB)=>{
                                 let apiResponse=response.generate(true, "Undo failed : undoChangeList", 500, null);
                                 reject(apiResponse);
                             } else {
+                                //console.log(" result " + JSON.stringify(listRecord));
                                 resolve(saveNotif);                                
                             }//else ended
                         })//save ended
@@ -150,10 +121,45 @@ let undoDeleteList=(data, undoChangeListCB)=>{
                 })//exec ended
         })//Promise ended
     }//function ended
+    let undoList=(saveNotif)=>{
+        console.log(saveNotif);
+        return new Promise((resolve, reject)=>{
+            ListModel.findOne({'listId':data.typeId})
+            .exec((err, result)=>{
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Undo failed : undoChangeList", 500, null);
+                reject(apiResponse);
+            } else if(check.isEmpty(result)){
+                //console.log("No Data found");
+                let apiResponse=response.generate(true, "No Data found : undoChangeList : undoList", 404, null);
+                reject(apiResponse);
+            } else {
+                result.isActive=true;
+                result.save((err, savedRecord)=>{
+                    if(err){
+                        console.log(err);
+                        let apiResponse=response.generate(true, "Undo failed : undoChangeList", 500, null);
+                        reject(apiResponse);
+                    } else { 
+                        let obj=savedRecord.toObject();
+                        delete obj._id;
+                        delete obj.__v; 
+                        obj.type="list";                      
+                        resolve(obj);
+                    }//else ended
+                })//save ended
+             }//else ended
+         })//exec ended
+      })//Promise ended
+    }//undoList function ended
+
     
-    undoList(data, undoChangeListCB)
-        .then(undoNotfication)        
+    
+    undoNotification(data, undoChangeListCB)
+        .then(undoList)        
         .then((resolve)=>{
+            
             let apiResponse=response.generate(false, "undo successful", 200, resolve);
             undoChangeListCB(apiResponse);
         })
@@ -241,7 +247,8 @@ let undoEditList=(data, undoEditListCB)=>{
                                 let apiResponse=response.generate(true, "Undo failed : undoEditListCB", 500, null);
                                 reject(apiResponse);
                             } else {
-                                console.log(saveNotif);                                
+                                //console.log(saveNotif); 
+                                console.log(listRecord) ;                              
                                 resolve(listRecord);                                
                             }//else ended
                         })//save ended

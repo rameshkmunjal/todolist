@@ -11,17 +11,7 @@
           <a class="nav-link" [routerLink]="['/home']"> 
             Home
           </a>
-        </li>
-      <li class="nav-item">
-          <a class="nav-link"> 
-            <i class="fa fa-user-o" (click)="showContactList()" aria-hidden="true"></i>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link"> 
-            <i class="fa fa-bell" (click)="showAllNotifications()" aria-hidden="true"></i>
-          </a>
-        </li>
+        </li>        
     <li class="nav-item">
       <a class="nav-link" [routerLink]="['/log-out']">Logout</a>
     </li>       
@@ -29,12 +19,11 @@
 </div>  
 </nav>
 <!----------------------navbar ends here------------------------------->
-<div class="container-fluid">
-  <p class="text-center">{{latestNotification}}</p>
+<div class="container-fluid ">  
   <div class="row d-flex justify-content-center">
     <h4 class="text-center mt-3 mb-3">All Notifications</h4>
     <div class="col-md-12 d-flex justify-content-center">
-      <table class="tbl table-bordered" *ngIf="notificationList.length > 0">
+      <table class="tbl table-bordered notification-container" *ngIf="notificationList.length > 0">
         <tr><th>Message</th><th>Sent By</th><th>Active</th></tr>
         <tr *ngFor="let item of notificationList">
           <td>{{item.message}}</td><td> {{item.sendName}} </td><td>{{item.isActive}}</td>
