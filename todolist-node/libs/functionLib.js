@@ -241,7 +241,8 @@ let createItem=(data, itemCB)=>{
         createdBy:data.createdBy,
         creatorId:data.creatorId,
         listId:data.listId, 
-        originId:randomId        
+        originId:randomId,
+        refkey:randomId        
     });
     logger.debug("FunctionsLib::createItem " + JSON.stringify(newItem));
     //save - item created in DB
@@ -728,7 +729,8 @@ let createNotification=(data, notificationCB)=>{
         typeId:data.typeId,
         message:data.message,
         sendId:data.sendId,
-        sendName:data.sendName
+        sendName:data.sendName, 
+        createdOn:new Date()
     })
 
     newNotice.save((err, saveNotice)=>{
@@ -900,7 +902,24 @@ let changeStatusSubItem=(data, changeStatusSubItemCB)=>{
         })
 }
 //------------------------------------------------------------------------------------------------------------
-
+let getAllNotifications=(data, notificationCB )=>{
+        NotificationModel.find({'isActive':true})
+            .exec((err, allData)=>{
+                console.log("inside exec method in getAllNotifications");
+                if(err){
+                    console.log(err);
+                    let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
+                    notificationCB(apiResponse);
+                } else if(check.isEmpty(allData)){
+                    console.log("Data Not found");
+                    let apiResponse=response.generate(true, "No Data found", 404, null);
+                    notificationCB(apiResponse);
+                } else {                    
+                    let apiResponse=response.generate(false, "All notifications fetched successfully", 200, allData);
+                    notificationCB(apiResponse);
+                }
+            })
+}
 
 //------------------------------------exporting functions------------------------------------------------------
 module.exports={
@@ -920,9 +939,11 @@ module.exports={
     getSubItemsByItemId:getSubItemsByItemId, 
 
     acceptFriendRequest:acceptFriendRequest,
-    //showFriendList:showFriendList,
+    
 
     createNotification:createNotification,
+    getAllNotifications:getAllNotifications,
+
     changeStatusList:changeStatusList,
     changeStatusItem:changeStatusItem,
     changeStatusSubItem:changeStatusSubItem    

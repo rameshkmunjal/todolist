@@ -60,7 +60,8 @@ export class HomeComponent implements OnInit {
     this.getMessageFromAUser();
     this.getSuccessMessage(); 
     this.getUndoSuccessMessage(); 
-    this.getCurrentNotification();  
+    this.getCurrentNotification();
+    this.showAllNotifications();  
     this.getAllNotifications(); 
          
   }
@@ -88,7 +89,7 @@ public moveToHomePage(){
     this.SocketService.getSuccessMessage().subscribe(
       data=>{
         console.log(data);  
-        this.getAllNotifications();
+        this.showAllNotifications();
       }, (error)=>{
         console.log(error);
       }
@@ -106,7 +107,7 @@ public moveToHomePage(){
     this.SocketService.getUndoSuccessMessage().subscribe(
       data=>{
         console.log(data);  
-        //this.getAllNotifications();
+        this.showAllNotifications();
       }, (error)=>{
         console.log(error);
       }
@@ -176,24 +177,30 @@ public declineFriendRequest=()=>{
   //-------------------------------Notifications------------------------------------------
   public getCurrentNotification():any{
     this.SocketService.getCurrentNotification().subscribe(
-      data=>{
-        //console.log(data);        
+      data=>{               
         this.showCurrentNotifModal(data.data.message);
-        this.getAllNotifications();
+        this.showAllNotifications();
       }, (error)=>{
         console.log(error);
       }
     )
   }
+  public showAllNotifications(){
+    let data={
+      userId:this.userId
+    }
+    this.SocketService.showAllNotifications(data);
+    this.getAllNotifications();
+  }
   
-  public getAllNotifications():any{
-    //console.log("getAllNotifications  called");
-    this.TaskService.getAllNotifications(this.authToken).subscribe(
+  public getAllNotifications():any{    
+    this.SocketService.getAllNotifications().subscribe(
       data=>{ 
         if(data.status===200){
-          this.notificationList=data.data;          
-          //this.notificationList=this.Utility.arrangeListsByDescendingOrder(this.notificationList);
-          this.lastChangeObj=this.notificationList[this.notificationList.length-1];
+          this.notificationList=data.data; 
+          //console.log(this.notificationList);         
+          this.notificationList=this.Utility.arrangeListsByDescendingOrder(this.notificationList);
+          this.lastChangeObj=this.notificationList[0];
           this.latestNotification=this.lastChangeObj.message; 
           console.log(this.latestNotification);
         } else {
@@ -208,9 +215,7 @@ public declineFriendRequest=()=>{
     )  
   }
 //--------------------------------------Modals----------------------------------------------
-  public showAllNotifications(){
-    //console.log(this.notificationList);
-    //console.log("all notifications will be shown ");
+  public showNotificationsInModal(){    
     $("#all-notification-modal").slideToggle(1500); 
   }
   public closeNotificationModal(){

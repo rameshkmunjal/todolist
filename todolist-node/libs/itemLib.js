@@ -21,38 +21,8 @@ const NotificationModel=mongoose.model('notification');
 
 let undoCreateItem=(data, undoCreateItemCB)=>{
     console.log("inside undoCreateItemCB");
-    let undoItem=()=>{
-        return new Promise((resolve, reject)=>{
-            ItemModel.findOne({'itemId':data.typeId})
-            .exec((err, result)=>{
-            if(err){
-                console.log(err);
-                let apiResponse=response.generate(true, "Undo failed : undoCreateItemCB", 500, null);
-                reject(apiResponse);
-            } else if(check.isEmpty(result)){
-                //console.log("No Data found");
-                let apiResponse=response.generate(true, "No Data found : undoCreateItemCB : undoList", 404, null);
-                reject(apiResponse);
-            } else {
-                result.isActive=false;
-                result.save((err, savedRecord)=>{
-                    if(err){
-                        console.log(err);
-                        let apiResponse=response.generate(true, "Undo failed : undoCreateItemCB", 500, null);
-                        reject(apiResponse);
-                    } else {
-                        console.log("item changed and saved ");
-                        console.log(savedRecord);
-                        resolve(savedRecord);
-                    }//else ended
-                })//save ended
-             }//else ended
-         })//exec ended
-      })//Promise ended
-    }//undoList function ended
-
-    let undoNotfication=(itemRecord)=>{
-        console.log(itemRecord);
+    let undoNotification=(data)=>{
+        //console.log(itemRecord);
         return new Promise((resolve, reject)=>{
             NotificationModel.findOne({id:data.id})
                 .exec((err, result)=>{
@@ -78,9 +48,43 @@ let undoCreateItem=(data, undoCreateItemCB)=>{
                 })//exec ended
         })//Promise ended
     }//function ended
+    let undoItem=(saveNotif)=>{
+        console.log(saveNotif);
+        return new Promise((resolve, reject)=>{
+            ItemModel.findOne({'itemId':data.typeId})
+            .exec((err, result)=>{
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Undo failed : undoCreateItemCB", 500, null);
+                reject(apiResponse);
+            } else if(check.isEmpty(result)){
+                //console.log("No Data found");
+                let apiResponse=response.generate(true, "No Data found : undoCreateItemCB : undoList", 404, null);
+                reject(apiResponse);
+            } else {
+                result.isActive=false;
+                result.save((err, savedRecord)=>{
+                    if(err){
+                        console.log(err);
+                        let apiResponse=response.generate(true, "Undo failed : undoCreateItemCB", 500, null);
+                        reject(apiResponse);
+                    } else {
+                        let obj=savedRecord.toObject();
+                        delete obj._id;
+                        delete obj.__v;
+                        obj.type="item";
+                        resolve(obj);
+                    }//else ended
+                })//save ended
+             }//else ended
+         })//exec ended
+      })//Promise ended
+    }//undoList function ended
+
     
-    undoItem(data, undoCreateItemCB)
-        .then(undoNotfication)        
+    
+    undoNotification(data, undoCreateItemCB)
+        .then(undoItem)        
         .then((resolve)=>{
             let apiResponse=response.generate(false, "undo successful", 200, resolve);
             undoCreateItemCB(apiResponse);
@@ -91,37 +95,8 @@ let undoCreateItem=(data, undoCreateItemCB)=>{
 }//function ended
 //---------------------------------------------------------------------------------------------
 let undoDeleteItem=(data, undoChangeItemCB)=>{
-    let undoItem=()=>{
-        return new Promise((resolve, reject)=>{
-            ItemModel.findOne({'itemId':data.typeId})
-            .exec((err, result)=>{
-            if(err){
-                console.log(err);
-                let apiResponse=response.generate(true, "Undo failed : undoChangeItem", 500, null);
-                reject(apiResponse);
-            } else if(check.isEmpty(result)){
-                //console.log("No Data found");
-                let apiResponse=response.generate(true, "No Data found : undoChangeItem : undoItem", 404, null);
-                reject(apiResponse);
-            } else {
-                result.isActive=true;   
-                result.save((err, savedRecord)=>{
-                    if(err){
-                        console.log(err);
-                        let apiResponse=response.generate(true, "Undo failed : undoChangeItem", 500, null);
-                        reject(apiResponse);
-                    } else {
-                        console.log(savedRecord);
-                        resolve(savedRecord);
-                    }//else ended
-                })//save ended
-             }//else ended
-         })//exec ended
-      })//Promise ended
-    }//undoList function ended
-
-    let undoNotfication=(itemRecord)=>{
-        console.log(itemRecord);
+    let undoNotification=()=>{
+        //console.log(itemRecord);
         return new Promise((resolve, reject)=>{
             NotificationModel.findOne({id:data.id})
                 .exec((err, result)=>{
@@ -147,9 +122,43 @@ let undoDeleteItem=(data, undoChangeItemCB)=>{
                 })//exec ended
         })//Promise ended
     }//function ended
+    let undoItem=(saveNotif)=>{
+        console.log(saveNotif);
+        return new Promise((resolve, reject)=>{
+            ItemModel.findOne({'itemId':data.typeId})
+            .exec((err, result)=>{
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Undo failed : undoChangeItem", 500, null);
+                reject(apiResponse);
+            } else if(check.isEmpty(result)){
+                //console.log("No Data found");
+                let apiResponse=response.generate(true, "No Data found : undoChangeItem : undoItem", 404, null);
+                reject(apiResponse);
+            } else {
+                result.isActive=true;   
+                result.save((err, savedRecord)=>{
+                    if(err){
+                        console.log(err);
+                        let apiResponse=response.generate(true, "Undo failed : undoChangeItem", 500, null);
+                        reject(apiResponse);
+                    } else {
+                        let obj=savedRecord.toObject();
+                        delete obj._id;
+                        delete obj.__v; 
+                        obj.type="item";                      
+                        resolve(obj);
+                    }//else ended
+                })//save ended
+             }//else ended
+         })//exec ended
+      })//Promise ended
+    }//undoList function ended
+
     
-    undoItem(data, undoChangeItemCB)
-        .then(undoNotfication)
+    
+    undoNotification(data, undoChangeItemCB)
+        .then(undoItem)
         .then((resolve)=>{
             let apiResponse=response.generate(false, "undo successful", 200, resolve);
             undoChangeItemCB(apiResponse);
@@ -159,9 +168,39 @@ let undoDeleteItem=(data, undoChangeItemCB)=>{
         })
 }//function ended
 //---------------------------------------------------------------------------------------------
+
 let undoEditItem=(data, undoEditItemCB)=>{
     console.log("inside undoEditItem");
+    let undoNotification=()=>{
+        
+        return new Promise((resolve, reject)=>{
+            NotificationModel.findOne({id:data.id})
+                .exec((err, result)=>{
+                    if(err){
+                        //console.log(err);
+                        let apiResponse=response.generate(true, "Undo failed : undoEditItemCB", 500, null);
+                        reject(apiResponse);
+                    } else if(check.isEmpty(result)){
+                        //console.log("No Data found");
+                        let apiResponse=response.generate(true, "No Data found : undoEditItemCB : undoNotification", 404, null);
+                        reject(apiResponse);
+                    } else {
+                        result.isActive=false;
+                        result.save((err, saveNotif)=>{
+                            if(err){
+                                let apiResponse=response.generate(true, "Undo failed : undoEditItemCB", 500, null);
+                                reject(apiResponse);
+                            } else {
+                                console.log(saveNotif);                                
+                                resolve(saveNotif);                                
+                            }//else ended
+                        })//save ended
+                    }//else ended
+                })//exec ended
+        })//Promise ended
+    }//function ended
     let undoItem=()=>{
+        
         return new Promise((resolve, reject)=>{
             ItemModel.findOne({'itemId':data.typeId})
             .exec((err, result)=>{
@@ -190,6 +229,7 @@ let undoEditItem=(data, undoEditItemCB)=>{
     }//undoList function ended
 
     let tracePreviousItem=(savedRecord)=>{
+        console.log(savedRecord);
         return new Promise((resolve, reject)=>{
             ItemModel.findOne({'itemId':savedRecord.refkey})
                 .exec((err, result)=>{
@@ -197,7 +237,7 @@ let undoEditItem=(data, undoEditItemCB)=>{
                         let apiResponse=response.generate(true, "Undo failed : undoEditItemCB : tracePreviousItem", 500, null);
                         reject(apiResponse);
                     } else if(check.isEmpty(result)){
-                        let apiResponse=response.generate(true, "No Data found : undoEditItemCB : tracePreviousItem", 500, null);
+                        let apiResponse=response.generate(true, "No Data found : undoEditItemCB : tracePreviousItem", 404, null);
                         reject(apiResponse);
                     } else {
                         result.isActive=true;
@@ -214,38 +254,11 @@ let undoEditItem=(data, undoEditItemCB)=>{
         })
     }
 
-    let undoNotfication=(listRecord)=>{
-        console.log(listRecord);
-        return new Promise((resolve, reject)=>{
-            NotificationModel.findOne({id:data.id})
-                .exec((err, result)=>{
-                    if(err){
-                        //console.log(err);
-                        let apiResponse=response.generate(true, "Undo failed : undoEditItemCB", 500, null);
-                        reject(apiResponse);
-                    } else if(check.isEmpty(result)){
-                        //console.log("No Data found");
-                        let apiResponse=response.generate(true, "No Data found : undoEditItemCB : undoNotification", 404, null);
-                        reject(apiResponse);
-                    } else {
-                        result.isActive=false;
-                        result.save((err, saveNotif)=>{
-                            if(err){
-                                let apiResponse=response.generate(true, "Undo failed : undoEditItemCB", 500, null);
-                                reject(apiResponse);
-                            } else {
-                                console.log(saveNotif);                                
-                                resolve(listRecord);                                
-                            }//else ended
-                        })//save ended
-                    }//else ended
-                })//exec ended
-        })//Promise ended
-    }//function ended
     
-    undoItem(data, undoEditItemCB)
-        .then(tracePreviousItem)
-        .then(undoNotfication)        
+    
+    undoNotification(data, undoEditItemCB)
+        .then(undoItem)
+        .then(tracePreviousItem)                
         .then((resolve)=>{
             let apiResponse=response.generate(false, "undo successful", 200, resolve);
             apiResponse.type="item";

@@ -18,7 +18,7 @@
           </li>                       
           <li class="nav-item">
             <a class="nav-link"> 
-              <i class="fa fa-bell" (click)="showAllNotifications()" aria-hidden="true"></i>
+              <i class="fa fa-bell" (click)="showNotificationsInModal()" aria-hidden="true"></i>
             </a>
           </li>
       <li class="nav-item">
@@ -31,15 +31,18 @@
 <div class="container-fluid info-bar">
     <div class="row">
       <!------------------------------------------------------------>
-      <div class="col-md-12 text-center p-2">
+      <div class="col-md-12 text-center p-2" *ngIf="latestNotification; else infoText">
           <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
       </div>
+      <ng-template>
+        <p>No information to display</p>
+      </ng-template>
     </div>
 </div>
 
 <div class="container-fluid home-container main">
   <div class="row">
-    <!------------------------------------------------------------->
+    <!-------------------------------------------------------------------->
       <div class="col-md-4 box">          
         <app-list></app-list>
       </div>

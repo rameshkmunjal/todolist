@@ -33,6 +33,7 @@ export class LoginComponent implements OnInit {
         email:this.email,
         password:this.password
       }
+      console.log(data);
       //validate form inputs
       this.errorObj=this.utility.validateLoginInputs(data);
       console.log(this.errorObj);

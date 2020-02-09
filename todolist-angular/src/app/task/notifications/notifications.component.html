@@ -23,10 +23,10 @@
   <div class="row d-flex justify-content-center">
     <h4 class="text-center mt-3 mb-3">All Notifications</h4>
     <div class="col-md-12 d-flex justify-content-center">
-      <table class="tbl table-bordered notification-container" *ngIf="notificationList.length > 0">
-        <tr><th>Message</th><th>Sent By</th><th>Active</th></tr>
-        <tr *ngFor="let item of notificationList">
-          <td>{{item.message}}</td><td> {{item.sendName}} </td><td>{{item.isActive}}</td>
+      <table class="tbl table-bordered notification-container" *ngIf="notificationList.length > 0; ">
+        <tr><th>Sr.</th><th>Message</th><th>Created On</th><th>Sent By</th><th>Active</th></tr>
+        <tr *ngFor="let item of notificationList; index as i">
+          <td>{{i+1 }}</td><td>{{item.message}}</td><td>{{item.createdOn | date:'dd/MM/yyyy'}}</td><td> {{item.sendName}} </td><td>{{item.isActive}}</td>
         </tr>
       </table>
     </div>

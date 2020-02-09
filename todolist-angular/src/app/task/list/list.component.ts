@@ -53,6 +53,7 @@ export class ListComponent implements OnInit {
     this.getAllListsMessage();    
     this.getChangeStatus();
     this.getSuccessMessage(); 
+    this.getUndoSuccessMessage();
   }
   //-------------------------------------------------------------------------------------------
   //function - user details send by home page
@@ -139,8 +140,7 @@ public getItemsByListId(listId, userId, listName){
   this.SocketService.getItemsByListId(data);
 }
 //--------------------------functions to get messages through socket listeners-------------------------------------------
-public getAllListsMessage():any{
-    //console.log("home component :: getAllListsMessage called");
+public getAllListsMessage():any{    
     this.SocketService.getAllListsMessage().subscribe(
       data=>{
         if(data.status===200 ){
@@ -210,7 +210,7 @@ public sendInputForNotification(data){
   console.log(temp);
   this.SocketService.sendCurrentNotification(temp);
 }
-//--------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------
 
 public getChangeStatus(){
   this.SocketService.getChangeStatusList().subscribe(
@@ -244,7 +244,7 @@ public getSuccessMessage():any{
         if(data.data.type==="list" && data.data.creatorId===this.userId){          
             this.sendInputForNotification(data.data);
             this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-            this.getAllListsMessage();                    
+            this.getAllListsMessage();                                
         }
       } else {
         this.router.navigate(['/error-page', data.status, data.message]);
@@ -259,13 +259,13 @@ public getSuccessMessage():any{
 //------------------------------------------------------
 public getUndoSuccessMessage():any{
   this.SocketService.getUndoSuccessMessage().subscribe(
-    data=>{
-      console.log(data);
+    data=>{      
       if(data.status===200){
-        if(data.data.type==="list" && data.data.creatorId===this.userId){          
-            this.sendInputForNotification(data.data);
-            this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-            this.getAllListsMessage();                    
+        console.log(data.data.creatorId+"  :   "+this.userId);
+        if(data.data.type==="list" && data.data.creatorId===this.userId){
+        console.log(data);
+        this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+        this.getAllListsMessage();        
         }
       } else {
         this.router.navigate(['/error-page', data.status, data.message]);

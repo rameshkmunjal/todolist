@@ -30,29 +30,9 @@ let getListById=(req, res)=>{
         })//exec method ending
 }//function ended
 
-let getAllNotifications=(req, res)=>{
-    
-    NotificationModel.find({'isActive':true})
-        .exec((err, allData)=>{
-            console.log("inside exec method in getAllNotifications");
-            if(err){
-                console.log(err);
-                let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
-                res.send(apiResponse);
-            } else if(check.isEmpty(allData)){
-                console.log("Data Not found");
-                let apiResponse=response.generate(true, "No Data found", 404, null);
-                res.send(apiResponse);
-            } else {
-                //console.log(allData);
-                let apiResponse=response.generate(false, "All notifications fetched successfully", 200, allData);
-                res.send(apiResponse);
-            }
-        })
 
-}
 
 module.exports={
-    getAllNotifications:getAllNotifications,
+    //getAllNotifications:getAllNotifications,
     getListById:getListById
 }

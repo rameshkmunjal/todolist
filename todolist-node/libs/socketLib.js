@@ -87,11 +87,8 @@ let setServer=(server)=>{
             myIo.emit('get-item-details-in-sub-item-box', data);
         })
 //-------------------------------------Lists-------------------------------------------------
-            socket.on('get-all-lists', (data)=>{            
-                //console.log("GEt all lists called for " +   socket.id);
-                functionLib.getAllLists(data, function(allListsCB){               
-                    console.log("Sending get all lists message to socket");
-                    //myIo.to(`${socket.userId}`).emit('get-all-lists-message', allListsCB);            
+            socket.on('get-all-lists', (data)=>{
+                functionLib.getAllLists(data, function(allListsCB){
                     myIo.emit('get-all-lists-message', allListsCB);
                 })
             })
@@ -280,9 +277,10 @@ socket.on('edit-task', (data)=>{
         })
 
         socket.on("show-all-notifications", (data)=>{
-            console.log(data);            
-            myIo.emit('show-notifications', data);
-            
+            console.log(data); 
+            functionLib.getAllNotifications(data, function(notificationCB){
+                myIo.emit('get-all-notifications', notificationCB);
+            }) 
         })
         socket.on('send-notifications-array', (data)=>{
             console.log(data);

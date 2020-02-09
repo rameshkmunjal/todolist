@@ -49,7 +49,22 @@ export class UtilityService {
     }   
   }
   //---------------------------End Of Class Definition---------------------------------------
+  /*
   public arrangeListsByDescendingOrder(list):any{
+    list.sort(function(a, b):any{          
+      if(new Date(a.createdOn) < new Date(b.createdOn)){
+        return 1;
+      } else if(new Date(a.createdOn)  > new Date(b.createdOn)){
+        return -1;
+      } else {
+        return 0;
+      }      
+    });
+    return list;
+  }
+*/
+  //function - sorting meetings in descending order
+  public arrangeListsByDescendingOrder(list){
     list.sort(function(a, b):any{          
       if(new Date(a.createdOn) < new Date(b.createdOn)){
         return 1;

@@ -43,6 +43,7 @@ export class UserService {
     let params=new HttpParams()
       .set("email", data.email)
       .set("password", data.password);
+      console.log(params);
     return this.http.post(`${this.url}/login`, params);
   }
 //function - api call to ask for OTP - to reset password

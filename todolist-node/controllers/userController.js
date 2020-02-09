@@ -98,6 +98,8 @@ function signupFunction(req, res){
 //--------------------------------------Login function--------------------------------------------------
 //function - to allow login - on success - will open main page of website
 function loginFunction(req, res){
+    console.log(req.body.email);
+    console.log(req.body.password);
     //find user
     let findUser=()=>{//find out user using email body param
         return new Promise((resolve, reject)=>{

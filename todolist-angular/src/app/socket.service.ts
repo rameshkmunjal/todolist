@@ -144,6 +144,14 @@ public getCurrentNotification():Observable<any>{
     })
   })
 }
+public getAllNotifications():Observable<any>{
+  return Observable.create((observer)=>{
+    this.socket.on('get-all-notifications', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })
+}
 //------------------------------------------------------------------------------------------
 public getSuccessMessage():Observable<any>{  
   return Observable.create((observer)=>{
@@ -241,11 +249,15 @@ public sendCurrentNotification(data){
   console.log(data);
   this.socket.emit("send-current-notification", data);
 }
-
+public showAllNotifications(data){
+  this.socket.emit("show-all-notifications", data);
+}
+/*
 public showNotifications(){
   let data={};
   this.socket.emit("show-all-notifications", data);
 }
+*/
 public sendNotifArray(data){
   this.socket.emit('send-notifications-array', data);
 }

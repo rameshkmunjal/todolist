@@ -120,7 +120,7 @@ public editSubItem(subItemId, subItemName){
     changeName:this.fullName,
     type:"subItem"      
   }
-  console.log(data);
+  //console.log(data);
   this.SocketService.editTask(data);      
 }
 //-----------------------------------------------------------------------------------------------
