@@ -329,9 +329,7 @@ let setServer=(server)=>{
 	     */
 	    socket.on('send-friend-request', (data)=>{
 		    data.message=data.senderName+" has sent you a friend request ";
-		    //console.log(message);
-		    //socket.broadcast.to(data.userId).emit(message);
-		    //socket.broadcast.to(data.id).emit('get-message', message);
+		    
 		    console.log("Event::send-friend-request " + data.receiverId);
 		    console.log("Event::send-friend-request Emitting to reciever");
 		    myIo.emit(data.receiverId, data);
@@ -344,9 +342,18 @@ let setServer=(server)=>{
 		    console.log("Event::accept-friend-request :: accept-friend-request is being handled ");
 		    functionLib.acceptFriendRequest(data, function(friendCB){
 			    console.log(friendCB);
-			    console.log("Event::accept-friend-request Emitting friend-accept-message");
-			    myIo.emit('friend-accept-message', friendCB);
-		    })
+			     let obj={
+                    receiverName : friendCB.data.receiverName,
+                    senderName : friendCB.data.senderName,
+                    receiverId : friendCB.data.receiverId,
+                    senderId : friendCB.data.senderId,
+                    message :receiverName+" has accepted " + senderName + " friendRequest",
+                    msgType:"general"
+                }
+                
+                myIo.emit(receiverId, obj);
+                myIo.emit(senderId, obj);
+	      })
 	    })
 
 	    /*
@@ -363,6 +370,14 @@ let setServer=(server)=>{
 		    console.log("Event send-user-details :: Emitting vacate-sub-item-box");
 		    myIo.emit('vacate-sub-item-box', "Select Item to show sub-items");            
 	    })
+            socket.on("get-contact-list", (data)=>{
+              userLib.getContactList(data, function(contactCB){
+                console.log("contact list : " + JSON.stringify(contactCB));
+                contactCB.pageOwnerId=data.pageOwnerId;
+                myIo.emit('show-contact-list', contactCB);
+            })
+
+        })
 
 	    //---------------------------Notifications--------------------------------------------
 	    /*
