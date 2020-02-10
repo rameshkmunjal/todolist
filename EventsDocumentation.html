@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)file:///C:/Users/sanket/Downloads/EventsDocumentation.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventsDocumentation</title>
+  <link rel="stylesheet" href="./EventsDocumentation_files/style.css">
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="todo-list-events-document">ToDo List Events Document</h1>
+<blockquote>
+<p>** Events for ToDo List functionality</p>
+</blockquote>
+<h2 id="socket-connection-management">Socket Connection Management</h2>
+<ul>
+<li>
+<p><strong>CONNECTION</strong><br>
+Event Triggered when a socket connection request is initiated from frontend</p>
+</li>
+<li>
+<p><strong>DISCONNECT</strong><br>
+Event Handler for graceful socket disconnection</p>
+</li>
+</ul>
+<h2 id="task-management">Task Management</h2>
+<ul>
+<li>
+<p><strong>SET-USER</strong><br>
+User is set upon socket connection and his  details like userId and fullName are stored.</p>
+</li>
+<li>
+<p><strong>SEND-LIST-DETAILS-TO-ITEM-BOX</strong><br>
+Details of list are sent to the item component to fetch items of list   with a given Id .</p>
+</li>
+<li>
+<p><strong>SEND-ITEM-DETAILS-TO-SUB-ITEM-BOX</strong><br>
+Details of item are sent to the sub-item component to fetch sub-items of an item with a given Id .</p>
+</li>
+<li>
+<p><strong>GET-ALL-LISTS</strong><br>
+All list of a userId are fetched.</p>
+</li>
+<li>
+<p><strong>ITEMS-BY-LIST-ID</strong><br>
+All Items of a list with given Id are fetched</p>
+</li>
+<li>
+<p><strong>SUB-ITEMS-BY-ITEM-ID</strong><br>
+All sub-Items of an item with given Id are fetched</p>
+</li>
+<li>
+<p><strong>DELETE-TASK</strong><br>
+A common socket event is emitted for deleting a list or item or sub-item . Data carries the type like list , item or sub-item along details and on that basis function is called to delete .</p>
+</li>
+<li>
+<p><strong>CREATE-TASK</strong><br>
+A common socket event is emitted for creating a list or item or sub-item . Data carries the type like list , item or sub-item along details and on that basis function is called to create .</p>
+</li>
+<li>
+<p><strong>EDIT-TASK</strong><br>
+A common socket event is emitted for editing a list or item or sub-item . Data carries the type like list , item or sub-item and on that basis function is called to edit.</p>
+</li>
+<li>
+<p><strong>CHANGE-STATUS</strong><br>
+A common socket event is emitted for changing status of a list or item or sub-item . Data carries the type like list , item or sub-item along details and on that basis function is called to change the status .</p>
+</li>
+</ul>
+<h2 id="undo-functionality">UNDO functionality</h2>
+<ul>
+<li><strong>UNDO-DELETE</strong><br>
+A common socket event is emitted for undo previous action of deleting  a list or item or sub-item . Data carries the type like list , item or sub-item along details and on that basis function is called to undo.</li>
+<li><strong>UNDO-CREATE</strong><br>
+A common socket event is emitted for undo previous action of creating  a list or item or sub-item . Data carries the type like list , item or sub-item along details and on that basis function is called to undo.</li>
+<li><strong>UNDO-EDIT</strong><br>
+A common socket event is emitted for undo previous action of editing  a list or item or sub-item . Data carries the type like list , item or sub-item along details and on that basis function is called to undo.</li>
+</ul>
+<h2 id="multi-user-management">Multi-User management</h2>
+<ul>
+<li>
+<p><strong>SEND-FRIEND-REQUEST</strong><br>
+This event is emitted to send friend request to other user. Both users id and name are sent. Handler function emits an event in response to display message on screen of other user.</p>
+</li>
+<li>
+<p><strong>SEND-USER-DETAILS</strong><br>
+As a user logs in - his details like userId and fullName are sent to the child components by home component. And when a friend name is selected - his details are sent to home component with same purpose.</p>
+</li>
+</ul>
+<h2 id="notifications-management">Notifications Management</h2>
+<ul>
+<li>
+<p><strong>SEND-CURRENT-NOTIFICATION</strong><br>
+Notification data is sent to socket side . Handler calls a function to input details in notification document in database .</p>
+</li>
+<li>
+<p><strong>SHOW-ALL-NOTIFICATIONS</strong><br>
+All notifications are demanded from socket side by emitting this event.</p>
+</li>
+</ul>
+</div>
+
+
+
+</body></html>

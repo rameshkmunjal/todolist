@@ -722,33 +722,64 @@ let acceptFriendRequest=(data, friendCB)=>{
 
 //-------------------------------------Notification function--------------------------------------------------
 
-let createNotification=(data, notificationCB)=>{    
+let createNotification=(data, notificationCB)=>{
+    let getFriendList=()=>{
+        return new Promise((resolve, reject)=>{
+            UserModel.findOne({userId:data.sendId})
+                .exec((err, user)=>{
+                    if(err){
+                        let apiResponse=response.generate(true, "User data fetching failed", 500, null);
+                        reject(apiResponse);
+                    } else if(check.isEmpty(user)){
+                        let apiResponse=response.generate(true, "No Data found", 500, null);
+                        reject(apiResponse);
+                    } else {
+                        let friends=user.friends;
+                        resolve(friends);
+                    }
+                })
+        })
+    }    
+  let newNotification=(friends)=>{
+      return new Promise((resolve, reject)=>{
+        let newNotice=new NotificationModel({
+            id:shortId.generate(),
+            type:data.type,
+            action:data.action,
+            typeId:data.typeId,
+            message:data.message,
+            sendId:data.sendId,
+            sendName:data.sendName, 
+            createdOn:new Date()
+        })
     
-    let newNotice=new NotificationModel({
-        id:shortId.generate(),
-        type:data.type,
-        action:data.action,
-        typeId:data.typeId,
-        message:data.message,
-        sendId:data.sendId,
-        sendName:data.sendName, 
-        createdOn:new Date()
-    })
-
-    newNotice.save((err, saveNotice)=>{
-        if(err){
-            //console.log("FunctionsLib " + err);
-            let apiResponse=response.generate(true, "Notification creation failed", 500, null);
-            notificationCB(apiResponse);
-        } else {
-            //console.log("FunctionsLib " + saveNotice);
-            let notice=saveNotice.toObject();
-            delete notice._id;
-            delete notice.__v;
-            let apiResponse=response.generate(false, "Notification creation successful", 200, saveNotice);
-            notificationCB(apiResponse); 
-        }
-    })
+        newNotice.save((err, saveNotice)=>{
+            if(err){
+                //console.log("FunctionsLib " + err);
+                let apiResponse=response.generate(true, "Notification creation failed", 500, null);
+                reject(apiResponse);
+            } else {
+                //console.log("FunctionsLib " + saveNotice);
+                let notice=saveNotice.toObject();
+                delete notice._id;
+                delete notice.__v;
+                
+                notice.friends=friends;
+                resolve(notice);
+            }
+        })
+    
+      })
+  }  
+ getFriendList(data, notificationCB)
+  .then(newNotification)
+  .then((resolve)=>{
+      let apiResponse=response.generate(false, "Current Notification appended successfully", 200, resolve);
+      notificationCB(apiResponse);
+  })
+  .catch((err)=>{
+      notificationCB(err);
+  })  
 }
 
 

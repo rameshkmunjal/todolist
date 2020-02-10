@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<!-- saved from url=(0058)file:///C:/Users/sanket/Downloads/API%20Documentation.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation</title>
+  <link rel="stylesheet" href="./API Documentation_files/style.css">
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="api-documentation">API Documentation</h1>
+<p>Base URL : /todolist</p>
+<h2 id="sign-up-sign-up">1. SIGN-UP (/sign-up)</h2>
+<ul>
+<li>POST</li>
+</ul>
+<h3 id="params">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>email</td>
+<td>Yes</td>
+<td>string.</td>
+<td>email to generate OTP for</td>
+</tr>
+<tr>
+<td>password</td>
+<td>Yes</td>
+<td>string</td>
+<td>Password</td>
+</tr>
+<tr>
+<td>firstName</td>
+<td>Yes</td>
+<td>string</td>
+<td>First Name</td>
+</tr>
+<tr>
+<td>lastName</td>
+<td>Yes</td>
+<td>string</td>
+<td>Last Name</td>
+</tr>
+<tr>
+<td>Country</td>
+<td>Yes</td>
+<td>string</td>
+<td>eg: India</td>
+</tr>
+<tr>
+<td>countryCode</td>
+<td>Yes</td>
+<td>string</td>
+<td>eg: 91</td>
+</tr>
+<tr>
+<td>mobile</td>
+<td>Yes</td>
+<td>string</td>
+<td>eg 9999999999</td>
+</tr>
+</tbody>
+</table><h3 id="response">Response:</h3>
+<p><strong>200</strong>:<br>
+{“message”: “User Created successfully”, “userId”: “random short id”}<br>
+<strong>400</strong>:<br>
+User with this email already exists<br>
+<strong>400</strong><br>
+Email address is not as per format<br>
+<strong>400</strong><br>
+Password is not as per format</p>
+<h2 id="login-login">2. login (/login)</h2>
+<ul>
+<li>POST</li>
+</ul>
+<h3 id="params-1">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>email</td>
+<td>Yes</td>
+<td>string.</td>
+<td>email to generate OTP for</td>
+</tr>
+<tr>
+<td>password</td>
+<td>Yes</td>
+<td>string</td>
+<td>Password</td>
+</tr>
+</tbody>
+</table><h3 id="response-1">Response:</h3>
+<p><strong>200</strong> :<br>
+Login successful<br>
+<strong>400</strong> :<br>
+Wrong password. Login failed<br>
+<strong>500</strong>:<br>
+Some error occurred<br>
+<strong>500</strong><br>
+Failed to generate Token</p>
+<h2 id="logout-logout">3. logout (/logout)</h2>
+<ul>
+<li>POST</li>
+</ul>
+<h3 id="params-2">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>userId</td>
+<td>Yes</td>
+<td>string</td>
+<td>Identifies a user</td>
+</tr>
+</tbody>
+</table><h3 id="response-2">Response:</h3>
+<p><strong>200</strong>:<br>
+User logged out successfully</p>
+<h2 id="matchotp-matchotp">4. MatchOTP (/matchOTP)</h2>
+<ul>
+<li>POST</li>
+</ul>
+<h3 id="params-3">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>userId</td>
+<td>Yes</td>
+<td>string.</td>
+<td>Identifies user</td>
+</tr>
+<tr>
+<td>otp</td>
+<td>Yes</td>
+<td>numeric</td>
+<td>Uniquely generated for a user</td>
+</tr>
+</tbody>
+</table><h3 id="response-3">Response:</h3>
+<p><strong>200</strong>:<br>
+OTP matched</p>
+<p><strong>403</strong>:<br>
+OTP does not match</p>
+<h2 id="resetpassword-resetpassword">5. ResetPassword (/resetPassword)</h2>
+<ul>
+<li>POST</li>
+</ul>
+<h3 id="params-4">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>email</td>
+<td>Yes</td>
+<td>string.</td>
+<td>email to reset password for</td>
+</tr>
+<tr>
+<td>code</td>
+<td>Yes</td>
+<td>string</td>
+<td>Security Code Uniquely sent over an email</td>
+</tr>
+</tbody>
+</table><h3 id="response-4">Response:</h3>
+<p><strong>200</strong> :<br>
+Password changed successfully</p>
+<p><strong>500</strong> :<br>
+Some error occurred</p>
+<h2 id="demandotp-demandotp">6. demandOTP (/demandOTP)</h2>
+<ul>
+<li>GET</li>
+</ul>
+<h3 id="params-5">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>email</td>
+<td>Yes</td>
+<td>string.</td>
+<td>email to generate OTP for</td>
+</tr>
+</tbody>
+</table><h3 id="response-5">Response:</h3>
+<p><strong>200</strong>:<br>
+OTP sent to email address</p>
+<p><strong>500</strong>:<br>
+Create OTP - Some error occurred</p>
+<h2 id="getallusers-getallusers">7. getAllUsers (/getAllUsers)</h2>
+<p>Generates list of friends for a userId</p>
+<ul>
+<li>GET</li>
+</ul>
+<h3 id="params-6">Params</h3>
+
+<table>
+<thead>
+<tr>
+<th>param</th>
+<th>Mandatory</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>userId</td>
+<td>Yes</td>
+<td>string.</td>
+<td>userId to generate list of friends for</td>
+</tr>
+</tbody>
+</table><h3 id="response-6">Response:</h3>
+<p><strong>200</strong>:<br>
+{<br>
+“error”:false,<br>
+“status”:200,<br>
+“message”:“User’s friend data fetched successfully”<br>
+“friends” : [{“friendId” : “”, “friendName”:""},<br>
+{“friendId” : “”, “friendName”: “”}]<br>
+}</p>
+<p><strong>400</strong>:<br>
+No user data found</p>
+</div>
+
+
+
+</body></html>

@@ -3,7 +3,7 @@ const express=require('express');
 const app=express();
 //including files
 const userController=require('./../controllers/userController');
-const appConfig=require('./../config/appConfig');
+const appConfig=require('./../config/appConfig');   
 const auth=require('./../middlewares/auth');
 
 let setRouter=(app)=>{
@@ -18,8 +18,7 @@ let setRouter=(app)=>{
     //get request handling routes
     app.get(baseUrl+'/demandOTP/:email', userController.demandOTP);
     app.get(baseUrl+'/:authToken/getfriendlist/:userId', userController.getAllUsers);
-    app.get(baseUrl+'/:authToken/contacts/:userId', userController.getNonFriendContacts);
-    //this.http.get(`${this.url}/${authToken}/contacts/${userId}`)
+    
     
 }
 //expoting setRouter function

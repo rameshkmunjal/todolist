@@ -66,8 +66,8 @@ function signupFunction(req, res){
                     })
     
                     newUser.save((err, result)=>{
-                        //console.log("result"+result);
-                        if(err){ 
+                        //conso le.log("result"+result);
+                        if(err){         
                             console.log(err); 
                         }
                         else {                            
@@ -232,14 +232,17 @@ function loginFunction(req, res){
         })
 }
 
-//--------------------------------------DemandOTP function--------------------------------------------------
+//--------------------------------------logout function--------------------------------------------------
 let logoutFunction=(req, res)=>{
     AuthModel.findOneAndRemove({userId:req.body.userId})
         .exec((err, result)=>{
             if(err){
-                //console.log(err);
+                let apiResponse=response.generate(true, "Some error occurred", 500, null);
+                res.send(apiResponse);
             } else if(check.isEmpty(result)){
                 //console.log("Data not found");
+                let apiResponse=response.generate(true, "Failed to access data ",404, null);
+                res.send(apiResponse);
             } else {
                 let apiResponse=response.generate(false, "User logged out successfully", 200, result);
                 res.send(apiResponse);
@@ -338,7 +341,7 @@ let demandOTP=(req, res)=>{
             delete otpObject.__v;
             delete otpObject.createdOn;
             
-            let apiResponse=response.generate(false, "otp obj sent ", 200, otpObject);
+            let apiResponse=response.generate(false, "otp sent to email address ", 200, otpObject);
             res.send(apiResponse);
         })
         .catch((err)=>{
@@ -443,8 +446,12 @@ let getAllUsers=(req, res)=>{
         .exec((err, result)=>{
             if(err){
                 //console.log(err);
+                let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                res.send(apiResponse);
             } else if(check.isEmpty(result)){
                 //console.log("data not found");
+                let apiResponse=response.generate(true, "No such data found", 404, null);
+                res.send(apiResponse);
             } else {
                 let friends=result.friends;
                 let apiResponse=response.generate( false, "User's friends data fetched successfully", 200, friends);
@@ -453,91 +460,7 @@ let getAllUsers=(req, res)=>{
         })
 }
 
-//------------------------------------------------------------------------------------------------------
-let getNonFriendContacts=(req, res)=>{
 
-    let getFriends=()=>{
-        return new Promise((resolve, reject)=>{
-            console.log(req.params.userId);
-            UserModel.findOne({userId:req.params.userId})
-                .exec((err, userData)=>{
-                    if(err){
-                        let apiResponse=response.generate(true, "Some error occurred", 500, null);
-                        reject(apiResponse);
-                    } else if(check.isEmpty(userData)){
-                        let apiResponse=response.generate(true, "No Data found", 404, null);
-                        reject(apiResponse);
-                    } else {
-                        let friends=userData.friends;
-                        resolve(friends);
-                    }
-            })//exec endec
-        })//Promise ended
-    }//getFriends ended
-    
-    let getContacts=(friends)=>{
-        return new Promise((resolve, reject)=>{
-        UserModel.find()
-            .exec((err, users)=>{
-
-            if(err){
-                //console.log(err);
-                let apiResponse=response.generate(true, "Some error occurred", 500, null);
-                reject(apiResponse);
-            } else if(check.isEmpty(users)){                
-                let apiResponse=response.generate(true, "No Data Found", 404, null);
-                reject(apiResponse);
-            } else {
-                //console.log(friends);
-                console.log(users);
-                let contactsArr=[];
-                //console.log(friends);
-
-                for(let i=0; i < users.length; i++){
-                    if(users[i].userId===req.params.userId){
-                        users.splice(i, 1);
-                    }                    
-                }
-               
-                for(let i=0; i< users.length; i++){
-                    for(let j=0; j<friends.length; j++){
-                        if(users[i].userId===friends[j].friendId){
-                            console.log("Matched");
-                            users.splice(i, 1);
-                            if(users.length > 1){
-                                i--;
-                            }
-                        }
-                    }
-                }
-                //console.log(users);
-                for(let i=0; i < users.length; i++){
-                    let user=users[i];
-                    let data={
-                        id:user.userId,
-                        fullName:user.firstName+" "+user.lastName
-                    }
-                    contactsArr.push(data);
-                }
-                console.log(contactsArr);
-                resolve(contactsArr);                
-            }
-        })//exec ended
-      })//Promise ended
-    } //getContacts ended
-
-    getFriends(req, res)
-        .then(getContacts)
-        .then((resolve)=>{
-            let apiResponse=response.generate(false, "Contacts fetch successfully", 200, resolve);
-            res.send(apiResponse);
-        })
-        .catch((err)=>{
-            let apiResponse=response.generate(true, "some Error occurred", 500, err);
-            res.send(apiResponse);
-        })
-    
-}
 //-----------------------------------------Definition ended----------------------------------------------
 //export all above functions 
 module.exports={
@@ -547,7 +470,7 @@ module.exports={
     demandOTP:demandOTP,
     matchOTP:matchOTP,
     resetPassword:resetPassword,
-    getAllUsers:getAllUsers,
-    getNonFriendContacts:getNonFriendContacts
+    getAllUsers:getAllUsers
+    //getNonFriendContacts:getNonFriendContacts
 }
 //------------------------------------------

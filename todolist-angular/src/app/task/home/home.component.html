@@ -32,13 +32,12 @@
     <div class="row">
       <!------------------------------------------------------------>
       <div class="col-md-12 text-center p-2" *ngIf="latestNotification; else infoText">
-        <div>
-   <!--    <input type="hidden" (keydown.control.z)='undoKeyboardEvent(event)' /> --> 
-          <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
-        </div>
+           
+        <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
+        
 
         </div>
-      <ng-template>
+      <ng-template #infoText>
         <p>No information to display</p>
       </ng-template>
     </div>
