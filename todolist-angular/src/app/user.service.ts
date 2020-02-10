@@ -6,7 +6,7 @@ import {Observable} from 'rxjs';
   providedIn: 'root'
 })
 export class UserService {
-  private url:string='http://18.188.89.46:3000/api/v1/todolist';
+  private url:string='http://localhost:3000/api/v1/todolist';
 
   constructor(//creating instances
     private http:HttpClient
@@ -58,20 +58,22 @@ public matchOTP(userId, otp):Observable<any>{
   return this.http.post(`${this.url}/matchOTP/${userId}`, params);
 }
 //function - api call to reset password
-  public resetPassword(email, password):Observable<any>{
+  public resetPassword(email, password, code):Observable<any>{
       let params=new HttpParams()
         .set('password', password);
-      return this.http.post(`${this.url}/resetPassword/${email}`, params);
+      return this.http.post(`${this.url}/resetPassword/${email}/${code}`, params);
   }
 //-----------------------------------------------------------------------------------
 //function - to get list of all users
   public getFriendList(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/getfriendlist/${userId}`);
   }
+  /*
  //function - to get list of users - those are not friends 
   public getNonFriendContacts(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/contacts/${userId}`);
   }
+  */
 //-----------------------------------------------------------------------------------
 //function - to logout
   public logoutFunction(authToken, userId):Observable<any>{

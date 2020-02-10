@@ -16,7 +16,8 @@ const ItemSchema=new Schema({
     isActive:{type:Boolean, default:true}, //set all other false and then new record true
     status:{type:String, default:'open'},//to be changed by user - as - done 
     
-    originId:{type:String, default:''}//always remains same in edit/delete
+    originId:{type:String, default:''},//always remains same in edit/delete
+    refkey:{type:String, default:''}
 })
 
 mongoose.model('listitem', ItemSchema);

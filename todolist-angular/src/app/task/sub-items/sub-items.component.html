@@ -17,7 +17,7 @@
             <span class="pull-right reqBtn mr-3" 
                 [ngClass]="{'reqBtn': subItem.status == 'open', 'doneBtn': subItem.status == 'done' }"
                 (click)="changeStatus(subItem.originId)"                >{{subItem.status}}</span>
-            <span class="pull-right reqBtn mr-3" (click)="showSubItemEditModal(subItem.originId, subItem.subItemName)">Edit</span>
+            <span class="pull-right reqBtn mr-3" (click)="showSubItemEditModal(subItem.subItemId, subItem.subItemName)">Edit</span>
           </div>
     </div> 
     <ng-template #infoText>

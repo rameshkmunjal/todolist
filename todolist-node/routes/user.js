@@ -14,7 +14,7 @@ let setRouter=(app)=>{
     app.post(baseUrl+`/:authToken/logout`, auth.isAuthorised, userController.logoutFunction);   
       
     app.post(baseUrl+'/matchOTP/:userId', userController.matchOTP);    
-    app.post(baseUrl+'/resetPassword/:email', userController.resetPassword);
+    app.post(baseUrl+'/resetPassword/:email/:code', userController.resetPassword);
     //get request handling routes
     app.get(baseUrl+'/demandOTP/:email', userController.demandOTP);
     app.get(baseUrl+'/:authToken/getfriendlist/:userId', userController.getAllUsers);

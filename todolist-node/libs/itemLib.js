@@ -199,8 +199,7 @@ let undoEditItem=(data, undoEditItemCB)=>{
                 })//exec ended
         })//Promise ended
     }//function ended
-    let undoItem=()=>{
-        
+    let undoItem=()=>{        
         return new Promise((resolve, reject)=>{
             ItemModel.findOne({'itemId':data.typeId})
             .exec((err, result)=>{
@@ -245,8 +244,13 @@ let undoEditItem=(data, undoEditItemCB)=>{
                             if(err){
                                 let apiResponse=response.generate(true, "Undo failed : undoEditItemCB : tracePreviousItem", 500, null);
                                 reject(apiResponse);
-                            } else {
-                                resolve(newRecord);
+                            } else {                                
+                                let obj=newRecord.toObject();
+                                delete obj._id;
+                                delete obj.__v; 
+                                obj.type="item"; 
+                                console.log("newRecorrd : "+JSON.stringify(obj));                     
+                                resolve(obj);
                             }
                         })
                     }

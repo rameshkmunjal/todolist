@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <div *ngIf="items.length > 0; else infoText ">
+    <div *ngIf="items.length > 0 ; else infoText ">
         <div  *ngFor="let item of items"  class="list-btn">            
             <span class="ml-3 light-color-text" (click)="showSubItems(item.itemId, item.itemName)">{{item.itemName}}</span>
 
@@ -18,13 +18,14 @@
             [ngClass]="{'reqBtn': item.status == 'open', 'doneBtn': item.status == 'done' }"
                 (click)="changeStatus(item.originId)" >{{item.status}}</span>
             <span class="pull-right reqBtn mr-3" (click)="showEditModal(item.originId, item.itemName)">Edit</span>
-        </div>
+        </div>         
     </div> 
     <ng-template #infoText>
-        <p class="text-center message-para">{{message}}</p>
-    </ng-template>           
+            <p class="text-center message-para">No Item to display</p>
+    </ng-template>
+              
 </div>
-<!------------------------------------------------------------------------------------------------------------->
+<!-------------------------------------------------------------------------------------------------------------->
 <div id="editItemModal">
     <div class="mb-3" style="font-size:18px;">
         <span class="pull-right mr-3">

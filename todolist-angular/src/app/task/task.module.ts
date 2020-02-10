@@ -11,6 +11,7 @@ import { ListComponent } from './list/list.component';
 import { ItemsComponent } from './items/items.component';
 import { SubItemsComponent } from './sub-items/sub-items.component';
 import { NotificationsComponent } from './notifications/notifications.component';
+import { KeypressEventDirective } from './keypress-event.directive';
 
 @NgModule({
   imports: [
@@ -31,7 +32,7 @@ import { NotificationsComponent } from './notifications/notifications.component'
     ListComponent, 
     ItemsComponent, 
     SubItemsComponent, 
-    NotificationsComponent
+    NotificationsComponent, KeypressEventDirective
   ]
 })
 export class TaskModule { }

@@ -44,9 +44,10 @@ export class FriendListComponent implements OnInit {
       }
     )
   }
-//---------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
 public moveToFriendPage(friendId, friendFullName){
   let data={
+    pageOwnerId:this.userId,
     userId:friendId,
     fullName:friendFullName,
     pageType:"friend"

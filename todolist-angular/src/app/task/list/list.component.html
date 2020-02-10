@@ -1,6 +1,6 @@
 <!------------------this left sidebar will show lists---------------->        
 <div class="heading-btn text-center">{{fullName}} : All Lists</div>
-  <div class="input-btn input-group  mb-3">
+  <div class="input-btn input-group  mb-3" *ngIf="pageType=='self'">
       <input type="text" class="form-control" (keydown)="createListUsingKeypress($event)" [(ngModel)]="newList" placeholder="Input List Name">
       <div class="input-group-append">
         <button class="addItemBtn" type="submit" (click)="createList()">Add List</button>

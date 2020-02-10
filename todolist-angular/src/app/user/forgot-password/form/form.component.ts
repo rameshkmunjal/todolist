@@ -28,12 +28,13 @@ export class FormComponent implements OnInit {
     } else {
       console.log("email address is : "+this.email);
       this.UserService.demandOTP(this.email).subscribe(apiResponse=>{
-        console.log(apiResponse);
+        //console.log(apiResponse);
         if(apiResponse.status===200){//when response status OK i.e. 200
           let userId=apiResponse.data.userId;         
           this.router.navigate(['/forgot-password/otp', userId]);
         } else{//when response status is not 200 - 
-          this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
+          console.log(apiResponse);
+          //this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
         }        
       },
       (err)=>{//when no apiResponse received - error object received

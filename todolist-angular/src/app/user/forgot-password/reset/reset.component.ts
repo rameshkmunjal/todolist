@@ -1,6 +1,6 @@
 //import angular packages
 import { Component, OnInit } from '@angular/core';
-import {Router} from '@angular/router';
+import {Router, ActivatedRoute} from '@angular/router';
 //import user-defined services
 import {UserService} from './../../../user.service';
 
@@ -19,12 +19,19 @@ export class ResetComponent implements OnInit {
   public errorMessage:string;//to show error
   public userDetails:any;//user details
 
+  public code:string;
+  
+
   constructor(//creating instances
     private UserService:UserService,
-    private router:Router
+    private router:Router,
+    private _route:ActivatedRoute
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {     
+    this.code=this._route.snapshot.paramMap.get('code');
+    //console.log(this.code);
+  }
 //-----------------function to reset password-----------------------------
   public resetPassword():void{    
     if(!this.email){
@@ -38,9 +45,9 @@ export class ResetComponent implements OnInit {
     }else {
       this.errorMessage="";
       
-      this.UserService.resetPassword(this.email, this.newPassword).subscribe(
+      this.UserService.resetPassword(this.email, this.newPassword,   this.code).subscribe(
         apiResponse=>{
-          console.log(apiResponse);
+          //console.log(apiResponse);
           if(apiResponse.status===200){//when response status is  200 
             this.router.navigate(['/login']);
           }else{//when response status is not 200 

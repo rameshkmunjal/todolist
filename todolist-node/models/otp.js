@@ -5,7 +5,8 @@ let OTP=new Schema({
     userId:{type:String},
     otp:{type:Number},
     createdOn:{type:Date, default:Date.now()},
-    email:{type:String, default:''}
+    email:{type:String, default:''},
+    emailDecryptLink:{type:String, default:''}
 })
 
 module.exports=mongoose.model('otp', OTP);

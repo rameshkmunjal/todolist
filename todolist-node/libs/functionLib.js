@@ -1,12 +1,13 @@
 // ***************** Include Packages *****************
 const mongoose=require('mongoose');
 const shortId=require('shortid');
+//const logger=require('pino');
 
 
 //****************** Include Libraries ****************
 const response=require('./responseLib');
 const check=require('./checkLib');
-
+const logger=require('./loggerLib');
 //****************** Include Models ******************
 require('./../models/user');
 const UserModel=mongoose.model('User');
@@ -32,21 +33,21 @@ const NotificationModel=mongoose.model('notification');
 *
 */
 let getAllLists=(data, allListsCB)=>{
-    logger.debug("FunctionsLib:: getAllLists " + JSON.stringify(data));
+    //console.log("FunctionsLib:: getAllLists " + JSON.stringify(data));
     ListModel.find({'creatorId':data.userId, 'isActive':true})
         .exec((err, allLists)=>{
             if(err){
-                logger.debug("FunctionsLib:: getAllLists" + err);
+                //console.log("FunctionsLib:: getAllLists" + err);
                 let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                 allListsCB(apiResponse);
             } else if(check.isEmpty(allLists)){                
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 allListsCB(apiResponse);
             } else {
-                logger.debug("FunctionsLib:: getAllLists " + "Matching data found");
+                //console.log("FunctionsLib:: getAllLists " + "Matching data found");
                 let apiResponse=response.generate(false, "All Lists Data fetched successfully", 200, allLists);
                 apiResponse.socketLoginId=data.userId;
-                logger.debug("FunctionsLib:: getAllLists " + JSON.stringify(apiResponse));
+                //console.log("FunctionsLib:: getAllLists " + JSON.stringify(apiResponse));
                 allListsCB(apiResponse);
             }
         })
@@ -72,10 +73,10 @@ let createList=(data, listData)=>{
         originId:randomId,
         refkey:randomId                  
     })
-logger.debug("FunctionsLib:: createList New List Object created - " + JSON.stringify(newList) + " Payload received " + JSON.stringify(data));
+//console.log("FunctionsLib:: createList New List Object created - " + JSON.stringify(newList) + " Payload received " + JSON.stringify(data));
     newList.save((err, list)=>{
         if(err){
-            logger.debug("FunctionsLib:: createList  " + err);
+            //console.log("FunctionsLib:: createList  " + err);
             let apiResponse=response.generate(true, "List creation - save action failed", 500, null);
             listData(apiResponse);
         } else {
@@ -85,7 +86,7 @@ logger.debug("FunctionsLib:: createList New List Object created - " + JSON.strin
             listObj.type="list";
             listObj.action="create";
             let apiResponse=response.generate(false, "List created successfully", 200, listObj);
-            logger.debug("FunctionsLib:: createList " + apiResponse);
+            //console.log("FunctionsLib:: createList " + apiResponse);
             listData(apiResponse);
         }
     })
@@ -103,17 +104,17 @@ logger.debug("FunctionsLib:: createList New List Object created - " + JSON.strin
  *		false
  */
 let editList=(data, editListCB)=>{
-    logger.debug("FunctionsLib::editList " + JSON.stringify(data));
+    //console.log("FunctionsLib::editList " + JSON.stringify(data));
     let saveOldList=()=>{
         return new Promise((resolve, reject)=>{
         ListModel.findOne({'originId':data.listId, 'isActive':true})
          .exec((err, oldList)=>{
             if(err){
-                logger.debug("FunctionsLib::editList  " + JSON.stringify(err));
+                //console.log("FunctionsLib::editList  " + JSON.stringify(err));
                 let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
                 reject(apiResponse);
             } else if(check.isEmpty(oldList)){
-                logger.debug("FunctionsLib::editList " + "No Data found");
+                //console.log("FunctionsLib::editList " + "No Data found");
                 let apiResponse=response.generate(true, "No data found", 404, null);
                 reject(apiResponse);
             } else {                
@@ -121,7 +122,7 @@ let editList=(data, editListCB)=>{
             
                 oldList.save((err, oldListData)=>{
                     if(err){
-                        logger.debug("FunctionsLib::editList " + JSON.stringify(err));
+                        //console.log("FunctionsLib::editList " + JSON.stringify(err));
                         let apiResponse=response.generate(true, "Save old list action failed", 500, null);
                         reject(apiResponse);
                     } else {                         
@@ -150,7 +151,7 @@ let editList=(data, editListCB)=>{
 
             newList.save((err, savedList)=>{
                 if(err){
-                    logger.debug("FunctionsLib " + err);
+                    //console.log("FunctionsLib " + err);
                     let apiResponse=response.generate(true, "Some Error Occurred", 500, null);                   
                     reject(apiResponse);
                 } else {
@@ -159,7 +160,7 @@ let editList=(data, editListCB)=>{
                     delete editedList.__v;
                     editedList.action=data.action;
                     editedList.type=data.type;
-                    logger.debug("FunctionsLib::editList :: createNewList " + JSON.stringify(editedList));
+                    //console.log("FunctionsLib::editList :: createNewList " + JSON.stringify(editedList));
                     resolve(editedList);
                 }
             })
@@ -191,20 +192,20 @@ let deleteList=(data, listData)=>{
     ListModel.findOne({'originId':data.listId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
-                logger.debug("FunctionsLib::deleteList " + JSON.stringify(err));
+                //console.log("FunctionsLib::deleteList " + JSON.stringify(err));
                 let apiResponse=response.generate(true, "Delete action failed : some error", 500, null);
                 listData(apiResponse);
             } else if(check.isEmpty(result)){
-                // logger.debug("FunctionsLib " + "No  data found");
+                // //console.log("FunctionsLib " + "No  data found");
                 let apiResponse=response.generate(true, "No  data found", 404, null);
                 listData(apiResponse);
             } else {
                 result.isActive=false;
                 result.save((err, deletedList)=>{
                     if(err){
-                        logger.debug("FunctionsLib::deleteList " + JSON.stringify(err));
+                        //console.log("FunctionsLib::deleteList " + JSON.stringify(err));
                     } else {
-                        logger.debug("FunctionsLib::deleteList  " + JSON.stringify(deletedList));
+                        //console.log("FunctionsLib::deleteList  " + JSON.stringify(deletedList));
                         let list=deletedList.toObject();
                         list.type="list";
                         delete list._id;
@@ -232,7 +233,7 @@ let deleteList=(data, listData)=>{
  */
 let createItem=(data, itemCB)=>{
     let randomId=shortId.generate(); 
-    logger.debug("FunctionsLib::createItem " + JSON.stringify(data) + randomId);
+    //console.log("FunctionsLib::createItem " + JSON.stringify(data) + randomId);
 
     let newItem=new ItemModel({
         itemId:randomId,
@@ -244,11 +245,11 @@ let createItem=(data, itemCB)=>{
         originId:randomId,
         refkey:randomId        
     });
-    logger.debug("FunctionsLib::createItem " + JSON.stringify(newItem));
+    //console.log("FunctionsLib::createItem " + JSON.stringify(newItem));
     //save - item created in DB
     newItem.save((err, newItem)=>{
         if(err){
-            logger.debug("FunctionsLib::createItem " + JSON.stringify(err));
+            //console.log("FunctionsLib::createItem " + JSON.stringify(err));
             let apiResponse=response.generate(true, "Create Item : Save action failed", 500, null);
             itemCB(apiResponse);
         } else {
@@ -294,7 +295,7 @@ let editItem=(data, editItemCB)=>{
                 oldItem.isActive=false;
                 oldItem.save((err, oldItemData)=>{
                     if(err){
-                        logger.debug("FunctionsLib::editItem " + JSON.stringify(err));
+                        //console.log("FunctionsLib::editItem " + JSON.stringify(err));
                         let apiResponse=response.generate(true, "Save in Edit action failed", 500, null);
                         reject(apiResponse);
                     } else {
@@ -318,12 +319,13 @@ let editItem=(data, editItemCB)=>{
                 changeOn:Date.now(),                
                 changeBy:data.changeName,
                 personId:data.userId,
-                originId:oldItemData.originId
+                originId:oldItemData.originId,
+                refkey:oldItemData.itemId
             })//new method ended
 
             newItem.save((err, item)=>{
                 if(err){
-                    logger.debug("FunctionsLib::createNewItem  " + err);
+                    //console.log("FunctionsLib::createNewItem  " + err);
                     let apiResponse=response.generate(true, "Edit action failed", 500, null);
                     reject(apiResponse);
                 } else {
@@ -342,7 +344,7 @@ let editItem=(data, editItemCB)=>{
         .then(createNewItem)
         .then((resolve)=>{             
             let apiResponse=response.generate(false, "Item edited successfully", 200, resolve);
-            logger.debug("FunctionsLib " + apiResponse);                   
+            //console.log("FunctionsLib " + apiResponse);                   
             editItemCB(apiResponse);
         })
         .catch((err)=>{                               
@@ -364,11 +366,11 @@ let deleteItem=(data, itemData)=>{
     ItemModel.findOne({'originId':data.itemId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
-                logger.debug("FunctionsLib::deleteItem " + JSON.stringify(err));
+                //console.log("FunctionsLib::deleteItem " + JSON.stringify(err));
                 let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
                 itemData(apiResponse);                
             } else if(check.isEmpty(result)){
-                logger.debug("FunctionsLib::deleteItem " + "No  data found");
+                //console.log("FunctionsLib::deleteItem " + "No  data found");
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 itemData(apiResponse);
             } else {
@@ -376,7 +378,7 @@ let deleteItem=(data, itemData)=>{
                 
                 result.save((err, deletedItem)=>{
                     if(err){
-                        logger.debug("FunctionsLib::deleteItem " + JSON.stringify(err));
+                        //console.log("FunctionsLib::deleteItem " + JSON.stringify(err));
                     } else {
                         let delItem=deletedItem.toObject();
                         delete delItem.__v;
@@ -403,18 +405,18 @@ let deleteItem=(data, itemData)=>{
  * 	error : false ; All items of list fetched successfully
  */
 let getItemsByListId=(data, allItemsCB)=>{
-    logger.debug("FunctionsLib::getItemsByListId " + "data in getItemByListId : "+ JSON.stringify(data));    
+    //console.log("FunctionsLib::getItemsByListId " + "data in getItemByListId : "+ JSON.stringify(data));    
     ItemModel.find({'listId':data.listId, 'isActive':true})
         .exec((err, allItems)=>{
             if(err){                
                 let apiResponse=response.generate(true, "Items fetching by listId failed", 500, null);
                 allItemsCB(apiResponse)
             } else if(check.isEmpty(allItems)){
-                logger.debug("FunctionsLib::getItemsByListId " + "no data found - due to origin id");                
+                //console.log("FunctionsLib::getItemsByListId " + "no data found - due to origin id");                
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 allItemsCB(apiResponse);
             } else {
-                logger.debug("FunctionsLib::getItemsByListId " + "no data found - no problem of  origin id");
+                //console.log("FunctionsLib::getItemsByListId " + "no data found - no problem of  origin id");
                 let apiResponse=response.generate(false, "All items of list fetched successfully", 200, allItems)
                 apiResponse.socketLoginId=data.userId;
                 apiResponse.listName=data.listName;
@@ -441,12 +443,13 @@ let createSubItem=(data, subItemCB)=>{
         createdBy:data.createdBy,
         creatorId:data.creatorId,        
         itemId:data.itemId,
-        originId:randomId       
+        originId:randomId,
+        refkey:randomId      
     });
     // to save created sub item in DB
     newSubItem.save((err, updatedList)=>{
         if(err){ 
-            logger.debug("FunctionsLib::createSubItem " + err);           
+            //console.log("FunctionsLib::createSubItem " + err);           
             let apiResponse=response.generate(true, "Save action failed after sub item creation", 500, null);
             subItemCB(apiResponse);
         } else {
@@ -476,7 +479,7 @@ let createSubItem=(data, subItemCB)=>{
  * 	Error : false; 
  */
 let editSubItem=(data, editSubItemCB)=>{
-    logger.debug("FunctionsLib::editSubItem " + data);
+    //console.log("FunctionsLib::editSubItem " + data);
     let saveOldSubItem=()=>{
         return new Promise((resolve, reject)=>{
             SubItemModel.findOne({'subItemId':data.subItemId, 'isActive':true})
@@ -492,7 +495,7 @@ let editSubItem=(data, editSubItemCB)=>{
             
                 oldSubItem.save((err, subItemData)=>{
                     if(err){
-                        logger.debug("FunctionsLib::editSubItem " + err);
+                        //console.log("FunctionsLib::editSubItem " + err);
                         let apiResponse=response.generate(true, "Save action failed : Sub Item edition", 500, null);                   
                         reject(apiResponse);
                     } else { 
@@ -515,12 +518,13 @@ let editSubItem=(data, editSubItemCB)=>{
                     changeOn:Date.now(),                    
                     changeBy:data.changeName,
                     personId:subItemData.userId,
-                    originId:subItemData.originId
+                    originId:subItemData.originId,
+                    refkey:subItemData.subItemId
                 })
 
                 newSubItem.save((err, editedSubItem)=>{
                     if(err){
-                        logger.debug("FunctionsLib " + err);
+                        //console.log("FunctionsLib " + err);
                         let apiResponse=response.generate(true, "Create sub item action failed", 500, null);
                         reject(apiResponse);
                     } else {
@@ -538,12 +542,11 @@ let editSubItem=(data, editSubItemCB)=>{
     saveOldSubItem(data, editSubItemCB)
         .then(createNewSubItem)
         .then((resolve)=>{
-            logger.debug("FunctionsLib " + resolve);
+            //console.log("FunctionsLib " + resolve);
             let apiResponse=response.generate(false, "sub item edited successfully", 200, resolve);
             editSubItemCB(apiResponse);
         })
-        .catch((err)=>{
-            
+        .catch((err)=>{            
             editSubItemCB(err);
         })
 }
@@ -561,15 +564,15 @@ let deleteSubItem=(data, subItemData)=>{
     SubItemModel.findOne({'originId':data.subItemId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
-                logger.debug("FunctionsLib::deleteSubItem " + err);
+                //console.log("FunctionsLib::deleteSubItem " + err);
                 let apiResponse=response.generate(true, "Deletion failed : Some Error", 500, null);
                 subItemData(apiResponse);                
             } else if(check.isEmpty(result)){
-                logger.debug("FunctionsLib::deleteSubItem " + "No  data found");
+                //console.log("FunctionsLib::deleteSubItem " + "No  data found");
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 subItemData(apiResponse);
             } else {
-                logger.debug("FunctionsLib::deleteSubItem " + JSON.stringify(result));
+                //console.log("FunctionsLib::deleteSubItem " + JSON.stringify(result));
                 result.isActive=false;
                 
                 result.save((err, delData)=>{
@@ -601,16 +604,16 @@ let deleteSubItem=(data, subItemData)=>{
  * 	false : All Items of List fetched successfully
  */
 let getSubItemsByItemId=(data, allSubItemsCB)=>{
-    logger.debug("FunctionsLib::getSubItemsByItemId " + "in getSubItemsByItemId function");
-    logger.debug("FunctionsLib::getSubItemsByItemId  " + JSON.stringify(data));
+    //console.log("FunctionsLib::getSubItemsByItemId " + "in getSubItemsByItemId function");
+    //console.log("FunctionsLib::getSubItemsByItemId  " + JSON.stringify(data));
     SubItemModel.find({'itemId':data.itemId, 'isActive':true})
         .exec((err, allSubItems)=>{
             if(err){
-                logger.debug("FunctionsLib " + err);
+                //console.log("FunctionsLib " + err);
                 let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                 allSubItemsCB(apiResponse);
             } else if(check.isEmpty(allSubItems)){
-                logger.debug("FunctionsLib " + "No Data found");
+                //console.log("FunctionsLib " + "No Data found");
                 let apiResponse=response.generate(true, "No Data found", 404, null);
                 allSubItemsCB(apiResponse);
             } else {
@@ -638,11 +641,11 @@ let acceptFriendRequest=(data, friendCB)=>{
             UserModel.findOne({'userId':data.receiverId})
                 .exec((err, friendDetails)=>{
                     if(err){
-                        logger.debug("FunctionsLib::acceptFriendRequest " + err);
+                        //console.log("FunctionsLib::acceptFriendRequest " + err);
                         let apiResponse=response.generate(true, "Some Error Occurred", 500, null);                
                         reject(apiResponse);
                     } else if(check.isEmpty(friendDetails)){
-                        logger.debug("FunctionsLib::acceptFriendRequest " + "No Data found");
+                        //console.log("FunctionsLib::acceptFriendRequest " + "No Data found");
                         let apiResponse=response.generate(true, "No Data Found", 404, null);                
                         reject(apiResponse);
                     } else {
@@ -658,7 +661,7 @@ let acceptFriendRequest=(data, friendCB)=>{
                                 let apiResponse=response.generate(true, "Save action failed", 500, null); 
                                 reject(apiResponse);
                             } else {
-                                logger.debug("FunctionsLib::acceptFriendRequest " + JSON.stringify(frndDetails));                                
+                                //console.log("FunctionsLib::acceptFriendRequest " + JSON.stringify(frndDetails));                                
                                 let friend={
                                     friendId:frndDetails.userId,
                                     friendName:frndDetails.firstName+" "+frndDetails.lastName
@@ -693,7 +696,7 @@ let acceptFriendRequest=(data, friendCB)=>{
                                     senderId:userData.userId,
                                     senderName:userData.firstName+" "+userData.lastName,
                                     receiverId:friend.friendId,
-                                    reciverName:friend.friendName
+                                    receiverName:friend.friendName
                                 }
                                 //userData.acceptanceData=acceptanceData;
                                 resolve(acceptanceData);
@@ -719,9 +722,8 @@ let acceptFriendRequest=(data, friendCB)=>{
 
 //-------------------------------------Notification function--------------------------------------------------
 
-let createNotification=(data, notificationCB)=>{
-    logger.debug("FunctionsLib " + "***********");
-    logger.debug("FunctionsLib " + "Create Notification -- " + JSON.stringify(data));
+let createNotification=(data, notificationCB)=>{    
+    
     let newNotice=new NotificationModel({
         id:shortId.generate(),
         type:data.type,
@@ -735,11 +737,11 @@ let createNotification=(data, notificationCB)=>{
 
     newNotice.save((err, saveNotice)=>{
         if(err){
-            logger.debug("FunctionsLib " + err);
+            //console.log("FunctionsLib " + err);
             let apiResponse=response.generate(true, "Notification creation failed", 500, null);
             notificationCB(apiResponse);
         } else {
-            logger.debug("FunctionsLib " + saveNotice);
+            //console.log("FunctionsLib " + saveNotice);
             let notice=saveNotice.toObject();
             delete notice._id;
             delete notice.__v;
@@ -760,19 +762,19 @@ let createNotification=(data, notificationCB)=>{
  * 	error : false : Status Change successful
  */
 let changeStatusList=(data, changeStatusListCB)=>{     
-    logger.debug("FunctionsLib::changeStatusList " + "line 615" + model);
+    //console.log("FunctionsLib::changeStatusList " + "line 615" + model);
     ListModel.findOne({'originId':data.originId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
-                logger.debug("FunctionsLib::changeStatusList " + JSON.stringify(err));
+                //console.log("FunctionsLib::changeStatusList " + JSON.stringify(err));
                 let apiResponse=response.generate(true, "Status Change Failed", 500, null);
                 changeStatusListCB(apiResponse);
             } else if(check.isEmpty(result)){
-                logger.debug("FunctionsLib::changeStatusList " + "No Data found");
+                //console.log("FunctionsLib::changeStatusList " + "No Data found");
                 let apiResponse=response.generate(true, "No Data  Found", 404, null);
                 changeStatusListCB(apiResponse);
             } else {
-                logger.debug("FunctionsLib::changeStatusList " + JSON.stringify(result));
+                //console.log("FunctionsLib::changeStatusList " + JSON.stringify(result));
                 
                 if(result.status==="open"){
                     result.status="done";
@@ -785,12 +787,12 @@ let changeStatusList=(data, changeStatusListCB)=>{
                         let apiResponse=response.generate(true, "Save Action Failed : Status Change", 500, null);
                         changeStatusListCB(apiResponse);
                     } else {
-                        logger.debug("FunctionsLib::changeStatusList " + JSON.stringify(record));
+                        //console.log("FunctionsLib::changeStatusList " + JSON.stringify(record));
                         let recordChanged=record.toObject();
                         delete recordChanged.__v;
                         delete recordChanged._id;
                         recordChanged.type=data.type;
-                        logger.debug("FunctionsLib::changeStatusList " + JSON.stringify(recordChanged));
+                        //console.log("FunctionsLib::changeStatusList " + JSON.stringify(recordChanged));
                         let apiResponse=response.generate(false, "Status Change Successful", 200, recordChanged);
                         changeStatusListCB(apiResponse);
                     }
@@ -813,19 +815,19 @@ let changeStatusList=(data, changeStatusListCB)=>{
  * 		false : Status Change Successful
  */
 let changeStatusItem=(data, changeStatusItemCB)=>{     
-    logger.debug("FunctionsLib::changeStatusItem " + "line 615" + model);
+    //console.log("FunctionsLib::changeStatusItem " + "line 615" + model);
     ItemModel.findOne({'originId':data.originId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
-                logger.debug("FunctionsLib::changeStatusItem " + err);
+                //console.log("FunctionsLib::changeStatusItem " + err);
                 let apiResponse=response.generate(true, "Status Change Failed", 500, null);
                 changeStatusItemCB(apiResponse);
             } else if(check.isEmpty(result)){
-                logger.debug("FunctionsLib::changeStatusItem " + "No Data found");
+                //console.log("FunctionsLib::changeStatusItem " + "No Data found");
                 let apiResponse=response.generate(true, "No Data  Found", 404, null);
                 changeStatusItemCB(apiResponse);
             } else {
-                logger.debug("FunctionsLib::changeStatusItem " + result);
+                //console.log("FunctionsLib::changeStatusItem " + result);
                 
                 if(result.status==="open"){
                     result.status="done";
@@ -838,12 +840,12 @@ let changeStatusItem=(data, changeStatusItemCB)=>{
                         let apiResponse=response.generate(true, "Save Action Failed : Status Change", 500, null);
                         changeStatusItemCB(apiResponse);
                     } else {
-                        logger.debug("FunctionsLib::changeStatusItem " + record);
+                        //console.log("FunctionsLib::changeStatusItem " + record);
                         let recordChanged=record.toObject();
                         delete recordChanged.__v;
                         delete recordChanged._id;
                         recordChanged.type=data.type;
-                        logger.debug("FunctionsLib::changeStatusItem " + recordChanged);
+                        //console.log("FunctionsLib::changeStatusItem " + recordChanged);
                         let apiResponse=response.generate(false, "Status Change Successful", 200, recordChanged);
                         changeStatusItemCB(apiResponse);
                     }
@@ -863,19 +865,19 @@ let changeStatusItem=(data, changeStatusItemCB)=>{
  * 		false : Status Change Successful
  */
 let changeStatusSubItem=(data, changeStatusSubItemCB)=>{     
-    logger.debug("FunctionsLib::changeStatusSubItem " + "line 615" + model);
+    //console.log("FunctionsLib::changeStatusSubItem " + "line 615" + model);
     SubItemModel.findOne({'originId':data.originId, 'isActive':true})
         .exec((err, result)=>{
             if(err){
-                logger.debug("FunctionsLib::changeStatusSubItem " + err);
+                //console.log("FunctionsLib::changeStatusSubItem " + err);
                 let apiResponse=response.generate(true, "Status Change Failed", 500, null);
                 changeStatusSubItemCB(apiResponse);
             } else if(check.isEmpty(result)){
-                logger.debug("FunctionsLib::changeStatusSubItem " + "No Data found");
+                //console.log("FunctionsLib::changeStatusSubItem " + "No Data found");
                 let apiResponse=response.generate(true, "No Data  Found", 404, null);
                 changeStatusSubItemCB(apiResponse);
             } else {
-                logger.debug("FunctionsLib::changeStatusSubItem " + result);
+                //console.log("FunctionsLib::changeStatusSubItem " + result);
                 
                 if(result.status==="open"){
                     result.status="done";
@@ -888,12 +890,12 @@ let changeStatusSubItem=(data, changeStatusSubItemCB)=>{
                         let apiResponse=response.generate(true, "Save Action Failed : Status Change", 500, null);
                         changeStatusSubItemCB(apiResponse);
                     } else {
-                        logger.debug("FunctionsLib::changeStatusSubItem " + record);
+                        //console.log("FunctionsLib::changeStatusSubItem " + record);
                         let recordChanged=record.toObject();
                         delete recordChanged.__v;
                         delete recordChanged._id;
                         recordChanged.type=data.type;
-                        logger.debug("FunctionsLib::changeStatusSubItem " + recordChanged);
+                        //console.log("FunctionsLib::changeStatusSubItem " + recordChanged);
                         let apiResponse=response.generate(false, "Status Change Successful", 200, recordChanged);
                         changeStatusSubItemCB(apiResponse);
                     }
@@ -905,13 +907,13 @@ let changeStatusSubItem=(data, changeStatusSubItemCB)=>{
 let getAllNotifications=(data, notificationCB )=>{
         NotificationModel.find({'isActive':true})
             .exec((err, allData)=>{
-                console.log("inside exec method in getAllNotifications");
+                //console.log("inside exec method in getAllNotifications");
                 if(err){
-                    console.log(err);
+                    //console.log(err);
                     let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
                     notificationCB(apiResponse);
                 } else if(check.isEmpty(allData)){
-                    console.log("Data Not found");
+                    //console.log("Data Not found");
                     let apiResponse=response.generate(true, "No Data found", 404, null);
                     notificationCB(apiResponse);
                 } else {                    

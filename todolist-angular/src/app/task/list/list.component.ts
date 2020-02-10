@@ -1,5 +1,5 @@
 //import angular packages
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Router} from '@angular/router';
 import { UserService } from 'src/app/user.service';
 //import user denfined services
@@ -16,15 +16,14 @@ import * as $ from 'jquery';
 })
 
 export class ListComponent implements OnInit { 
-  
+  @Input() pageOwnerId:string;
   public userList:any=[];
   
   public userId:string;
   public userName:string;
   public fullName:string;
 
-  public pageOwnerId:string;
-  public pageOwnerName:string;
+  public pageType:string="self";
 
   public errorMessage:string;
   public msgObj:any;
@@ -46,10 +45,8 @@ export class ListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.userId=this.UserService.getUserFromLocalStorage().userId;
-    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
-    //this.getUserDetails();  
-    this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+    
+    this.getUserDetails();     
     this.getAllListsMessage();    
     this.getChangeStatus();
     this.getSuccessMessage(); 
@@ -57,18 +54,21 @@ export class ListComponent implements OnInit {
   }
   //-------------------------------------------------------------------------------------------
   //function - user details send by home page
-  /*
   public getUserDetails(){
     this.SocketService.getUserDetails().subscribe(
       data=>{
-        this.userId=data.userId;
-        this.fullName=data.fullName;
-        console.log(this.userId+" : "+this.fullName);
-        this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+        console.log(data);
+        if(this.pageOwnerId===data.pageOwnerId){
+          this.userId=data.userId;
+          this.fullName=data.fullName; 
+          this.pageType=data.pageType;
+          console.log(this.userId, this.fullName, this.pageType);
+          this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
+        }             
       }
     )   
-  }
-  */
+  } 
+  
 //------------------------------------function definitions------------------------------------------------
 //function - create list - involving DB operations
 public createList=()=>{
@@ -119,13 +119,14 @@ public deleteList(id){
   this.SocketService.deleteTask(data);  
   this.SocketService.getItemsByListId(data);
 }
-//--------------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------------
 //function - to get items using list id
 public getItemsByListId(listId, userId, listName){ 
   let d={
+    pageOwnerId:this.pageOwnerId,
     listId:listId,
     listName:listName,
-    userId:this.userId,
+    userId:userId,
     fullName:this.fullName
   }
   console.log(d);
@@ -239,7 +240,7 @@ public changeStatus(originId){
 public getSuccessMessage():any{
   this.SocketService.getSuccessMessage().subscribe(
     data=>{
-      console.log(data);
+      //console.log(data);
       if(data.status===200){
         if(data.data.type==="list" && data.data.creatorId===this.userId){          
             this.sendInputForNotification(data.data);

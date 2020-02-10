@@ -1,7 +1,7 @@
 <!----------------------navbar starts here------------------------------->
 <nav class="navbar navbar-fixed navbar-expand-lg my-nav-bg navbar-dark"> 
     <a class="navbar-brand" href="#">To-Do-List</a>
-    <span class="text-white">Welcome : {{fullName}}</span>   
+    <span class="text-white">Welcome : {{pageOwnerName}}</span>   
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -13,7 +13,7 @@
           
           <li class="nav-item">
             <a class="nav-link"> 
-              <i class="fa fa-user-o" (click)="showContactList()" aria-hidden="true"></i>
+              <i class="fa fa-user-o" (click)="showContactModal()" aria-hidden="true"></i>
             </a>
           </li>                       
           <li class="nav-item">
@@ -32,24 +32,28 @@
     <div class="row">
       <!------------------------------------------------------------>
       <div class="col-md-12 text-center p-2" *ngIf="latestNotification; else infoText">
+        <div>
+   <!--    <input type="hidden" (keydown.control.z)='undoKeyboardEvent(event)' /> --> 
           <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
-      </div>
+        </div>
+
+        </div>
       <ng-template>
         <p>No information to display</p>
       </ng-template>
     </div>
 </div>
 
-<div class="container-fluid home-container main">
+<div class="container-fluid home-container main (keydown.control.z)='undoKeyboardEvent(event)'" >
   <div class="row">
     <!-------------------------------------------------------------------->
       <div class="col-md-4 box">          
-        <app-list></app-list>
+        <app-list [pageOwnerId]="pageOwnerId"></app-list>
       </div>
 
       <div class="col-md-6 box">
-        <app-items></app-items>
-        <app-sub-items></app-sub-items>
+        <app-items [pageOwnerId]="pageOwnerId"></app-items>
+        <app-sub-items [pageOwnerId]="pageOwnerId"></app-sub-items>
       </div>
       <div class="col-md-2 box mb-3">
         <div class="home-page-btn-box">
@@ -70,17 +74,15 @@
       <div class="userBox m-0"  *ngFor="let user of userList | slice:0:9">
         <span class="contactName" >{{user.fullName}}</span>
         <span class="pull-right reqBtn mr-3" (click)="sendFriendRequest(user.id, user.fullName)">Send Friend Request</span> 
-      </div>
-      <div class="pt-2 bottom-line-box">
-        <p class="bottom-line" >See All</p>
-      </div>       
+      </div>             
   </div>
 </div>
 <!--------------------------------Notification Modal-------------------------------------->
 
 <div id="notification-modal" >  
       <p class="pull-right mt-0 closeBtn" (click)="closeCurrentNotifModal()">&times;</p>
-    <p>{{latestNotification}}</p> 
+    <p>{{latestNotification}}</p>
+     
 </div>
 <!---------------------------------------------------------------------------------------->
 <!---->
@@ -99,7 +101,7 @@
 <!---------------------------------------------------------------------------------------->
 <div id="friendship-modal" >  
   <div class="text-center">{{message}}</div>
-  <div class="d-flex justify-content-between mt-3">
+  <div class="d-flex justify-content-between mt-3" *ngIf="friendRequest==true">
       <span class="reqBtn" (click)="declineFriendRequest()">Decline</span>
       <span class="reqBtn" (click)="acceptFriendRequest()">Accept</span>
   </div>

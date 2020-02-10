@@ -7,7 +7,7 @@ const shortId=require('shortid');
 // ************************* Including User defined libraries *************************
 const redisLib=require('./redisLib');
 const tokenLib=require('./tokenLib');
-const emailLib=require('./emailLib');
+const userLib=require('./userLib');
 const functionLib=require('./functionLib');
 const listLib=require('./listLib');
 const itemLib=require('./itemLib');
@@ -52,7 +52,7 @@ let setServer=(server)=>{
                     let fullName=`${currentUser.firstName} ${currentUser.lastName}`;
                     let value=fullName;
                     console.log(key , value, socket.id);
-/*
+
                     redisLib.setNewOnlineUserInHash('onlineusers', key, value, (err, result)=>{
                         console.log("inside getAllUsersInAHash function");
                         if(err){
@@ -66,19 +66,19 @@ let setServer=(server)=>{
                                 if (err) {
                                     console.log(err)
                                 } else {
-*/                                     
+                                    
                                       //console.log("else block of getAllUsersInHash");
                                       //console.log(result);
-                                      console.log(socket);
+                                      //console.log(socket);
                                       socket.room="task";
                                       socket.join(socket.room);  
-                                      socket.to(socket.room).broadcast.emit('online-user-list', fullName);
-/*                                      
+                                      socket.to(socket.room).broadcast.emit('online-user-list', result);
+                                      
                                     }
                                 }) //redisLib function ended                               
                             }//else ended
                     })//---------end of setOnlineUserInHash function----------------------
-*/
+
                 }//end of else block - user as result
             })//----verifyClaimsWithoutSecret ended----------------------------------------
         })//-------------------end of set-user event listener------------------------------
@@ -126,7 +126,7 @@ let setServer=(server)=>{
                 console.log("Event::items-by-list-id allItemsCB result "+ JSON.stringify(allItemsCB));    
 		console.log("Event::items-by-list-id Emitting get-all-items");
                 myIo.emit('get-all-items', allItemsCB);
-               // myIo.emit('vacate-sub-item-box', "Select Item to show sub-items"); 
+                myIo.emit('vacate-sub-item-box', "Select Item to show sub-items"); 
             })
         })
 

@@ -1,5 +1,5 @@
 //import angular packages
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input} from '@angular/core';
 import {Router} from '@angular/router';
 //import user denfined services
 import { SocketService } from 'src/app/socket.service';
@@ -13,9 +13,10 @@ import { UtilityService } from 'src/app/utility.service';
   styleUrls: ['./items.component.css']
 })
 export class ItemsComponent implements OnInit {
+  @Input() pageOwnerId:string;
   public userId:string;
   public fullName:string;
-  public pageOwnerId:string;
+  
   public pageOwnerName:string;
   public pageType:string;
 
@@ -27,24 +28,19 @@ export class ItemsComponent implements OnInit {
   public listId:string;
   public listName:string;
 
-  public message:string;
+  public message:string="No item to display";
   public msgObj:any;
   public errorMessage:string;
 
   constructor(
-    private SocketService:SocketService,
-    private UserService:UserService,
+    private SocketService:SocketService,    
     private Utility:UtilityService,
     private router:Router
   ) { }
 
-  ngOnInit() { 
-    this.userId=this.UserService.getUserFromLocalStorage().userId;
-    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
-    this.pageOwnerId=this.userId;   
-    this.getUserDetails();
-    this.getAllItems();
+  ngOnInit() {    
     this.getListDetails();
+    this.getAllItems();
     this.vacateItemBox();    
     this.getChangeStatusItem();
     this.getSuccessMessage();
@@ -56,9 +52,10 @@ export class ItemsComponent implements OnInit {
   public getUserDetails(){
     this.SocketService.getUserDetails().subscribe(
       data=>{
-        this.userId=data.id;
+        this.pageOwnerId=data.pageOwnerId;
+        this.userId=data.userId;
         this.fullName=data.fullName; 
-        this.pageType="friend"       
+        this.pageType=data.pageType;
       }
     )   
   }
@@ -67,7 +64,7 @@ export class ItemsComponent implements OnInit {
   public getAllItems(){
     this.SocketService.getAllItems().subscribe(
       data=>{ 
-        console.log("Get All Items response -- " + JSON.stringify(data));    
+        //console.log("Get All Items response -- " + JSON.stringify(data));    
         if(data.status===200){ 
           if(data.socketLoginId===this.userId){         
               this.items=data.data;            
@@ -86,15 +83,23 @@ export class ItemsComponent implements OnInit {
   public getListDetails(){
     this.SocketService.getListDetails().subscribe(
       data=>{
-        if(data.userId===this.userId){
+      if(data.pageOwnerId===this.pageOwnerId){
+        console.log(data.pageOwnerId);
+        console.log(this.pageOwnerId);
           this.listName=data.listName; 
           this.listId=data.listId;  
           this.userId=data.userId; 
           this.fullName=data.fullName; 
-          this.SocketService.getItemsByListId(data);
+          console.log(this.listName);
+          this.SocketService.getItemsByListId({
+            listName:this.listName, 
+            listId:this.listId, 
+            userId:this.userId,
+            fullName:this.fullName
+          });
         }             
       }, (err)=>{
-        //console.log(err);
+        console.log(err);
       }
     )
   }
@@ -177,7 +182,8 @@ public showSubItems(itemId, itemName){
   let d={
     itemId:itemId,
     itemName:itemName, 
-    userId:this.userId
+    userId:this.userId,
+    pageOwnerId:this.pageOwnerId
   }
   this.SocketService.sendItemDetailsToSubItemBox(d); 
 }
@@ -236,13 +242,13 @@ public changeStatus(originId){
   this.SocketService.changeStatus(data);
 }
 
-//---------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------
 public getSuccessMessage():any{
   this.SocketService.getSuccessMessage().subscribe(
     data=>{
       if(data.status===200){ 
         if(data.data.type==="item" && data.data.creatorId===this.userId){
-          console.log("sfjlsfljjsfljfsljsflfsjlsjlsfj");
+          
           this.sendInputForNotification(data.data);         
           this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
           this.getAllItems();

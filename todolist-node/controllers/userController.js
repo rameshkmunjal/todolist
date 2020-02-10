@@ -9,9 +9,11 @@ const passwordLib=require('./../libs/passwordLib');
 const tokenLib=require('./../libs/tokenLib');
 const emailLib=require('./../libs/emailLib');
 
+
 //including models
 const UserModel=mongoose.model('User');
 const AuthModel=mongoose.model('Auth');
+const OTPModel=mongoose.model('otp');
 
 //--------------------------------------Signup function--------------------------------------------------
 //function - to allow signup - on success user created and login input allowed
@@ -251,18 +253,19 @@ let demandOTP=(req, res)=>{
     
     let getUserId=()=>{ //to get user details - use email param
         return new Promise((resolve, reject)=>{
-            //console.log("Email : "+req.params.email);
+            console.log("Email : "+req.params.email);
                 UserModel.findOne({email:req.params.email})
                     .exec((err, userDetails)=>{
                     if(err){
-                        //console.log(err);
+                        console.log(err);
                         let apiResponse=response.generate(true, "Some error occurred", 500, null);
                         reject(apiResponse);
                     } else if(check.isEmpty(userDetails)){
-                        //console.log("No data found");
+                        console.log("No data found");
                         let apiResponse=response.generate(true, "Failed to access data ",404, null);
                         reject(apiResponse);
                     } else {
+                        console.log(userDetails);
                         resolve(userDetails); //sent to next function
                     }
             })            
@@ -270,43 +273,50 @@ let demandOTP=(req, res)=>{
     }
 
     let createOTP=(userDetails)=>{//find userDetails.userId in otps collection
+        console.log("inside createOTP function");
         return new Promise((resolve, reject)=>{
             OTPModel.findOne({userId:userDetails.userId})
             .exec((err, user)=>{
                 if(err){
+                    console.log("inside createOTP function : err block");
                     console.log(err);
                     let apiResponse=response.generate(true, "create OTP : Some Error Occurred", 500, null);
                     reject(apiResponse);
                 } else if(check.isEmpty(user)){//if not found - create new record
-                    //console.log(user);
+                    console.log("inside createOTP function : else if  block");
+                    console.log(user);
                     let otp=new OTPModel({                            
                         userId:userDetails.userId,
                         otp:Math.floor(Math.random()*9000+1000),
                         createdOn:Date.now(),
-                        email:userDetails.email
+                        email:userDetails.email, 
+                        emailDecryptLink : passwordLib.hashPassword(userDetails.email)
                     })
                     //save otp in otps collection
                     otp.save((err, otpDetails)=>{
                         if(err){
-                            //console.log(err);
+                            console.log(err);
                             let apiResponse=response.generate(true, "create OTP : save : Failed to save OTP", 500, null);
                             reject(apiResponse);
-                        } else{                            
-                            emailLib.sendOTP(otpDetails.otp, otpDetails.email);
+                        } else{                                                       
+                            emailLib.sendOTP(otpDetails.otp, otpDetails.email, otpDetails.emailDecryptLink);
                             resolve(otpDetails);
                         }
                     })
                 } else { //if record found - update otp with new one
+                    console.log("inside createOTP function : else block");
                     user.otp=Math.floor(Math.random()*9000+1000);
                     user.createdOn=Date.now();
+                    let encrypticLink=passwordLib.hashPassword(user.email);
+                    user.emailDecryptLink=encrypticLink;
 
                     user.save((err, otpObj)=>{
                         if(err){
-                            //console.log(err);
+                            console.log(err);
                             let apiResponse=response.generate(true, "create OTP : save - some error occurred", 500, null);
                             reject(apiResponse);
                         } else{
-                            //console.log(otpObj);
+                            console.log(otpObj);
                             emailLib.sendOTP(otpObj.otp, otpObj.email);
                             resolve(otpObj);
                         }
@@ -340,7 +350,7 @@ let demandOTP=(req, res)=>{
 //-------------------------------------------match OTP--------------------------------------------------
 //function - to match OTP - reset be allowed on success response
 let matchOTP=(req, res)=>{
-    //console.log("otp : "+ req.body.otp);//find out record matching userId 
+    
     OTPModel.findOne({userId:req.params.userId})
         .exec((err, result)=>{
             if(err){
@@ -357,21 +367,42 @@ let matchOTP=(req, res)=>{
                     delete otpObj.otp;
                     delete otpObj.__v;
                     delete otpObj.createdOn;
-
-                    let apiResponse=response.generate(false, "OTP matched successfully", 200, otpObj);
-                    res.send(apiResponse);
+                    
+                    let apiResponse=response.generate(false, "otp matched - redirect to reset", 200, otpObj);
+                    res.send(apiResponse);                    
                 } else { //if not matched - send error response
                     let apiResponse=response.generate(true, "OTP does not match - try again", 403, null);
                     res.send(apiResponse);
                 }                
             }
-        })
-}
+         })       
+    }
+    
 //--------------------------------------reset password function--------------------------------------------------
 //function - to reset password - login be allowed on success response
 let resetPassword=(req, res)=>{
-    
-    UserModel.findOne({email:req.params.email})//find user matching email
+    console.log(req.params.email);
+    console.log(req.params.code);
+    let matchLink=()=>{
+        return new Promise((resolve, reject)=>{
+            OTPModel.findOne({email:req.params.email, emailDecryptLink:req.params.code})
+            .exec((err, result)=>{
+                if(err){
+                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                    reject(apiResponse);
+                } else if(check.isEmpty(result)){
+                    let apiResponse=response.generate(true, "No such data found", 404, null);
+                    reject(apiResponse);
+                } else {
+                    resolve(result);
+                }
+            })
+        })
+    }       
+
+    let savePassword=()=>{
+        return new Promise((resolve, reject)=>{
+            UserModel.findOne({email:req.params.email})//find user matching email
         .exec((err, userDetails)=>{
             if(err){
                 //console.log(err);
@@ -387,13 +418,24 @@ let resetPassword=(req, res)=>{
                     if(err){                        
                         let apiResponse=response.generate(true, "Password could not be saved", 500, null);
                         res.send(apiResponse);
-                    } else{                        
-                        let apiResponse=response.generate(false, "Password changed successfully", 404, user);
-                        res.send(apiResponse);                       
+                    } else{
+                        resolve(user);                       
                     }
                 })
             }
         })//exec method ended
+      }) //promise ended       
+    }//function ended
+
+    matchLink(req, res)
+        .then(savePassword)
+        .then((resolve)=>{                                    
+            let apiResponse=response.generate(false, "Password changed successfully", 200, resolve);
+            res.send(apiResponse);
+        })
+        .then((err)=>{
+            res.send(err);
+        })
 }//function ended
 //--------------------------------------------------------------------------------------------------------
 let getAllUsers=(req, res)=>{
@@ -461,8 +503,10 @@ let getNonFriendContacts=(req, res)=>{
                     for(let j=0; j<friends.length; j++){
                         if(users[i].userId===friends[j].friendId){
                             console.log("Matched");
-                            users.splice(i, 1);                            
-                            i--;                            
+                            users.splice(i, 1);
+                            if(users.length > 1){
+                                i--;
+                            }
                         }
                     }
                 }

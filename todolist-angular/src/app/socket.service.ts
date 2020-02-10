@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class SocketService {
-  private url='http://18.188.89.46:3000';
+  private url='http://localhost:3000';
   private socket;
 
   constructor() {
@@ -84,10 +84,17 @@ public messageByUserId = (userId) => {
   }); // end Observable
 } // end chatByUserId
 //----------------------------------------------------------------------------------------
-
 public getUserDetails():Observable<any>{
   return Observable.create((observer)=>{
     this.socket.on('get-user-details', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })    
+}
+public showContactList():Observable<any>{
+  return Observable.create((observer)=>{
+    this.socket.on('show-contact-list', (data)=>{
       console.log(data);
       observer.next(data);
     })
@@ -147,7 +154,7 @@ public getCurrentNotification():Observable<any>{
 public getAllNotifications():Observable<any>{
   return Observable.create((observer)=>{
     this.socket.on('get-all-notifications', (data)=>{
-      console.log(data);
+      //console.log(data);
       observer.next(data);
     })
   })
@@ -156,7 +163,7 @@ public getAllNotifications():Observable<any>{
 public getSuccessMessage():Observable<any>{  
   return Observable.create((observer)=>{
     this.socket.on('get-success-message', (data)=>{
-      console.log(data);
+      //console.log(data);
       observer.next(data);
     })
   })
@@ -239,12 +246,15 @@ public acceptFriendRequest(data){
   console.log(data);
   this.socket.emit('accept-friend-request', data);
 }
+public getContactList(data){
+  this.socket.emit('get-contact-list', data);
+}
 //------------------------------------------------------------------
 public sendUserDetails(data){
   console.log(data);
   this.socket.emit('send-user-details', data);
 }
-//---------------------------------Notifications-----------------------------------------------
+//-----------------------------------Notifications-----------------------------------------------
 public sendCurrentNotification(data){
   console.log(data);
   this.socket.emit("send-current-notification", data);

@@ -1,5 +1,5 @@
 //import angular packages
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import {Router} from '@angular/router';
 //import user denfined services
 import { SocketService } from 'src/app/socket.service';
@@ -15,9 +15,10 @@ import * as $ from 'jquery';
   styleUrls: ['./sub-items.component.css']
 })
 export class SubItemsComponent implements OnInit {
+  @Input() pageOwnerId:string;
   public userId:string;
   public fullName:string;
-  public pageOwnerId:string;
+  
   public pageOwnerName:string;
 
   public subItems:any=[];
@@ -51,7 +52,7 @@ export class SubItemsComponent implements OnInit {
     this.getSuccessMessage();
     this.getUndoSuccessMessage();
   }
-//-----------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------
 /*
 public getUserDetails(){
   this.SocketService.getUserDetails().subscribe(    
@@ -69,7 +70,7 @@ public getUserDetails(){
 public getItemDetails(){
   this.SocketService.getItemDetails().subscribe(
     data=>{
-      if(this.userId===data.userId){
+      if(this.pageOwnerId===data.pageOwnerId){
         console.log(data); 
         this.itemName=data.itemName;
         this.itemId=data.itemId; 
@@ -131,20 +132,20 @@ public deleteSubItem(id){
 //-------------------------------------------------------------------------------------
 public getAllSubItems(){
     this.SocketService.getAllSubItems().subscribe(
-      apiResponse=>{
-        console.log(apiResponse);
-        console.log(apiResponse.socketLoginId);
-
-        if(apiResponse.status===200){
-          console.log(this.userId);        
-          this.subItems=apiResponse.data; 
+      data=>{
+        if(data.status===200 ){
+        if(data.socketLoginId===this.userId){               
+          this.subItems=data.data; 
           console.log(this.subItems);
-          //this.subItems=this.Utility.arrangeListsByDescendingOrder(this.subItems);
+          this.subItems=this.Utility.arrangeListsByDescendingOrder(this.subItems);
         } else {
           this.subItems=[];
           console.log("No sub-item in this item");
-        }             
-      }, (err)=>{
+        } 
+      } else{
+        this.subItems=[];
+      }
+    }, (err)=>{
         console.log(err);
       }
     )
@@ -162,13 +163,29 @@ public getAllSubItems(){
     )
   }
   //--------------------------------------------------------------------------------------------------------
-public sendInputForNotification(data,action, happened){
+public sendInputForNotification(data){
+  let message="";
+  let happened="";
+  console.log(this.fullName);
+  if(data.action=="create"){
+    happened="created";
+    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`; 
+  } else if(data.action=="edit"){
+    happened="edited";
+    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`;
+  } else if(data.action=="delete"){
+    happened="deleted";
+    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`;
+  }else{
+    happened = "changed";
+    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`;
+  }
   let temp={
     type:"subItem",
-    action:action,
+    action:data.action,
     typeId:data.subItemId,
     originId:data.originId,
-    message:"Sub-Item "+data.subItemName+" in Item "+ this.itemName +" is "+ happened + " by " +this.fullName,
+    message:message,
     sendId:this.userId,
     sendName:this.fullName
   }
@@ -214,10 +231,13 @@ public changeStatus(originId){
 public getSuccessMessage():any{
   this.SocketService.getSuccessMessage().subscribe(
     data=>{
+      console.log(data);
       if(data.status===200){
-        if(data.data.type==="subItem"){
+        if(data.data.type==="subItem" && data.data.creatorId===this.userId){
+          this.sendInputForNotification(data.data); 
           this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});
           this.getAllSubItems();
+          this.newSubItem="";
         } 
       }else{             
         this.router.navigate(['/error-page', data.status, data.message]);
@@ -232,14 +252,16 @@ public getSuccessMessage():any{
 public getUndoSuccessMessage():any{
   this.SocketService.getUndoSuccessMessage().subscribe(
     data=>{
+      console.log(data);
       if(data.status===200){       
-        if(data.data.type==="subItem"){          
+        if(data.data.type==="subItem"  && data.data.creatorId===this.userId){
+          console.log("matched");          
           this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});
           this.getAllSubItems();
           this.newSubItem="";
         }      
     } else {
-      this.router.navigate(['/error-page', data.status, data.message]);
+        this.subItems=[];
     } 
    }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);

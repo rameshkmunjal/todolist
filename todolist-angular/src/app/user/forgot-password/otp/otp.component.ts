@@ -13,6 +13,8 @@ import {UserService} from './../../../user.service';
 export class OtpComponent implements OnInit {
   public userId:string;
   public otp:string;//to hold otp
+  public code:string;//a param to hold otp-mode string in case of otp input && encrypted code in case of link
+  public mode:string;//otp or link
   public errorMessage:string="";//to hold error message
 
   constructor(//creating instances
@@ -23,6 +25,7 @@ export class OtpComponent implements OnInit {
 
   ngOnInit() {
     this.userId=this._route.snapshot.paramMap.get('userId');
+    this.mode="otp";
     console.log(this.userId);
   }
 //function to send OTP - service function
@@ -33,8 +36,9 @@ export class OtpComponent implements OnInit {
       this.userService.matchOTP(this.userId, this.otp).subscribe(
         apiResponse=>{          
           console.log(apiResponse);
-          if(apiResponse.status===200){
-            this.router.navigate(['/forgot-password/reset']);
+          if(apiResponse.status===200){ 
+            this.code=apiResponse.data.emailDecryptLink;                      
+            this.router.navigate(['/forgot-password/reset', this.code]);
           } else {
             this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
           } 

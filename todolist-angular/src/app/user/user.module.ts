@@ -23,7 +23,7 @@ import { LogOutComponent } from './log-out/log-out.component';
       {path:'forgot-password', component:ForgotPasswordComponent, children:[
         {path:'form', component:FormComponent},
         {path:'otp/:userId', component:OtpComponent},
-        {path:'reset', component:ResetComponent},
+        {path:'reset/:code', component:ResetComponent},
         {path:'', redirectTo:'form', pathMatch:'full'}        
       ]}
     ])
