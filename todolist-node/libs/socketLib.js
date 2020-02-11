@@ -23,7 +23,7 @@ let setServer=(server)=>{
      */
 
     myIo.on('connection', (socket)=>{
-	console.log("Event::connection - Emit verify-user");
+		console.log("Event::connection - Emit verify-user");
         socket.emit('verify-user', 'ram-ram');
         console.log("*******************Socket at server side set up********************");
         
@@ -42,12 +42,7 @@ let setServer=(server)=>{
                     console.log("Event::set-user - " + currentUser);
                     socket.userId=currentUser.userId;
                     console.log("Event::set-user - socket user id :"+ socket.userId);
-                    /*
-                    getAllLists(socket.userId, function(allListsCB){
-                        myIo.emit('get-all-lists', allListsCB);
-                    });
-*/
-                    //let fullName=`${currentUser.firstName} ${currentUser.lastName}`;
+                    
                     let key=currentUser.userId;
                     let fullName=`${currentUser.firstName} ${currentUser.lastName}`;
                     let value=fullName;
@@ -66,14 +61,9 @@ let setServer=(server)=>{
                                 if (err) {
                                     console.log(err)
                                 } else {
-                                    
-                                      //console.log("else block of getAllUsersInHash");
-                                      //console.log(result);
-                                      //console.log(socket);
                                       socket.room="task";
                                       socket.join(socket.room);  
-                                      socket.to(socket.room).broadcast.emit('online-user-list', result);
-                                      
+                                      socket.to(socket.room).broadcast.emit('online-user-list', result);                                      
                                     }
                                 }) //redisLib function ended                               
                             }//else ended
@@ -322,8 +312,14 @@ let setServer=(server)=>{
 			    })        
 		    }          
 	    })
-	    
-		
+	    /*
+	     * EventHandler::send-friend-request - 
+	     */
+	    socket.on('send-friend-list', (data)=>{
+		    userLib.getFriendList(data, (friendCB)=>{
+				myIo.emit('get-friend-list', friendCB);
+			})		    
+	    })		
 	    /*
 	     * EventHandler::send-friend-request - 
 	     */
@@ -351,8 +347,8 @@ let setServer=(server)=>{
                     msgType:"general"
                 }
                 
-                myIo.emit(receiverId, obj);
-                myIo.emit(senderId, obj);
+                myIo.emit('msg-friend-request-accept', obj);
+                
 	      })
 	    })
 

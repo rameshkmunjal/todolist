@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { UserService } from './../../user.service';
 import { SocketService } from './../../socket.service';
 import * as $ from 'jquery';
-import { TaskService } from 'src/app/task.service';
+//import { TaskService } from 'src/app/task.service';
 import { UtilityService } from 'src/app/utility.service';
 
 @Component({
@@ -44,7 +44,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private UserService:UserService,
     private SocketService:SocketService,
-    private TaskService:TaskService,
+    //private TaskService:TaskService,
     private Utility:UtilityService,
     private router:Router   
   ){}
@@ -64,7 +64,9 @@ export class HomeComponent implements OnInit {
     this.getUserDetails();
     this.getContactList();
     this.showContactList();
+    this.sendFriendList();
     this.getMessageFromAUser();
+    this.getFriendRequestAcceptMessage();
     this.getSuccessMessage(); 
     this.getUndoSuccessMessage(); 
     this.getCurrentNotification();
@@ -105,6 +107,23 @@ public getOnlineUserList=():any=>{
   )
 }
 
+public sendFriendList(){
+  let data={
+    userId:this.pageOwnerId
+  }
+  this.SocketService.sendFriendList(data);
+}
+
+public getFriendRequestAcceptMessage(){
+  this.SocketService.getFriendAcceptMessage().subscribe(
+    data=>{
+      if(this.pageOwnerId===data.receiverId || 
+        this.pageOwnerId===data.senderId ){
+          console.log(data);
+        }         
+    }
+  ) 
+}
  public sendUserDetails=(pageOwnerId, userId, fullName, pageType)=>{
    let data={
     pageOwnerId:pageOwnerId,
@@ -192,9 +211,7 @@ public moveToHomePage(){
   }  
   public showContactList(){
     console.log(this.pageOwnerId);
-
-    this.SocketService.showContactList().subscribe(
-      
+    this.SocketService.showContactList().subscribe(      
       apiResponse=>{
         console.log(apiResponse);
         if(apiResponse.pageOwnerId===this.pageOwnerId){
@@ -209,8 +226,7 @@ public moveToHomePage(){
       })       
   }
 
-  public showContactModal(){
-    
+  public showContactModal(){    
     $("#contacts-modal").slideToggle(1500);
   }
 

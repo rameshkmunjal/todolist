@@ -8,8 +8,8 @@
     </div>
 
     <div *ngIf="items.length > 0 ; else infoText ">
-        <div  *ngFor="let item of items"  class="list-btn">            
-            <span class="ml-3 light-color-text" (click)="showSubItems(item.itemId, item.itemName)">{{item.itemName}}</span>
+        <div  *ngFor="let item of items"  class="list-btn" (click)="showSubItems(item.itemId, item.itemName)">            
+            <span class="ml-3 light-color-text" >{{item.itemName}}</span>
 
             <span class="pull-right mr-3">
               <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteItem(item.originId)"></i>

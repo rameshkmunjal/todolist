@@ -298,6 +298,7 @@ input{
       z-index:1000;
       background:rgb(57, 81, 216);
       color:white; 
+      border:1px solid #aaa;
   }
   #all-notification-modal{
     display:none; 
@@ -318,7 +319,7 @@ input{
     top:20vh;
     left:0vw;
     z-index:10010;
-    background:white;
+    background:rgb(210, 230, 240);
     color:#777;    
     padding:5px 10px;    
     font-size:10px;
@@ -407,14 +408,14 @@ input{
 #notification-modal{
   display:none;     
   position:absolute;
-  top:20vh;
-  left:30vw;
-  z-index:10010;
-  background:white;
+  top:30vh;
+  left:40vw;
+  z-index:10010;  
   color:#777;    
   padding:5px 10px;    
   font-size:10px;
-
+  background:rgb(210, 230, 240);  
+  border:1px solid #aaa;
 }
 
 #contacts-modal{

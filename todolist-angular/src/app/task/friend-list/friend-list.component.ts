@@ -1,5 +1,5 @@
 //import angular packages
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { Router} from '@angular/router';
 //import user denfined services
 import {UserService} from './../../user.service';
@@ -11,7 +11,8 @@ import { SocketService } from './../../socket.service';
   styleUrls: ['./friend-list.component.css']
 })
 
-export class FriendListComponent implements OnInit {  
+export class FriendListComponent implements OnInit {
+  @Input() pageOwnerId:string;  
   public authToken:string;
  
   public userId:string;
@@ -27,22 +28,47 @@ export class FriendListComponent implements OnInit {
   ngOnInit() {
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.userId=this.UserService.getUserFromLocalStorage().userId;
-    this.getFriendList(this.authToken, this.userId);   
+    //this.sendFriendList(); 
+    this.getFriendList(); 
   }
     
+  
 
-  public getFriendList(authToken, userId):any{
-    this.UserService.getFriendList(authToken, userId).subscribe(
+  public getFriendList():any{
+    this.SocketService.getFriendList().subscribe(
       apiResponse=>{
         console.log(apiResponse);
-        this.friendList=apiResponse.data;
-        console.log(this.friendList);
+       if(this.pageOwnerId===apiResponse.pageOwnerId){
+          this.friendList=apiResponse.data;
+          console.log(this.friendList);
+        }
+        
       },
       error=>{
         console.log(error);            
         this.router.navigate(['/error-page', error.error.status, error.error.message]);
       }
     )
+  }
+
+  public getFriendRequestAcceptMessage(){
+    this.SocketService.getFriendAcceptMessage().subscribe(
+      data=>{
+        if(this.pageOwnerId===data.receiverId || 
+          this.pageOwnerId===data.senderId ){
+            console.log(data);
+            this.sendFriendList();
+            this.getFriendList();
+          }         
+      }
+    ) 
+  }
+
+  public sendFriendList(){
+    let data={
+      userId:this.pageOwnerId
+    }
+    this.SocketService.sendFriendList(data);
   }
 //------------------------------------------------------------------------------------
 public moveToFriendPage(friendId, friendFullName){

@@ -100,6 +100,23 @@ public showContactList():Observable<any>{
     })
   })    
 }
+public getFriendList():Observable<any>{
+  return Observable.create((observer)=>{
+    this.socket.on('get-friend-list', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  })    
+}
+
+public getFriendAcceptMessage(){
+  return Observable.create((observer)=>{
+    this.socket.on('msg-friend-request-accept', (data)=>{
+      console.log(data);
+      observer.next(data);
+    })
+  }) 
+}
 //---------------------------------------------------------------------------------------
 public getListDetails():Observable<any>{
   return Observable.create((observer)=>{    
@@ -246,6 +263,9 @@ public acceptFriendRequest(data){
   console.log(data);
   this.socket.emit('accept-friend-request', data);
 }
+public sendFriendList(data){
+  this.socket.emit('send-friend-list', data);
+}
 public getContactList(data){
   this.socket.emit('get-contact-list', data);
 }
@@ -267,9 +287,10 @@ public showNotifications(){
   let data={};
   this.socket.emit("show-all-notifications", data);
 }
-*/
+
 public sendNotifArray(data){
   this.socket.emit('send-notifications-array', data);
 }
+*/
 //----------------------------------------------------------------------------------------------
 }
