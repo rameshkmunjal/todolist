@@ -91,9 +91,9 @@ User can fill in Personal Details on the SignUp page and create his account on t
  
 		https://github.com/rameshkmunjal/todolist
 		
-		Frontend Link : todo.bestbuddy.io
+		Frontend Link : http://todo.bestbuddy.io
 		Backend Link  : http://18.188.89.46:3000/api/v1
-		Documentation Link : todo.bestbuddy.io/apiDoc.html, todo.bestbuddy.io/eventsDoc.html
+		Documentation Link : http://todo.bestbuddy.io/apiDoc.html, http://todo.bestbuddy.io/eventsDoc.html
 
 			
 ## Contributors:

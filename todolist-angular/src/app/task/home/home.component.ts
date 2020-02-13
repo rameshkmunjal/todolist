@@ -27,6 +27,7 @@ export class HomeComponent implements OnInit {
 
   public friendId:string;
   public friendName:string;
+  public friendList:any=[];
 
   public receiverId:string;
   public receiverName:string;
@@ -52,7 +53,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(){
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;
-    console.log(this.pageOwnerId);
+    //console.log(this.pageOwnerId);
     this.pageOwnerName=this.UserService.getUserFromLocalStorage().fullName;
     this.userId=this.pageOwnerId;
     this.fullName=this.pageOwnerName;
@@ -65,6 +66,7 @@ export class HomeComponent implements OnInit {
     this.getContactList();
     this.showContactList();
     this.sendFriendList();
+    this.getFriendList();
     this.getMessageFromAUser();
     this.getFriendRequestAcceptMessage();
     this.getSuccessMessage(); 
@@ -91,10 +93,10 @@ public verifyUserConfirmation():any{
   this.SocketService.verifyUser()
       .subscribe(
         (data)=>{
-          console.log(data);
+          //console.log(data);
           this.SocketService.setUser(this.authToken);
         }, (err)=>{
-          console.log(err);
+          //console.log(err);
         }
       )
 }
@@ -102,7 +104,7 @@ public verifyUserConfirmation():any{
 public getOnlineUserList=():any=>{
   this.SocketService.onlineUserList().subscribe(
     (data)=>{
-      console.log(data);
+      //console.log(data);
     }
   )
 }
@@ -131,7 +133,7 @@ public getFriendRequestAcceptMessage(){
     fullName:fullName,
     pageType:pageType
   }
-  //console.log(data);
+  ////console.log(data);
   this.SocketService.sendUserDetails(data);
 }
 
@@ -164,7 +166,7 @@ public moveToHomePage(){
         console.log(data);  
         this.showAllNotifications();
       }, (error)=>{
-        console.log(error);
+        //console.log(error);
       }
     )
   }  
@@ -174,7 +176,7 @@ public moveToHomePage(){
   }
 
   @HostListener('document:keydown.control.z') undoKeyboardEvent(event: KeyboardEvent) {
-    console.log("control and z key pressed" + KeyboardEvent);
+    //console.log("control and z key pressed" + KeyboardEvent);
     this.undoLastChange();
     // responds to control+z
   }
@@ -184,7 +186,7 @@ public moveToHomePage(){
   public keypressFunction=() => { 
     $(document).keypress(function(e) {
       if(e.which === 90) {
-        console.log("key pressed");
+        ////console.log("key pressed");
         //this.undoLastChange();
       }
   });     
@@ -194,10 +196,10 @@ public moveToHomePage(){
   public getUndoSuccessMessage():any{
     this.SocketService.getUndoSuccessMessage().subscribe(
       data=>{
-        console.log(data);  
+        ////console.log(data);  
         this.showAllNotifications();
       }, (error)=>{
-        console.log(error);
+        ////console.log(error);
       }
     )
   }  
@@ -210,18 +212,18 @@ public moveToHomePage(){
     this.SocketService.getContactList(data);    
   }  
   public showContactList(){
-    console.log(this.pageOwnerId);
+    ////console.log(this.pageOwnerId);
     this.SocketService.showContactList().subscribe(      
       apiResponse=>{
-        console.log(apiResponse);
+        ////console.log(apiResponse);
         if(apiResponse.pageOwnerId===this.pageOwnerId){
           this.userList=apiResponse.data;       
-          console.log(this.userList); 
+          ////console.log(this.userList); 
         }        
                              
       },
       error=>{
-        //console.log(error);
+        ////console.log(error);
         this.router.navigate(['/error-page', error.error.message, error.error.status]);
       })       
   }
@@ -235,7 +237,7 @@ public moveToHomePage(){
   }
 //-------------------------------------------------------------------------------------------
 public sendFriendRequest=(id, fullName)=>{
-  console.log("Friend Request sent to "+ id + ": "+ fullName);
+  //console.log("Friend Request sent to "+ id + ": "+ fullName);
   this.friendRequest=true;
   let data={
     msgType:"friend-request",
@@ -248,8 +250,7 @@ public sendFriendRequest=(id, fullName)=>{
   $("#contacts-modal").slideUp(1500); 
 }
 //function - to get message from other user(for private message like friend request)
- public getMessageFromAUser :any =()=>{
-   
+ public getMessageFromAUser :any =()=>{   
   this.SocketService.messageByUserId(this.pageOwnerId)
   .subscribe((data)=>{
     console.log(data);
@@ -260,13 +261,18 @@ public sendFriendRequest=(id, fullName)=>{
     this.senderName=data.senderName;
     if(data.msgType==="friend-request"){
       this.friendRequest=true;
+      $("#friendship-modal").fadeIn(2000);
+    } else if(data.msgType==="notification"){
+      this.latestNotification=this.message;
+      console.log(this.latestNotification)    
+      $("#notification-modal").fadeIn(2000);
     }
-    $("#friendship-modal").fadeIn(2000);
+    
   });//end subscribe
 }// end get message from a user 
 //function - to accept friend request
 public acceptFriendRequest=()=>{
-  console.log("friend request accepted");
+  //console.log("friend request accepted");
   let data={
     receiverId:this.receiverId,
     receiverName:this.receiverName,
@@ -278,17 +284,18 @@ public acceptFriendRequest=()=>{
 }
 //function - to decline friend request
 public declineFriendRequest=()=>{
-  console.log("friend request declined");
+  //console.log("friend request declined");
 }
   //----------------------------------------------------------------------------------------
   //-------------------------------Notifications------------------------------------------
   public getCurrentNotification():any{
     this.SocketService.getCurrentNotification().subscribe(
       data=>{               
-        this.showCurrentNotifModal(data.data.message);
+        this.sendCurrentNotificationToFriend(data.data.message);
         this.showAllNotifications();
+        
       }, (error)=>{
-        console.log(error);
+        //console.log(error);
       }
     )
   }
@@ -308,17 +315,52 @@ public declineFriendRequest=()=>{
           this.notificationList=this.Utility.arrangeListsByDescendingOrder(this.notificationList);
           this.lastChangeObj=this.notificationList[0];
           this.latestNotification=this.lastChangeObj.message; 
-          console.log(this.latestNotification);
+          //console.log(this.latestNotification);
         } else {
             this.notificationList=[];
             this.latestNotification="No new notification to display"
         }    
               
       }, (error)=>{
-        //console.log(error);
+        ////console.log(error);
         this.router.navigate(['/error-page', error.error.status, error.error.message]);
       }
     )  
+  }
+
+  public getFriendList():any{
+    this.SocketService.getFriendList().subscribe(
+      apiResponse=>{
+        //console.log(apiResponse);
+       if(this.pageOwnerId===apiResponse.pageOwnerId){
+          this.friendList=apiResponse.data;
+          //console.log(this.friendList);
+        }
+        
+      },
+      error=>{
+        //console.log(error);            
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      }
+    )
+  }
+  public sendCurrentNotificationToFriend(message){
+    console.log("inside send current notification function");
+    console.log(this.friendList);
+    for(let i=0; i<this.friendList.length; i++){
+      console.log("inside loop "+i);
+      let data={
+        senderId:this.pageOwnerId,
+        senderName:this.pageOwnerName,
+        receiverId:this.friendList[i].friendId,
+        receiverName:this.friendList[i].friendName,
+        message:message,
+        msgType:"notification"
+      }
+      console.log(data);  
+      this.SocketService.sendMessageToFriend(data);
+    }
+    
   }
 //--------------------------------------Modals----------------------------------------------
   public showNotificationsInModal(){    
@@ -326,11 +368,13 @@ public declineFriendRequest=()=>{
   }
   public closeNotificationModal(){
     $("#all-notification-modal").slideUp(1000);  
-  }  
+  }
+  /*  
   public showCurrentNotifModal(message){
-    this.latestNotification=message;
+    this.latestNotification=message;    
     $("#notification-modal").fadeIn(2000);
   }
+  */
   public closeCurrentNotifModal(){  
     $("#notification-modal").fadeOut(2000);
   }

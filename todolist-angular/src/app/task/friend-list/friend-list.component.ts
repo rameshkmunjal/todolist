@@ -37,15 +37,15 @@ export class FriendListComponent implements OnInit {
   public getFriendList():any{
     this.SocketService.getFriendList().subscribe(
       apiResponse=>{
-        console.log(apiResponse);
+        ////console.log(apiResponse);
        if(this.pageOwnerId===apiResponse.pageOwnerId){
           this.friendList=apiResponse.data;
-          console.log(this.friendList);
+          ////console.log(this.friendList);
         }
         
       },
       error=>{
-        console.log(error);            
+        //console.log(error);            
         this.router.navigate(['/error-page', error.error.status, error.error.message]);
       }
     )
@@ -56,7 +56,7 @@ export class FriendListComponent implements OnInit {
       data=>{
         if(this.pageOwnerId===data.receiverId || 
           this.pageOwnerId===data.senderId ){
-            console.log(data);
+            //console.log(data);
             this.sendFriendList();
             this.getFriendList();
           }         

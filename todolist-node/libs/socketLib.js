@@ -384,23 +384,13 @@ let setServer=(server)=>{
 		    functionLib.createNotification(data, function(notificationCB){
 			    console.log("Event send-current-notification Emitting get-current-notification");
 			    myIo.emit('get-current-notification', notificationCB);
-	/* 
-                let friends=notificationCB.friends;
-
-                for(let i=0; i<friends.length; i++){
-                    let data={
-                        receiverId:friends[i].friendId,
-                        receiverName:friends[i].friendName,
-                        senderId:notificationCB.data.sendId,
-                        senderName:notificationCB.data.sendName,
-                        message:notificationCB.data.message
-                    }
-                    console.log(data);
-                    myIo.emit(data.receiverId, data.message);
-                }
-                */
+	
 		    })                      
-	    })
+		})
+		
+		socket.on('send-message-to-friend', (data)=>{
+			myIo.emit(data.receiverId, data);
+		})
 
 	    /*
 	     * EventHandler::show-all-notifications 

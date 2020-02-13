@@ -53,19 +53,7 @@ export class SubItemsComponent implements OnInit {
     this.getUndoSuccessMessage();
   }
 //------------------------------------------------------------------------------------------
-/*
-public getUserDetails(){
-  this.SocketService.getUserDetails().subscribe(    
-    data=>{
-      this.userId=data.id;
-      this.fullName=data.fullName;        
-    }
-    
-  ) 
-  console.log(this.userId);
-  console.log(this.fullName);
-}
-*/
+
 //--------------------------------------------------------------------------------------------
 public getItemDetails(){
   this.SocketService.getItemDetails().subscribe(
@@ -231,7 +219,7 @@ public changeStatus(originId){
 public getSuccessMessage():any{
   this.SocketService.getSuccessMessage().subscribe(
     data=>{
-      console.log(data);
+      //console.log(data);
       if(data.status===200){
         if(data.data.type==="subItem" && data.data.creatorId===this.userId){
           this.sendInputForNotification(data.data); 
