@@ -53,9 +53,10 @@ export class HomeComponent implements OnInit {
   ngOnInit(){
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;
-    //console.log(this.pageOwnerId);
+    console.log(this.pageOwnerId);
     this.pageOwnerName=this.UserService.getUserFromLocalStorage().fullName;
     this.userId=this.pageOwnerId;
+    console.log(this.userId);
     this.fullName=this.pageOwnerName;
 
     this.sendUserDetails(this.pageOwnerId, this.userId, this.fullName, this.pageType);
@@ -133,7 +134,7 @@ public getFriendRequestAcceptMessage(){
     fullName:fullName,
     pageType:pageType
   }
-  ////console.log(data);
+  //console.log(data);
   this.SocketService.sendUserDetails(data);
 }
 
@@ -141,7 +142,7 @@ public getUserDetails(){
   this.SocketService.getUserDetails().subscribe(
     data=>{
       if(this.pageOwnerId===data.pageOwnerId){
-        this.userId=data.id;
+        this.userId=data.userId;
         this.fullName=data.fullName; 
         this.pageType=data.pageType;
       }             
@@ -166,7 +167,7 @@ public moveToHomePage(){
         console.log(data);  
         this.showAllNotifications();
       }, (error)=>{
-        //console.log(error);
+        console.log(error);
       }
     )
   }  
@@ -187,7 +188,7 @@ public moveToHomePage(){
     $(document).keypress(function(e) {
       if(e.which === 90) {
         ////console.log("key pressed");
-        //this.undoLastChange();
+          this.undoLastChange();
       }
   });     
   }
@@ -199,7 +200,7 @@ public moveToHomePage(){
         ////console.log(data);  
         this.showAllNotifications();
       }, (error)=>{
-        ////console.log(error);
+        console.log(error);
       }
     )
   }  
@@ -254,19 +255,26 @@ public sendFriendRequest=(id, fullName)=>{
   this.SocketService.messageByUserId(this.pageOwnerId)
   .subscribe((data)=>{
     console.log(data);
+    console.log(this.userId);
     this.message=data.message;
     this.receiverId=data.receiverId;
     this.receiverName=data.receiverName;
     this.senderId=data.senderId;
     this.senderName=data.senderName;
-    if(data.msgType==="friend-request"){
-      this.friendRequest=true;
-      $("#friendship-modal").fadeIn(2000);
-    } else if(data.msgType==="notification"){
-      this.latestNotification=this.message;
-      console.log(this.latestNotification)    
-      $("#notification-modal").fadeIn(2000);
+    if(this.receiverId===this.userId){
+      console.log("matched userId");
+      if(data.msgType==="friend-request"){
+        this.friendRequest=true;
+        $("#friendship-modal").fadeIn(2000);
+      } else if(data.msgType==="notification"){
+        console.log("matched notification");
+        this.latestNotification=this.message;
+        console.log(this.latestNotification)    
+        $("#notification-modal").fadeIn(2000);
+      }
+
     }
+    
     
   });//end subscribe
 }// end get message from a user 
@@ -288,6 +296,7 @@ public declineFriendRequest=()=>{
 }
   //----------------------------------------------------------------------------------------
   //-------------------------------Notifications------------------------------------------
+  
   public getCurrentNotification():any{
     this.SocketService.getCurrentNotification().subscribe(
       data=>{               
@@ -299,6 +308,7 @@ public declineFriendRequest=()=>{
       }
     )
   }
+  
   public showAllNotifications(){
     let data={
       userId:this.userId
@@ -334,7 +344,7 @@ public declineFriendRequest=()=>{
         //console.log(apiResponse);
        if(this.pageOwnerId===apiResponse.pageOwnerId){
           this.friendList=apiResponse.data;
-          //console.log(this.friendList);
+          console.log(this.friendList);
         }
         
       },

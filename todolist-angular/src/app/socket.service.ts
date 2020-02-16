@@ -78,7 +78,7 @@ public messageByUserId = (userId) => {
   //console.log(userId);
   return Observable.create((observer) => {      
     this.socket.on(userId, (data) => {
-      //console.log(data);
+      console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable
@@ -160,6 +160,7 @@ public getChangeStatusSubItem():Observable<any>{
   })
 }
 //-------------------------------Notifications---------------------------------------------
+
 public getCurrentNotification():Observable<any>{
   return Observable.create((observer)=>{
     this.socket.on('get-current-notification', (data)=>{
@@ -168,6 +169,7 @@ public getCurrentNotification():Observable<any>{
     })
   })
 }
+
 public getAllNotifications():Observable<any>{
   return Observable.create((observer)=>{
     this.socket.on('get-all-notifications', (data)=>{
