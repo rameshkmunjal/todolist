@@ -10,7 +10,7 @@ let generateToken=(data, cb)=>{
         let claims={
             jwtid:shortId.generate(),
             iat:Date.now(),
-            exp:new Date("2020-03-31T05:43:00.000Z").getTime()/1000,
+            exp:new Date("2020-06-30T05:43:00.000Z").getTime()/1000,
             sub:'authToken',
             iss:'todolist',
             data:data

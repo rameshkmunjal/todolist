@@ -30,272 +30,168 @@ public onlineUserList():Observable<any>{
     })
   })
 }
-//---------------------------------------------------------------------------------------
-public getAllListsMessage():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-all-lists-message', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-}
-public getAllItems():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-all-items', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-} 
-//
-public getAllSubItems():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-all-sub-items', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-} 
-public vacateItemBox():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('vacate-item-box', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-}
-
-public vacateSubItemBox():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('vacate-sub-item-box', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-}
-//---------------------------------------------------------------------------------------
-public messageByUserId = (userId) => {
-  //console.log(userId);
+//-------------------------------------------------------------------------------------
+public messageByUserId(userId):Observable<any>{
+  console.log(userId);
   return Observable.create((observer) => {      
     this.socket.on(userId, (data) => {
-      console.log(data);
+     // console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable
 } // end chatByUserId
-//----------------------------------------------------------------------------------------
-public getUserDetails():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-user-details', (data)=>{
-      //console.log(data);
+
+public getHomePageLoad():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('get-home-page-load', (data) => {     
       observer.next(data);
-    })
-  })    
-}
-public showContactList():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('show-contact-list', (data)=>{
-      //console.log(data);
+    }); // end Socket
+  }); // end Observable
+} 
+
+public getFriendPageLoad():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('get-friend-page-load', (data) => {     
       observer.next(data);
-    })
-  })    
-}
-public getFriendList():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-friend-list', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })    
+    }); // end Socket
+  }); // end Observable
 }
 
-public getFriendAcceptMessage(){
-  return Observable.create((observer)=>{
-    this.socket.on('msg-friend-request-accept', (data)=>{
-      ////console.log(data);
+public getContactListResponse():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('get-contact-list-response', (data) => {     
       observer.next(data);
-    })
-  }) 
+    }); // end Socket
+  }); // end Observable
 }
-//---------------------------------------------------------------------------------------
-public getListDetails():Observable<any>{
-  return Observable.create((observer)=>{    
-    this.socket.on('get-list-details-in-item-box', (data)=>{
-      ////console.log(data);
-      observer.next(data);
-    })
-  })
-}
-public getItemDetails():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-item-details-in-sub-item-box', (data)=>{
-      ////console.log(data);
-      observer.next(data);
-    })
-  })
-}
-//---------------------------------------------------------------------------------------------------
-public getChangeStatusList():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-change-status-list', (data)=>{
-      ////console.log(data);
-      observer.next(data);
-    })
-  })
-}
-public getChangeStatusItem():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-change-status-item', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-}
-public getChangeStatusSubItem():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-change-status-sub-item', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-}
-//-------------------------------Notifications---------------------------------------------
 
-public getCurrentNotification():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-current-notification', (data)=>{
+public getNotificationListResponse():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('get-notification-list-response', (data) => {     
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+
+public getFriendRequestResponse():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('get-friend-request-response', (data) => {
       console.log(data);
       observer.next(data);
-    })
-  })
+    }); // end Socket
+  }); // end Observable
+}
+public acceptFriendRequestResponse():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('accept-friend-request-response', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+public updateListPageResponse():Observable<any>{ 
+  console.log("update list page response"); 
+  return Observable.create((observer) => {      
+    this.socket.on('update-list-page-response', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+public getFriendRequest():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('send-friend-request-response', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+//'update-contact-friend-response', data
+public getContactsFriendsUpdated():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('update-contact-friend-response', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+//'public-notification-response'
+public getPublishNotification():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('public-notification-response', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+//'get-last-change-object', notificationCB
+public getLastChangeObject():Observable<any>{  
+  return Observable.create((observer) => {      
+    this.socket.on('get-last-change-object', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
 }
 
-public getAllNotifications():Observable<any>{
-  return Observable.create((observer)=>{
-    this.socket.on('get-all-notifications', (data)=>{
-      ////console.log(data);
+public undoResponse():Observable<any>{
+  return Observable.create((observer) => {      
+    this.socket.on('undo-last-action-response', (data) => {
+      console.log(data);
       observer.next(data);
-    })
-  })
+    }); // end Socket
+  }); // end Observable 
 }
-//------------------------------------------------------------------------------------------
-public getSuccessMessage():Observable<any>{  
-  return Observable.create((observer)=>{
-    this.socket.on('get-success-message', (data)=>{
-      ////console.log(data);
-      observer.next(data);
-    })
-  })
-}
-//getUndoSuccessMessage()
-public getUndoSuccessMessage():Observable<any>{  
-  return Observable.create((observer)=>{
-    this.socket.on('undo-success-message', (data)=>{
-      //console.log(data);
-      observer.next(data);
-    })
-  })
-}
-//------------events to be emiitted-------------------------------------------------------
+
+//---------------------------------------------------------------------------------------
 public setUser(authToken){
   this.socket.emit('set-user', authToken);
 }
-public exitSocket(){
-  this.socket.disconnect();
+public loadHomePage(data){
+  this.socket.emit('load-home-page-event', data);
 }
-//-----------list realted events emitted---------------------
-public getAllLists(data){
+public loadFriendPage(data){
   //console.log(data);
-  this.socket.emit('get-all-lists', data);
+  this.socket.emit('load-friend-page-event', data);
 }
-public createTask(data){
+public showContactList(data){
   //console.log(data);
-  this.socket.emit('create-task', data);
+  this.socket.emit('show-contact-list-event', data);
 }
-public editTask(data){
-  //console.log(data);
-  this.socket.emit('edit-task', data);
-}
-public deleteTask(data){
-  //console.log(data);
-  this.socket.emit('delete-task', data);
-}
-
-//-----------item realted events emitted---------------------
-
-public getItemsByListId(data){  
-  //console.log("Get Items By List Id -- " + JSON.stringify(data));
-  this.socket.emit('items-by-list-id', data);
-}
-public getSubItemsByItemId(data){
-  //console.log(data);
-  this.socket.emit('sub-items-by-item-id', data);  
-}
-//-----------------------------------------------------------------------------------------------------
-public sendListDetailsToItemBox(data){
-  //console.log(data);
-  this.socket.emit('send-list-details-to-item-box', data)
-}
-public sendItemDetailsToSubItemBox(data){
-  //console.log(data);
-  this.socket.emit('send-item-details-to-sub-item-box', data)
-}
-//----------------------------------------------------------
-public changeStatus(data){
-  //console.log(data);
-  this.socket.emit('change-status', data);
-}
-//----------------------------------------------------------------
-public undoLastChange(data){
-  //console.log(data);
-  if(data.action==="delete"){
-    this.socket.emit('undo-delete', data);
-  } else if (data.action==="create"){
-    this.socket.emit('undo-create', data);
-  } else if(data.action==="edit"){
-    this.socket.emit('undo-edit', data);
-  }  
-}
-//-----------friend realted events emitted---------------------
 public sendFriendRequest(data){
   //console.log(data);
-  this.socket.emit('send-friend-request', data);
+  this.socket.emit('send-friend-request-event', data);
 }
 public acceptFriendRequest(data){
   //console.log(data);
-  this.socket.emit('accept-friend-request', data);
+  this.socket.emit('accept-friend-request-event', data);
 }
-public sendFriendList(data){
-  this.socket.emit('send-friend-list', data);
-}
-public getContactList(data){
-  this.socket.emit('get-contact-list', data);
-}
-public sendMessageToFriend(data){
-  this.socket.emit('send-message-to-friend', data);
-}
-//------------------------------------------------------------------
-public sendUserDetails(data){
+public updateContactAndFriendList(data){
   //console.log(data);
-  this.socket.emit('send-user-details', data);
+  this.socket.emit('update-contact-friend-event', data);
 }
-//-----------------------------------Notifications-----------------------------------------------
-public sendCurrentNotification(data){
+public showNotificationList(data){
   //console.log(data);
-  this.socket.emit("send-current-notification", data);
+  this.socket.emit('show-contact-list-event', data);
 }
-public showAllNotifications(data){
-  this.socket.emit("show-all-notifications", data);
+public publishNotification(data){
+  //console.log(data);
+  this.socket.emit('public-notification-event', data); 
 }
-/*
-public showNotifications(){
-  let data={};
-  this.socket.emit("show-all-notifications", data);
+public latestChange(data){
+  console.log(data);
+  this.socket.emit('latest-change-event', data);
 }
 
-public sendNotifArray(data){
-  this.socket.emit('send-notifications-array', data);
+//--------------------------------------------------------------------------------------
+public updateListPage(data){
+  console.log(data);
+  this.socket.emit('update-list-page-event', data);
 }
-*/
-//----------------------------------------------------------------------------------------------
+public undoLastAction(data){
+  console.log(data);
+  this.socket.emit('undo-last-action', data);
+}
+
+//---------------------------------------------------------------------------------------
 }

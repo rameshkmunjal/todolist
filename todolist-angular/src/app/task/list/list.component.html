@@ -6,18 +6,19 @@
         <button class="addItemBtn" type="submit" (click)="createList()">Add List</button>
       </div>
   </div> 
+  <!--(click)="getItemsByListId(list.originId, userId, list.listName)"-->
 <div class="container-fluid" >
   <div class="row" *ngIf="allLists.length > 0 ; else infoText">
-      <div  *ngFor="let list of allLists"  class="list-btn" (click)="getItemsByListId(list.originId, userId, list.listName)" >
+      <div  *ngFor="let list of allLists"  class="list-btn"  >
           <span class="ml-3"></span>
           <span class="ml-3 light-color-text" >{{list.listName}}</span>              
           <span class="pull-right mr-3">
-            <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.originId)"></i>        
+            <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.listId)"></i>        
           </span>
           <span class="pull-right reqBtn mr-3" 
             [ngClass]="{'reqBtn': list.status == 'open', 'doneBtn': list.status == 'done' }"
-            (click)="changeStatus(list.originId)" >{{list.status}}</span>
-          <span class="pull-right reqBtn mr-3" (click)="showEditListModal(list.originId, list.listName)">Edit</span>
+            (click)="changeStatus(list.listId)" >{{list.status}}</span>
+          <span class="pull-right reqBtn mr-3" (click)="showEditListModal(list.listId, list.listName)">Edit</span>
       </div>      
   </div>
   <ng-template #infoText>
@@ -42,7 +43,7 @@
       </div>      
       
       <div class="full-width text-center">
-          <button class="editBtn" (click)="editList(listId)">Submit</button>
+          <button class="editBtn" (click)="editList()">Submit</button>
       </div>
   </form>  
 </div>

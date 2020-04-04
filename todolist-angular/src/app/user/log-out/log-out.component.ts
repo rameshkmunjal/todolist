@@ -10,8 +10,8 @@ import {SocketService} from './../../socket.service';
   styleUrls: ['./log-out.component.css']
 })
 export class LogOutComponent implements OnInit {
-  public userId:string;
-  public authToken:string;
+  //public userId:string;
+ // public authToken:string;
 
   constructor(
     private _route:ActivatedRoute,
@@ -21,12 +21,14 @@ export class LogOutComponent implements OnInit {
     ) { }
 
   ngOnInit() {
-    this.userId=this._route.snapshot.paramMap.get('userId');
-    this.authToken=this.userService.getUserFromLocalStorage().authToken;
-    console.log(this.userId);
-    this.logoutFunction(this.userId);
+    
+    //this.userId=this._route.snapshot.paramMap.get('userId');
+    //this.authToken=this.userService.getUserFromLocalStorage().authToken;
+    console.log("logout component");
+    //this.logoutFunction(this.userId);
+  
   }
-
+/*
   public logoutFunction(userId):any{
     console.log(userId);
     
@@ -45,5 +47,5 @@ export class LogOutComponent implements OnInit {
       }
     )
   }
-
+*/
 }

@@ -15,11 +15,12 @@ import * as $ from 'jquery';
   styleUrls: ['./sub-items.component.css']
 })
 export class SubItemsComponent implements OnInit {
-  @Input() pageOwnerId:string;
-  public userId:string;
+  @Input() userId:string;
+  
   public fullName:string;
   
   public pageOwnerName:string;
+  /*
 
   public subItems:any=[];
   public subItemId:string;
@@ -31,7 +32,7 @@ export class SubItemsComponent implements OnInit {
   public message:string;
   public errorMessage:string;
   public msgObj:any;
-
+*/
   constructor(
     //instances : services
     private SocketService:SocketService,
@@ -42,19 +43,21 @@ export class SubItemsComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.userId=this.UserService.getUserFromLocalStorage().userId;
-    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
     
+    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
+    /*
     this.getItemDetails();    
     this.getAllSubItems();
     this.vacateSubItemBox();    
     this.getChangeStatusSubItem();
     this.getSuccessMessage();
     this.getUndoSuccessMessage();
+    */
   }
 //------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------
+/*
 public getItemDetails(){
   this.SocketService.getItemDetails().subscribe(
     data=>{
@@ -256,5 +259,6 @@ public getUndoSuccessMessage():any{
     }
   )
 }
+*/
 //----------------------------------------------------------------------------
 }

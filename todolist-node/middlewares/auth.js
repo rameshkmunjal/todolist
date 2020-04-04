@@ -12,8 +12,8 @@ const AuthModel=mongoose.model('Auth');
 //function - to check whether authToken is present in api call
 let isAuthorised=(req, res, next)=>{
     //if authToken is present - find it in auths collection
-    console.log(req.params);
-    console.log(req.body);
+    //console.log(req.params);
+    //console.log(req.body);
     if(req.params.authToken || req.body.authToken || req.query.authToken || req.header('authToken')){
         AuthModel.findOne({authToken:req.params.authToken || req.body.authToken || req.query.authToken
             || req.header('authToken')})

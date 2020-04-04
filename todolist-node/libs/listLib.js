@@ -24,7 +24,7 @@ let undoCreateList=(data, undoCreateListCB)=>{
     let undoNotification=()=>{
         //console.log(listRecord);
         return new Promise((resolve, reject)=>{
-            NotificationModel.findOne({id:data.id})
+            NotificationModel.findOne({id:data.obj.id})
                 .exec((err, result)=>{
                     if(err){
                         console.log(err);
@@ -51,7 +51,7 @@ let undoCreateList=(data, undoCreateListCB)=>{
     let undoList=(saveNotif)=>{
         console.log(saveNotif)
         return new Promise((resolve, reject)=>{
-            ListModel.findOne({'listId':data.typeId})
+            ListModel.findOne({'listId':data.obj.typeId})
             .exec((err, result)=>{
             if(err){
                 console.log(err);

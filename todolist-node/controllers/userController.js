@@ -441,7 +441,7 @@ let resetPassword=(req, res)=>{
         })
 }//function ended
 //--------------------------------------------------------------------------------------------------------
-let getAllUsers=(req, res)=>{
+let getFriendList=(req, res)=>{
     UserModel.findOne({userId:req.params.userId})
         .exec((err, result)=>{
             if(err){
@@ -454,10 +454,177 @@ let getAllUsers=(req, res)=>{
                 res.send(apiResponse);
             } else {
                 let friends=result.friends;
+                for(let i=0; i<friends.length; i++){
+                    let friend=friends[i];
+                    if(friend.friendId===null){
+                        friends.splice(i, 1);
+                        i--;
+                    }
+                }
                 let apiResponse=response.generate( false, "User's friends data fetched successfully", 200, friends);
                 res.send(apiResponse);
             }
         })
+}
+//------------------------------------------------------------------------------------------------------------
+let getContactList=(req, res)=>{
+    let userId=req.params.userId;
+    let getFriendList=()=>{
+        return new Promise((resolve, reject)=>{
+            UserModel.findOne({'userId':req.params.userId})
+            .exec((err, user)=>{
+                if(err){
+                    console.log(err);
+                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                    reject(apiResponse);
+                } else if(check.isEmpty(user)){
+                    console.log("No Data found");
+                    let apiResponse=response.generate(true, "No Data found", 404, null);
+                    reject(apiResponse);
+                } else {
+                    let friends=user.friends;
+                    /*
+                     
+                    */
+                   resolve(friends);
+                }
+            })
+
+        })
+        
+    }
+    let getNonFriendContacts=(friends)=>{
+        return new Promise((resolve, reject)=>{
+        UserModel.find()
+            .exec((err, contacts)=>{
+            if(err){
+                console.log(err);
+                let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                reject(apiResponse);
+            } else if(check.isEmpty(contacts)){
+                console.log("No Data found");
+                let apiResponse=response.generate(true, "Some Error Occurred", 404, null);
+                reject(apiResponse);
+            } else {
+                for(let i=0; i<friends.length; i++){
+                    for(let j=0; j<contacts.length; j++){
+                        let contact=contacts[j];
+                        let friend=friends[i];
+                        if(contact.userId===friend.friendId){
+                            contacts.splice(j , 1);
+                        }
+                    }
+                }
+
+                for(let k=0; k<contacts.length; k++){
+                    let contact=contacts[k];
+                    
+                    if(contact.userId===req.params.userId){
+                        contacts.splice(k , 1);
+                    }
+                }
+                console.log("contacts  :  " + JSON.stringify(contacts));
+                resolve(contacts);
+            }
+        })
+
+        })
+    }
+
+    getFriendList(req, res)
+        .then(getNonFriendContacts)
+        .then((resolve)=>{
+            console.log("resolve :"+JSON.stringify(resolve));
+            let apiResponse=response.generate(false, "Non friends contacts fetched successfully", 200, resolve);
+            res.send(apiResponse);
+        })
+        .catch((err)=>{
+            res.send(err);
+        })
+    
+}
+//------------------------------------------------------------------------------------------
+let acceptFriendRequest=(req, res)=>{
+    //append friend request sender data in receiver/acceptor user data
+    let appendFriendData=()=>{        
+        return new Promise((resolve, reject)=>{
+            UserModel.findOne({'userId':req.params.userId})
+                .exec((err, userDetails)=>{
+                    if(err){
+                        //console.log("FunctionsLib::acceptFriendRequest " + err);
+                        let apiResponse=response.generate(true, "Some Error Occurred", 500, null);                
+                        reject(apiResponse);
+                    } else if(check.isEmpty(userDetails)){
+                        //console.log("FunctionsLib::acceptFriendRequest " + "No Data found");
+                        let apiResponse=response.generate(true, "No Data Found", 404, null);                
+                        reject(apiResponse);
+                    } else {
+                        //let receiverName=userDetails.firstName+" "+userDetails.lastName;
+
+                        let temp={
+                            friendId:req.body.friendId,
+                            friendName:req.body.friendName
+                        }
+                        userDetails.friends.push(temp);
+
+                        userDetails.save((err, users)=>{
+                            if(err){                                
+                                let apiResponse=response.generate(true, "Save action failed", 500, null); 
+                                reject(apiResponse);
+                            } else {                               
+                                resolve(users);
+                            }
+                        })
+                    }
+                })
+        })
+    }
+//append friend request acceptor/receiver data in sender/requestor user data
+
+    let appendUserData=(users)=>{
+        console.log(users);
+        return new Promise((resolve, reject)=>{
+            UserModel.findOne({'userId':req.body.friendId})
+                .exec((err, friendDetails)=>{
+                    if(err){
+                        //console.log("FunctionsLib::acceptFriendRequest " + err);
+                        let apiResponse=response.generate(true, "Some Error Occurred", 500, null);                
+                        reject(apiResponse);
+                    } else if(check.isEmpty(friendDetails)){
+                        //console.log("FunctionsLib::acceptFriendRequest " + "No Data found");
+                        let apiResponse=response.generate(true, "No Data Found", 404, null);                
+                        reject(apiResponse);
+                    } else {
+
+                        let temp={
+                            friendId:req.body.userId,
+                            friendName:req.body.userName
+                        }
+                        friendDetails.friends.push(temp);
+
+                        friendDetails.save((err, friend)=>{
+                            if(err){                                
+                                let apiResponse=response.generate(true, "Save action failed", 500, null); 
+                                reject(apiResponse);
+                            } else {                               
+                                resolve(friend);
+                            }
+                        })
+                    }
+                })
+        })
+    }
+
+    appendFriendData()
+        .then(appendUserData)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "friends data updated successfully", 200, resolve);
+            res.send(apiResponse);
+        })
+        .catch(err=>{
+            let apiResponse=response.generate(true, "friends data updation failed", 500, err);
+            res.send(apiResponse);
+        });    
 }
 
 
@@ -470,7 +637,8 @@ module.exports={
     demandOTP:demandOTP,
     matchOTP:matchOTP,
     resetPassword:resetPassword,
-    getAllUsers:getAllUsers
-    //getNonFriendContacts:getNonFriendContacts
+    getFriendList:getFriendList,
+    acceptFriendRequest:acceptFriendRequest,
+    getContactList:getContactList
 }
 //------------------------------------------

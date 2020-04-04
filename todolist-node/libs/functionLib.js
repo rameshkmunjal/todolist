@@ -936,23 +936,58 @@ let changeStatusSubItem=(data, changeStatusSubItemCB)=>{
 }
 //------------------------------------------------------------------------------------------------------------
 let getAllNotifications=(data, notificationCB )=>{
-        NotificationModel.find({'isActive':true})
-            .exec((err, allData)=>{
-                //console.log("inside exec method in getAllNotifications");
+    let getFriendIds=()=>{
+        return new Promise((resolve, reject)=>{
+            UserModel.findOne({userId:data.userId})
+            .exec((err, result)=>{
                 if(err){
-                    //console.log(err);
-                    let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
-                    notificationCB(apiResponse);
-                } else if(check.isEmpty(allData)){
-                    //console.log("Data Not found");
-                    let apiResponse=response.generate(true, "No Data found", 404, null);
-                    notificationCB(apiResponse);
-                } else {                    
-                    let apiResponse=response.generate(false, "All notifications fetched successfully", 200, allData);
-                    notificationCB(apiResponse);
+                    console.log(err);
+                    let apiResponse=response.generate(true, "Some Error Occurred : getFriendIds", 500, null);
+                    reject(apiResponse);
+                } else if(check.isEmpty(result)){
+                    console.log(result);
+                    let apiResponse=response.generate(true, "No Data found : getFriendIds", 404, null);
+                    reject(apiResponse);
+                } else {
+                    let friends=result.friends;
+                    resolve(friends);
                 }
             })
-}
+        })
+    }//get notifications function ended
+
+    let getNotifications=(friends)=>{
+        return new Promise((resolve, reject)=>{
+            NotificationModel.find({'isActive':true})
+            .exec((err, notifications)=>{               
+                if(err){                    
+                    let apiResponse=response.generate(true, "Notifications fetching failed", 500, null);
+                    reject(apiResponse);
+                } else if(check.isEmpty(notifications)){                    
+                    let apiResponse=response.generate(true, "No Data found", 404, null);
+                    reject(apiResponse);
+                } else { 
+                    let allData={
+                        notifications:notifications,
+                        friends:friends
+                    }                   
+                    resolve(allData);
+                }
+            })
+        })
+    }//get notifications function ended
+
+    getFriendIds(data, notificationCB)
+        .then(getNotifications)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "Notifications data fetched successfully", 200, resolve);
+            notificationCB(apiResponse);
+        })
+        .catch((err)=>{
+            let apiResponse=response.generate(true, "Some error occurred", 500, null);
+            notificationCB(apiResponse);            
+        })
+}        
 
 //------------------------------------exporting functions------------------------------------------------------
 module.exports={

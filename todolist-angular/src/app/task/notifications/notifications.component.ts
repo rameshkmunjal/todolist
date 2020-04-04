@@ -9,12 +9,13 @@ import { UtilityService } from 'src/app/utility.service';
   styleUrls: ['./notifications.component.css']
 })
 export class NotificationsComponent implements OnInit {
+  /*
   public authToken:string;
   public userId:string; 
   public fullName:string;
   public notificationList:any=[];
   public latestNotification:string;
-
+*/
   constructor(
     private SocketService:SocketService,
     private UserService:UserService,
@@ -22,14 +23,16 @@ export class NotificationsComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    /*
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.userId=this.UserService.getUserFromLocalStorage().userId;
     this.fullName=this.UserService.getUserFromLocalStorage().fullName; 
     this.SocketService.showAllNotifications({userId:this.userId});
     this.showAllNotifications();
     this.getAllNotifications();
+    */
   }
-
+/*
   public showAllNotifications(){
     let data={
       userId:this.userId
@@ -49,5 +52,5 @@ export class NotificationsComponent implements OnInit {
       }
     )  
   }
-
+*/
 }

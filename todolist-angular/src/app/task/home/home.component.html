@@ -1,42 +1,10 @@
-<!----------------------navbar starts here------------------------------->
-<nav class="navbar navbar-fixed navbar-expand-lg my-nav-bg navbar-dark"> 
-    <a class="navbar-brand" href="#">To-Do-List</a>
-    <span class="text-white">Welcome : {{pageOwnerName}}</span>   
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="collapsibleNavbar">
-    <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" [routerLink]="['/home']"> Home</a>
-          </li>
-          
-          <li class="nav-item">
-            <a class="nav-link"> 
-              <i class="fa fa-user-o" (click)="showContactModal()" aria-hidden="true"></i>
-            </a>
-          </li>                       
-          <li class="nav-item">
-            <a class="nav-link"> 
-              <i class="fa fa-bell" (click)="showNotificationsInModal()" aria-hidden="true"></i>
-            </a>
-          </li>
-      <li class="nav-item">
-        <a class="nav-link" [routerLink]="['/log-out']">Logout</a>
-      </li>       
-    </ul>
-  </div>  
-  </nav>
-<!----------------------navbar ends here------------------------------->
+<app-task-nav [userId]="userId"></app-task-nav>
 <div class="container-fluid info-bar">
     <div class="row">
-      <!------------------------------------------------------------>
-      <div class="col-md-12 text-center p-2" *ngIf="latestNotification; else infoText">
-           
-        <span>{{latestNotification}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
-        
-
-        </div>
+      <!------------------------------------------------------------->
+      <div class="col-md-12 text-center p-2" *ngIf="lastChangeObject; else infoText">           
+        <span>{{lastChangeMessage}}</span><span class="reqBtn ml-3" (click)="undoLastChange()">Undo</span>
+      </div>
       <ng-template #infoText>
         <p>No information to display</p>
       </ng-template>
@@ -47,41 +15,38 @@
   <div class="row">
     <!-------------------------------------------------------------------->
       <div class="col-md-4 box">          
-        <app-list [pageOwnerId]="pageOwnerId"></app-list>
+        <app-list [userId]="userId"></app-list>
       </div>
 
       <div class="col-md-6 box">
-        <app-items [pageOwnerId]="pageOwnerId"></app-items>
-        <app-sub-items [pageOwnerId]="pageOwnerId"></app-sub-items>
+        <app-items [userId]="userId"></app-items>
+        <app-sub-items [userId]="userId"></app-sub-items>
       </div>
       <div class="col-md-2 box mb-3">
         <div class="home-page-btn-box">
           <button class="reqBtn" (click)="moveToHomePage()">Move to Home Page</button>
         </div>
-        <app-friend-list [pageOwnerId]="pageOwnerId"></app-friend-list>
+        <app-friend-list [userId]="userId"></app-friend-list>
       </div>
     
-  <!-------------------------------------------------------------->
+  <!--------------------------------------------------------------------------------------->
   </div>
 </div>
-
-<!-----------------------Contacts Modal-------------------------------------->
+<!-------------------------------------Contacts Modal-------------------------------------->
 <div id="contacts-modal" >
-  <div class="mb-0 pb-0 mt-0 pt-0" *ngIf="userList.length > 0">
-      <span class="pull-right mt-0 closeBtn" (click)="closeContactsModal()">&times;</span>
+  <div class="mb-0 pb-0 mt-0 pt-0" *ngIf="contactList.length > 0">
+      <span class="pull-right mt-0 closeBtn" (click)="closeContactModal()">&times;</span>
     <h5 class="text-center">Contacts</h5>
-      <div class="userBox m-0"  *ngFor="let user of userList | slice:0:9">
-        <span class="contactName" >{{user.fullName}}</span>
-        <span class="pull-right reqBtn mr-3" (click)="sendFriendRequest(user.id, user.fullName)">Send Friend Request</span> 
+      <div class="userBox m-0"  *ngFor="let user of contactList | slice:0:9">
+        <span class="contactName" >{{user.firstName}} {{user.lastName}}</span>
+        <span class="pull-right reqBtn mr-3" (click)="sendFriendRequest(user.userId, user.firstName, user.lastName)">Send Friend Request</span> 
       </div>             
   </div>
 </div>
 <!--------------------------------Notification Modal-------------------------------------->
-
 <div id="notification-modal" >  
       <p class="pull-right mt-0 closeBtn" (click)="closeCurrentNotifModal()">&times;</p>
-    <p>{{latestNotification}}</p>
-     
+    <p>{{latestNotification}}</p>     
 </div>
 <!---------------------------------------------------------------------------------------->
 <!---->
@@ -102,7 +67,8 @@
   <div class="text-center">{{message}}</div>
   <div class="d-flex justify-content-between mt-3" *ngIf="friendRequest==true">
       <span class="reqBtn" (click)="declineFriendRequest()">Decline</span>
-      <span class="reqBtn" (click)="acceptFriendRequest()">Accept</span>
+      <span class="reqBtn" (click)="acceptFriendRequest(senderId, senderName)">Accept</span>
   </div>
 </div>
+<!--------------------------------------------------------------------------------------->
 

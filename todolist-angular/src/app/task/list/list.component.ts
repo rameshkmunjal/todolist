@@ -1,13 +1,14 @@
 //import angular packages
 import { Component, OnInit, Input } from '@angular/core';
 import { Router} from '@angular/router';
+
+// import user denfined services
 import { UserService } from 'src/app/user.service';
-//import user denfined services
+import { TaskService } from 'src/app/task.service';
 import { SocketService } from './../../socket.service';
 import { UtilityService} from './../../utility.service';
 //import jquery
 import * as $ from 'jquery';
-
 
 @Component({
   selector: 'app-list',  
@@ -16,72 +17,136 @@ import * as $ from 'jquery';
 })
 
 export class ListComponent implements OnInit { 
-  @Input() pageOwnerId:string;
-  public userList:any=[];
-  
-  public userId:string;
-  public userName:string;
+  @Input() userId:string;
+   //will hold value pageOwnerId or friendId - as will be page
+  public pageOwnerId:string;
+  public pageOwnerName:string;
+  public authToken:string;
+ 
   public fullName:string;
-
+  public allLists:any=[];
+  public listId:string;
+  public listName:string;
   public pageType:string="self";
 
-  public errorMessage:string;
-  public msgObj:any;
-
-  public allLists:any=[];
   public newList:string;
-  public listName:string;
-  public listTitle:string;
-  public listId:string;
-  public items:any=[];
-  public subItems:any=[];
+  
 
   constructor(
     private UserService:UserService,        
     private SocketService:SocketService,
     private Utility:UtilityService,
+    private TaskService:TaskService,
     private router:Router
     
   ) { }
 
   ngOnInit() {
-    
-    this.getUserDetails();     
-    this.getAllListsMessage();    
-    this.getChangeStatus();
-    this.getSuccessMessage(); 
-    this.getUndoSuccessMessage();
+    this.authToken=this.UserService.getUserFromLocalStorage().authToken;
+    this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;
+    this.pageOwnerName=this.UserService.getUserFromLocalStorage().fullName;
+
+    this.getHomePageLoad();
+    this.getFriendPageLoad();
+    this.updateListPageResponse();
+    this.undoResponse();    
   }
   //-------------------------------------------------------------------------------------------
-  //function - user details send by home page
-  public getUserDetails(){
-    this.SocketService.getUserDetails().subscribe(
-      data=>{
-        console.log(data);
+  
+  public getHomePageLoad:any=()=>{
+    this.SocketService.getHomePageLoad()
+      .subscribe((data)=>{
         if(this.pageOwnerId===data.pageOwnerId){
           this.userId=data.userId;
-          this.fullName=data.fullName; 
+          this.fullName=data.fullName;
           this.pageType=data.pageType;
-          console.log(this.userId, this.fullName, this.pageType);
-          this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-        }             
+          this.getAllListsOfAUser(this.authToken, this.pageOwnerId);
+        } 
+      }, (error)=>{
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      })
+  }
+  //-----------------------------------------------------------------------------------------
+public getFriendPageLoad:any=()=>{
+  this.SocketService.getFriendPageLoad()
+    .subscribe((data)=>{
+      if(this.pageOwnerId===data.pageOwnerId){
+        this.userId=data.userId;
+        this.fullName=data.fullName;
+        this.pageType=data.pageType;
+        console.log(data); 
+        console.log(this.userId); 
+        this.getAllListsOfAUser(this.authToken, data.userId);
       }
-    )   
-  } 
-  
-//------------------------------------function definitions------------------------------------------------
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
+//----------------------------------------------------------------------------------
+public updateListPageResponse:any=()=>{
+  this.SocketService.updateListPageResponse()
+    .subscribe((data)=>{      
+      if(this.userId===data.userId){            
+        this.getAllListsOfAUser(this.authToken, this.userId);                   
+      }      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
+//----------------------------------------------------------------------------------------------
+public changeStatus(listId){
+  let data={    
+    listId:listId,
+    type:"list",
+    action:"change-status",
+    userId:this.pageOwnerId,
+    changeName:this.pageOwnerName
+  }
+  this.TaskService.changeListStatus(this.authToken, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        userId:this.userId,
+        //event:'update-list',
+        //subEvent:'show-notif', 
+        //list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+      
+    }, (error)=>{
+      console.log(error);
+    }
+  )
+}
+//------------------------------------------------------------------------------
+public getAllListsOfAUser(authToken, userId){
+  this.TaskService.getAllListsOfAUser(authToken, userId).subscribe(
+    apiResponse=>{
+      if(apiResponse.status===200){
+        //console.log(apiResponse);
+        this.allLists=apiResponse.data;
+        this.Utility.arrangeListsByDescendingOrder(this.allLists);
+      } else {
+        this.allLists=[];
+      }
+      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message])
+    }
+  )
+}
+//---------------------------------------------------------------------------------
 //function - create list - involving DB operations
 public createList=()=>{
   //console.log(this.newList);
   let data={
-    listName:this.newList,
+    listName:this.newList,    
     creatorId:this.userId,
-    createdBy:this.fullName,
+    createdBy:this.pageOwnerName,
     type:"list"
   }
   //console.log(data);
-  this.SocketService.createTask(data);  
-  this.newList="";
+  this.sendInputToCreateList(this.authToken, this.pageOwnerId, data);  
 }
 //function - when enter key is pressed - create list
 public createListUsingKeypress: any = (event: any) => {
@@ -89,194 +154,148 @@ public createListUsingKeypress: any = (event: any) => {
     this.createList();
   }
 } 
-//-----------------------------------------------------------------------------------------------
-//function - to edit list
-public editList(listId){
-  //console.log(listId);
-  $("#editListModal").hide(2000);
-  this.listId=listId;  
+
+public sendInputToCreateList(authToken, userId, data){
+  this.TaskService.createList(authToken, userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse.data);       
+
+      let data={
+        userId:this.userId,
+        //event:'update-list',
+        //subEvent:'show-notif', 
+        //list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
   
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )  
+  this.newList="";
+
+} 
+//------------------------------------------------------------------------------------------------
+public editList(){  
+  $("#editListModal").hide(2000); 
   let data={
-    listId:listId,
+    listId:this.listId,
     listName:this.listName,      
-    changeId:this.userId,
-    changeName:this.fullName,
+    changeId:this.pageOwnerId,
+    changeName:this.pageOwnerName,
     type:"list",
     action:"edit"     
-  }
-  //console.log(data);
-  this.SocketService.editTask(data);        
-}
-//-------------------------------------------------------------------------------------------------------
-//function - to delete list
-public deleteList(id){
-  let data={
-    userId:this.userId,      
-    listId:id,
-    type:"list"
-  }
-  
-  this.SocketService.deleteTask(data);  
-  this.SocketService.getItemsByListId(data);
-}
-//---------------------------------------------------------------------------------------
-//function - to get items using list id
-public getItemsByListId(listId, userId, listName){ 
-  let d={
-    pageOwnerId:this.pageOwnerId,
-    listId:listId,
-    listName:listName,
-    userId:userId,
-    fullName:this.fullName
-  }
-  console.log(d);
-  this.SocketService.sendListDetailsToItemBox(d);
-     
-  let data={
-    listId:listId,
-    listName:listName,
-    userId:this.userId
-  }
-  //console.log(data);
-  this.SocketService.getItemsByListId(data);
-}
-//--------------------------functions to get messages through socket listeners-------------------------------------------
-public getAllListsMessage():any{    
-    this.SocketService.getAllListsMessage().subscribe(
-      data=>{
-        if(data.status===200 ){
-          if(data.socketLoginId===this.userId){
-            this.allLists=data.data;           
-            this.allLists=this.Utility.arrangeListsByDescendingOrder(this.allLists);            
-            this.errorMessage="";
-            this.listName="";
-          }         
-        } else {
-          //console.log(data);
-          if(data.status===404){
-            this.allLists=[];
-          } else{
-            this.router.navigate(['/error-page', data.status, data.message]);
-          }          
-        }        
-      },
-      error=>{
-        //console.log(error);            
-        this.router.navigate(['/error-page', error.error.status, error.error.message]);
-        this.allLists=[];
-      }
-    )
-  }  
-//--------------------------------------------------------------------------------------------------
-  //-------------------------------functions - relating modal-----------------------------------------  
-  public showEditListModal(listId, listName){
-    //console.log(listId);
-    //console.log(listName);
-    this.listId=listId;
-    this.listName=listName;
-    $("#editListModal").show();
-  }
-
-  public closeEditModal(){
-    $("#editListModal").hide(2000); 
-  }   
-  //------------------------------------------------------------------------------
-public sendInputForNotification(data){
-  console.log("SendInputForNotifications" + data);
-  let message="";
-  let happened="";
-  console.log(this.fullName);
-  if(data.action=="create"){
-    happened="created";
-    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`; 
-  } else if(data.action=="edit"){
-    happened="edited";
-    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`;
-  } else if(data.action=="delete"){
-    happened="deleted";
-    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`;
-  }else{
-    happened = "changed";
-    message=`List "${data.listName}" is ${happened}  by  ${this.fullName}`;
-  }
-  let temp={
-    type:data.type,
-    action:data.action,
-    typeId:data.listId,
-    originId:data.originId,
-    message:message,
-    sendId:this.userId,
-    sendName:this.fullName
-  }
-  console.log(temp);
-  this.SocketService.sendCurrentNotification(temp);
-}
-//-----------------------------------------------------------------------------------------
-
-public getChangeStatus(){
-  this.SocketService.getChangeStatusList().subscribe(
+  } 
+  this.TaskService.editList(this.authToken, data).subscribe(
     apiResponse=>{
       console.log(apiResponse);
-      this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-      this.getAllListsMessage();
+      
+      let data={
+        userId:this.userId,
+        //event:'update-list',
+        //subEvent:'show-notif',
+        //list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )        
+}
+
+public showEditListModal(listId, listName){  
+  this.listId=listId;
+  this.listName=listName;
+  $("#editListModal").show();
+}
+
+public closeEditModal(){
+  $("#editListModal").hide(2000); 
+}  
+//--------------------------------------------------------------------------------------------------------
+//function - to delete list
+public deleteList(id){ 
+  let data={
+    listId:id,
+    changeBy:this.pageOwnerName,
+    changeId:this.pageOwnerId,
+    type:"list",
+    action:"delete"
+  }   
+  this.TaskService.deleteList(this.authToken,  data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        userId:this.userId,
+        //event:'update-list',
+        //subEvent:'show-notif',
+        //list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )   
+}
+
+//-------------------------------------------------------------------------------
+
+public undoResponse(){
+  this.SocketService.undoResponse().subscribe(
+    data=>{
+      //console.log(data);
+      if(data.userId===this.pageOwnerId && data.type==="list"){
+        console.log(data);
+        if(data.action==="create"){
+          this.undoCreateList(data);
+        } else if(data.action==="delete"){
+          this.undoDeleteList(data);
+        }        
+      }    
+    }
+  )
+}
+
+public undoCreateList(data){
+  console.log(data);
+  this.TaskService.undoCreateList(this.authToken, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        userId:apiResponse.data.creatorId,
+        //event:'update-list', 
+        //subEvent:'no-notif',
+        //list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
     }, (error)=>{
       console.log(error);
     }
   )
 }
 
-
-public changeStatus(originId){
-  //console.log(originId);
-  let data={
-    type:"list",
-    originId:originId
-  }
-  this.SocketService.changeStatus(data);
-}
-
-
-//-------------------------------------------------------
-public getSuccessMessage():any{
-  this.SocketService.getSuccessMessage().subscribe(
-    data=>{
-      //console.log(data);
-      if(data.status===200){
-        if(data.data.type==="list" && data.data.creatorId===this.userId){          
-            this.sendInputForNotification(data.data);
-            this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-            this.getAllListsMessage();                                
-        }
-      } else {
-        this.router.navigate(['/error-page', data.status, data.message]);
+public undoDeleteList(data){
+  console.log(data);
+  this.TaskService.undoDeleteList(this.authToken, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        userId:apiResponse.data.creatorId,
+        //event:'update-list', 
+        //subEvent:'no-notif',
+        //list:apiResponse.data
       }
-      
+      this.SocketService.updateListPage(data);
     }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      console.log(error);
     }
   )
 }
-
-//------------------------------------------------------
-public getUndoSuccessMessage():any{
-  this.SocketService.getUndoSuccessMessage().subscribe(
-    data=>{      
-      if(data.status===200){
-        console.log(data.data.creatorId+"  :   "+this.userId);
-        if(data.data.type==="list" && data.data.creatorId===this.userId){
-        console.log(data);
-        this.SocketService.getAllLists({userId:this.userId, fullName:this.fullName});
-        this.getAllListsMessage();        
-        }
-      } else {
-        this.router.navigate(['/error-page', data.status, data.message]);
-      }
-      
-    }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    }
-  )
-}
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------
 //end of class definition
 }
+
+
+
+
+//-----------------------------------------------------------------------

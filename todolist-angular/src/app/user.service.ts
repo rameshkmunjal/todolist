@@ -68,13 +68,21 @@ public matchOTP(userId, otp):Observable<any>{
   public getFriendList(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/getfriendlist/${userId}`);
   }
-  /*
+  
  //function - to get list of users - those are not friends 
-  public getNonFriendContacts(authToken, userId):Observable<any>{
+  public getContactList(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/contacts/${userId}`);
   }
-  */
-//-----------------------------------------------------------------------------------
+
+  public includeAContactInFriendList(authToken, userId, data):Observable<any>{
+    let params=new HttpParams()
+      .set('userId', data.userId)
+      .set('userName', data.userName)
+      .set('friendId', data.friendId)
+      .set('friendName', data.friendName)
+    return this.http.post(`${this.url}/${authToken}/acceptFriend/${userId}`, params);
+  }
+  //-----------------------------------------------------------------------------------
 //function - to logout
   public logoutFunction(authToken, userId):Observable<any>{
     console.log(userId);

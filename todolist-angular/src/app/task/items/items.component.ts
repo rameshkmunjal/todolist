@@ -13,9 +13,10 @@ import { UtilityService } from 'src/app/utility.service';
   styleUrls: ['./items.component.css']
 })
 export class ItemsComponent implements OnInit {
-  @Input() pageOwnerId:string;
-  public userId:string;
+  @Input() userId:string;
+  
   public fullName:string;
+  /*
   
   public pageOwnerName:string;
   public pageType:string;
@@ -31,24 +32,25 @@ export class ItemsComponent implements OnInit {
   public message:string="No item to display";
   public msgObj:any;
   public errorMessage:string;
-
+*/
   constructor(
     private SocketService:SocketService,    
     private Utility:UtilityService,
     private router:Router
   ) { }
 
-  ngOnInit() {    
+  ngOnInit() { 
+    /*   
     this.getListDetails();
     this.getAllItems();
     this.vacateItemBox();    
     this.getChangeStatusItem();
     this.getSuccessMessage();
     this.getUndoSuccessMessage();
-    
+    */
   }
   //----------------------------------------------------------------
-  
+  /*
   public getUserDetails(){
     this.SocketService.getUserDetails().subscribe(
       data=>{
@@ -282,6 +284,6 @@ public getUndoSuccessMessage():any{
   )
 }
 //---------------------------------------------------------------
-
+*/
 
 }

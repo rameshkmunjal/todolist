@@ -15,10 +15,11 @@ let setRouter=(app)=>{
       
     app.post(baseUrl+'/matchOTP/:userId', userController.matchOTP);    
     app.post(baseUrl+'/resetPassword/:email/:code', userController.resetPassword);
+    app.post(baseUrl+'/:authToken/acceptFriend/:userId', auth.isAuthorised, userController.acceptFriendRequest);
     //get request handling routes
     app.get(baseUrl+'/demandOTP/:email', userController.demandOTP);
-    app.get(baseUrl+'/:authToken/getfriendlist/:userId', userController.getAllUsers);
-    
+    app.get(baseUrl+'/:authToken/getfriendlist/:userId',auth.isAuthorised,  userController.getFriendList);
+    app.get(baseUrl+'/:authToken/contacts/:userId',auth.isAuthorised,  userController.getContactList);   
     
 }
 //expoting setRouter function
