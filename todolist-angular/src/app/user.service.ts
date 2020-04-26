@@ -26,7 +26,7 @@ export class UserService {
 //-----------------------------------------------------------------------------------
 //function - to make api call to sign up
   public signupFunction(data):Observable<any>{
-    console.log(data);
+    //console.log(data);
     let params=new HttpParams()
       .set("firstName", data.firstName)
       .set("lastName", data.lastName)
@@ -35,7 +35,7 @@ export class UserService {
       .set("country", data.country)
       .set("countryCode", data.countryCode)
       .set("mobile", data.mobile);
-      console.log(params);
+      //console.log(params);
     return this.http.post(`${this.url}/sign-up`, params);
   }
 //function - to make api call for login
@@ -43,7 +43,7 @@ export class UserService {
     let params=new HttpParams()
       .set("email", data.email)
       .set("password", data.password);
-      console.log(params);
+      //console.log(params);
     return this.http.post(`${this.url}/login`, params);
   }
 //function - api call to ask for OTP - to reset password
@@ -74,7 +74,7 @@ public matchOTP(userId, otp):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/contacts/${userId}`);
   }
 
-  public includeAContactInFriendList(authToken, userId, data):Observable<any>{
+  public acceptFriendRequest(authToken, userId, data):Observable<any>{
     let params=new HttpParams()
       .set('userId', data.userId)
       .set('userName', data.userName)
@@ -85,7 +85,7 @@ public matchOTP(userId, otp):Observable<any>{
   //-----------------------------------------------------------------------------------
 //function - to logout
   public logoutFunction(authToken, userId):Observable<any>{
-    console.log(userId);
+    //console.log(userId);
     let params=new HttpParams()
       .set("userId", userId);
     return this.http.post(`${this.url}/${authToken}/logout`, params);

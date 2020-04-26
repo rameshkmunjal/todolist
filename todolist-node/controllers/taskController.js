@@ -4,8 +4,11 @@ const shortId=require('shortid');
 //including files
 const response=require('./../libs/responseLib');
 const check=require('./../libs/checkLib');
+const utility=require('./../libs/utilityLib');
 
 //including model
+require('./../models/user');
+const UserModel=mongoose.model('User');
 require('./../models/list');
 const ListModel=mongoose.model('List');
 require('./../models/notification');
@@ -29,6 +32,7 @@ let getAllListsByUserId=(req, res)=>{
 
 
 let createList=(req, res)=>{ 
+   
   create_list(req, res)
     .then(create_Notification)
     .then((resolve)=>{
@@ -56,59 +60,57 @@ let editList=(req, res)=>{
         })
 }
 //----------------------------------------------------------------------------------------------------------
-let getNotificationList=(req, res)=>{
-    NotificationModel.find({'isActive':true})
-        .exec((err, notifications)=>{
-            if(err){
-                console.log("getNotificationList:Some Error Occurred");
-            } else if(check.isEmpty(notifications)){
-                console.log("getNotificationList:No Data found");
-            } else {
-                let apiResponse=response.generate(false, "Notifications fetched successfully", 200, notifications);
-                res.send(apiResponse);
-            }
+let getAllNotifications=(req, res)=>{
+    //console.log("*******************5397397539********************");    
+    get_Friend_List(req, res)
+        .then(getNotifications)
+        .then((resolve)=>{
+            //console.log("$$$$$$$$$$$$$$$$$$$$");
+            //console.log(resolve);
+            let apiResponse=response.generate(false, "All Notifications fetched successfully", 200, resolve);
+            //console.log(apiResponse);
+            //console.log("$$$$$$$$$$$$$$$$$$$$");
+            res.send(apiResponse);
         })
+        .catch((err)=>{
+            res.send(err);
+        })    
+}
+//---------------------------------------------------------------------------------------------------
+let getLatestNotification=(req, res)=>{
+    //console.log("*********************999********************");    
+    get_Friend_List(req, res)
+        .then(getNotifications)
+        .then((resolve)=>{
+            //console.log("$$$$$$$$$$$$$$$$$$$$");
+            let latestNotification=resolve[0];            
+            let apiResponse=response.generate(false, "Latest Notifications fetched successfully", 200, latestNotification);
+            //console.log(apiResponse);
+            //console.log("$$$$$$$$$$$$$$$$$$$$");
+            res.send(apiResponse);
+        })
+        .catch((err)=>{
+            res.send(err);
+        })    
 }
 //---------------------------------------------------------------------------------------------------
 let changeStatusList=(req, res)=>{
-    ListModel.findOne({'listId':req.body.listId})
-        .exec((err, result)=>{
-            if(err){
-                console.log(err);
-            } else if(check.isEmpty(result)){
-                console.log("No Data found");
-            } else {
-                if(result.status==="open"){
-                    result.status="done"
-                } else if(result.status==="done") {
-                    result.status="open"
-                }
-                result.changeOn=Date.now();
-                result.changeBy=req.body.changeName;
-                result.personId=req.body.userId;
-
-                result.save((err, list)=>{
-                    if(err){
-                        console.log(err);
-                    } else {
-                        let listObj=list.toObject();
-                        delete listObj._id;
-                        delete listObj.__v;
-                        listObj.action=req.body.action;
-                        listObj.type=req.body.type;
-                        let apiResponse=response.generate(false, "List Status Changed Successfully", 200, listObj);
-                        res.send(apiResponse);
-                    }
-                })
-            }
+    change_status_list(req, res)
+        .then(create_Notification)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "List Status Changed Successfully", 200, resolve);
+            res.send(apiResponse);
         })
+        .catch((err)=>{
+            res.send(err);
+        })
+    
 }
 //-----------------------------undoCreateList------------------------------------------------------------
 let undoCreateList=(req, res)=>{    
     deactivateNotification(req, res)
-        .then(deactivateList)
-        //.then(getAllLists)
-        .then((resolve)=>{
+        .then(deactivateList)        
+        .then((resolve)=>{            
             let apiResponse=response.generate(false, "Create List undone successfully", 200, resolve);
             console.log(apiResponse);
             res.send(apiResponse);
@@ -130,22 +132,33 @@ let undoDeleteList=(req, res)=>{
             res.send(err);
         })    
 }
-
+//-----------------------------------------------------------------------------------------------
+let undoEditList=(req, res)=>{
+    console.log("undoEditList api function");
+    deactivateNotification(req, res)
+        .then(deactivateList)
+        .then(activateList)        
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "List edit undone successfully", 200, resolve);                   
+            res.send(apiResponse);
+        })
+        .catch((err)=>{ res.send(err);})
+}
+    //----------------------------------------------------------------------------------------------------------
 
 //--------------------------deactivate notification----------------------------------------------
-let deactivateNotification=(req, res)=>{
-    
+let deactivateNotification=(req, res)=>{    
     return new Promise((resolve, reject)=>{   
-        console.log(req.body.notificationId);
+        //console.log(req.body.notificationId);
         NotificationModel.findOne({'id': req.body.notificationId})
             .exec((err, result)=>{
                 if(err){
-                    console.log(err);
+                    //console.log(err);
                     let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                     reject(apiResponse);
                     //res.send(apiResponse);
                 } else if(check.isEmpty(result)){
-                    console.log("No Data found");
+                    //console.log("No Data found");
                     let apiResponse=response.generate(true, "No Notif Data found", 404, null);
                     reject(apiResponse);
                     //res.send(apiResponse);
@@ -153,14 +166,23 @@ let deactivateNotification=(req, res)=>{
                     result.isActive=false;
                     result.save((err, editedNotif)=>{
                         if(err){
-                            console.log(err);
+                            //console.log(err);
                             let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                             reject(apiResponse);
                             //res.send(apiResponse);
-                        } else{                                
+                        } else{ 
+                            //console.log(editedNotif); 
+                            let obj=editedNotif.toObject(); 
+                            
+                            if(obj.action="create"){
+                              req.refId=obj.typeId;
+                            }else if(obj.action="delete"){
+                               req.refId=obj.refkey;
+                            } else if(obj.action="edit"){
+                               req.refId=obj.typeId;
+                            }
+                            console.log("refId : "+req.refId);                                                      
                             resolve(req);
-                            //let apiResponse=response.generate(false, "Sucess", 200, editedNotif);                                
-                            //res.send(apiResponse);
                         }
                     })
                 }
@@ -170,34 +192,31 @@ let deactivateNotification=(req, res)=>{
 }
 //-----------------------------------deactivate list-------------------------------------------
 let deactivateList=(req)=>{
-    console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&& Deactivate List ");
-    console.log(req.body.id);
-    console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&& Deactivate List ");
+    console.log("refId in deactivateList : "+req.refId);
     return new Promise(function(resolve, reject){
         //console.log("************************** List id is : "+ JSON.stringify(notif.id));
-        ListModel.findOne({'listId':req.body.id})
+        ListModel.findOne({'listId':req.refId})
             .exec((err, result)=>{
                 if(err){
-                    console.log(err);
+                    //console.log(err);
                     let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                     reject(apiResponse);
                 } else if(check.isEmpty(result)){
-                    console.log("No Data found");
+                    //console.log("No Data found");
                     let apiResponse=response.generate(true, "No Data Found", 404, null);
                     reject(apiResponse);
                 } else {
                     result.isActive=false;
                     result.save((err, newList)=>{
                         if(err){
-                            console.log(err);
+                            //console.log(err);
                             let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                             reject(apiResponse);
                         } else {
-                            console.log("*****************************");
-                            console.log(newList);
-                            console.log("*****************************");
-                        
-                            resolve(newList);
+                            let list = newList.toObject();
+                            list.refId=list.refkey; 
+                            console.log(list);                           
+                            resolve(list);
                         }
                     })//save method ended
                 }//else block ended
@@ -205,9 +224,10 @@ let deactivateList=(req)=>{
     });//Promise ended    
 }//function deactivateList ended
 //---------------------------------------activate list----------------------------------------------
-let activateList=(req)=>{
+let activateList=(obj)=>{
+    console.log("refId in activateList : " + obj.refId);
     return new Promise((resolve, reject)=>{
-        ListModel.findOne({'listId':req.body.id})
+        ListModel.findOne({'listId':obj.refId})
             .exec((err, result)=>{
                 if(err){
                     console.log(err);
@@ -225,6 +245,8 @@ let activateList=(req)=>{
                             let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
                             reject(apiResponse);
                         } else {
+                            console.log("activate list : save method ");4
+                            console.log(newList);
                             resolve(newList);
                         }
                     })//save method ended
@@ -254,13 +276,18 @@ let create_list=(req)=>{
                 let listObj=list.toObject();
                 delete listObj._id;
                 delete listObj.__v; 
-                listObj.type="list";
-                listObj.action="create";
-                req.list=listObj ;
-                req.body.type="list";
-                req.body.action="create";
-                req.body.message= "List " + req.body.listName +" created by "+req.body.createdBy;             
-                resolve(req.body);
+                
+                let obj={
+                    type:"list",
+                    action:"create",
+                    typeId:listObj.listId,
+                    refkey:listObj.refkey,
+                    message:"List "+listObj.listName+"  created by "+listObj.createdBy,
+                    creatorId:listObj.creatorId,
+                    createdBy:listObj.createdBy
+                }
+
+                resolve(obj);
             }
         })
     })
@@ -282,7 +309,7 @@ let create_list=(req)=>{
                     result.changeOn=new Date();
                     result.personId=req.body.changeId;
                     
-                    console.log("deleted List" + JSON.stringify(result));
+                    //console.log("deleted List" + JSON.stringify(result));
                     result.save((err, list)=>{
                         if(err){
                             let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
@@ -291,10 +318,18 @@ let create_list=(req)=>{
                             let listObj=list.toObject();
                             delete listObj._id;
                             delete listObj.__v; 
-                            listObj.action="delete";
-                            listObj.type="list"; 
-                            req.body.message= "List " + req.body.listName +" deleted by "+req.body.changeBy;             
-                            resolve(req.body);
+                            
+                            let obj={
+                                type:"list",
+                                action:"delete",
+                                typeId:listObj.listId,
+                                refkey:listObj.refkey,
+                                message:"List "+listObj.listName+"  deleted by "+listObj.changeBy,
+                                creatorId:listObj.personId,
+                                createdBy:listObj.changeBy
+                            } 
+                           
+                            resolve(obj);
                         }
                     })  //save method ended              
                 }//else block ended
@@ -309,6 +344,7 @@ let create_list=(req)=>{
             type:obj.type,
             action:obj.action,
             typeId:obj.typeId,
+            refkey:obj.refkey,            
             message:obj.message,
             sendId:obj.creatorId,
             sendName:obj.createdBy, 
@@ -323,7 +359,7 @@ let create_list=(req)=>{
                 let notice=saveNotice.toObject();
                 delete notice._id;
                 delete notice.__v; 
-                resolve(notice);          
+                resolve(notice);
                 
             }
         })
@@ -343,26 +379,29 @@ let create_list=(req)=>{
 }
 //-------------------------------------edit list------------------------------------------------------
 let saveOldList=(req, res)=>{
+    //console.log("*************Save Old List****************");
     return new Promise((resolve, reject)=>{
     ListModel.findOne({'listId':req.body.listId, 'isActive':true})
      .exec((err, oldList)=>{
         if(err){
-            //console.log("FunctionsLib::editList  " + JSON.stringify(err));
-            let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
+            //console.log("undoEditList  " + JSON.stringify(err));
+            let apiResponse=response.generate(true, "Undo Edit action failed after deletion", 500, null);
             reject(apiResponse);
         } else if(check.isEmpty(oldList)){
-            //console.log("FunctionsLib::editList " + "No Data found");
+            //console.log("undoEditList " + "No Data found");
             let apiResponse=response.generate(true, "No data found", 404, null);
             reject(apiResponse);
-        } else {                
+        } else {
+            //console.log("old list saved");                
             oldList.isActive=false;                                   
         
             oldList.save((err, oldListData)=>{
                 if(err){
-                    //console.log("FunctionsLib::editList " + JSON.stringify(err));
+                    //console.log("undoEditList " + JSON.stringify(err));
                     let apiResponse=response.generate(true, "Save old list action failed", 500, null);
                     reject(apiResponse);
                 } else {
+                    //console.log("old list saved : else block");
                     let obj={
                         oldListData:oldListData,
                         reqBody:req.body
@@ -399,23 +438,160 @@ let createNewList=(obj)=>{
                 let editedList=savedList.toObject();
                 delete editedList._id;
                 delete editedList.__v;
-                let obj={
+                let newObj={
                     type:"list",
                     action:"edit",
                     typeId:editedList.listId,
-                    message:"List "+editedList.listName+"  edited by "+editedList.createdBy,
-                    creatorId:editedList.creatorId,
-                    createdBy:editedList.createdBy
+                    refkey:editedList.refkey,
+                    message:"List "+editedList.listName+"  edited by "+obj.reqBody.changeName,
+                    creatorId:obj.reqBody.changeId,
+                    createdBy:obj.reqBody.changeName
                 }                
-                resolve(obj);
+                resolve(newObj);
             }
         })
     })        
 }
-//------------------------------------------------------------------------------------------------------------------
 
-  //XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                
+let get_Friend_List=(req, res)=>{
+    return new Promise((resolve, reject)=>{
+        UserModel.findOne({'userId':req.params.userId})
+            .exec((err, result)=>{
+                if(err){
+                    //console.log(err);
+                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                    reject(apiResponse);
+                } else if(check.isEmpty(result)){
+                    //console.log("No Data found");
+                    let apiResponse=response.generate(true, "No Data Found", 404, null);
+                    reject(apiResponse);
+                } else {
+                    //console.log("88888888888888");
+                    //console.log(result);
+                    //console.log("88888888888888");
+                    req.friendList=result.friends;
+                    resolve(req);
+                }
+
+        })
+    })
+}
+
+
+let getNotifications=(req)=>{    
+    
+    return new Promise((resolve, reject)=>{
+        NotificationModel.find({'isActive':true})
+            .exec((err, notifications)=>{
+        if(err){
+            //console.log("getNotificationList:Some Error Occurred");
+            let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+            reject(apiResponse);
+        } else if(check.isEmpty(notifications)){
+            //console.log("getNotificationList:No Data found");
+            let apiResponse=response.generate(true, "No Data found", 404, null);
+            reject(apiResponse);
+        } else {
+            //console.log("getNotificationList: api success");
+            let allNotifications=[];
+
+            let friendList=req.friendList;
+            for(let i=0; i<friendList.length; i++){
+                for(let j=0; j<notifications.length; j++){
+                    if(friendList[i].friendId===notifications[j].sendId){
+                        allNotifications.push(notifications[j]);                        
+                    }
+                }
+            }
+            allNotifications=utility.getSortedDescending(allNotifications);            
+            //console.log("^^^^^^^^^^^^^^^^^^^");
+            resolve(allNotifications);
+        }
+      })
+    })
+}
+//------------------------------------------------------------------------------------------------------------------
+let change_status_list=(req, res)=>{
+    return new Promise((resolve, reject)=>{
+        ListModel.findOne({'listId':req.body.listId})
+    .exec((err, result)=>{
+        if(err){
+            //console.log(err);
+            let apiResponse=response.generate(true, "Some error occured", 500, null);
+            reject(apiResponse);
+        } else if(check.isEmpty(result)){
+            //console.log("No Data found");
+            let apiResponse=response.generate(true, "No Data found", 404, null);
+            reject(apiResponse);
+        } else {
+            if(result.status==="open"){
+                result.status="done"
+            } else if(result.status==="done") {
+                result.status="open"
+            }
+            result.changeOn=Date.now();
+            result.changeBy=req.body.changeName;
+            result.personId=req.body.userId;
+
+            result.save((err, list)=>{
+                if(err){
+                    //console.log(err);
+                } else {
+                    let listObj=list.toObject();
+                    delete listObj._id;
+                    delete listObj.__v;
+                    //listObj.action=req.body.action;
+                    //listObj.type=req.body.type;
+                    let obj={
+                        type:"list",
+                        action:"status-change",
+                        typeId:listObj.listId,
+                        refkey:refkey,
+                        message:"List "+listObj.listName+"  status changed by "+listObj.createdBy,
+                        creatorId:listObj.creatorId,
+                        createdBy:listObj.createdBy
+                    }                        
+                    resolve(obj);
+                }
+            })
+        }
+    })
+
+    })
+}
+//----------------------------------------------------------------------------------------
+let getOldList=(obj)=>{
+    //console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    //console.log(obj.oldListData);
+    //console.log("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    return new Promise((resolve, reject)=>{
+        ListModel.findOne({'listId':obj.oldListData.refKey})
+         .exec((err, oldList)=>{
+            if(err){
+                //console.log("FunctionsLib::editList  " + JSON.stringify(err));
+                let apiResponse=response.generate(true, "Edit action failed after deletion", 500, null);
+                reject(apiResponse);
+            } else if(check.isEmpty(oldList)){
+                //console.log("FunctionsLib::editList " + "No Data found");
+                let apiResponse=response.generate(true, "No data found", 404, null);
+                reject(apiResponse);
+            } else {                
+                oldList.isActive=true;                                   
+            
+                oldList.save((err, oldListData)=>{
+                    if(err){
+                        //("FunctionsLib::editList " + JSON.stringify(err));
+                        let apiResponse=response.generate(true, "Save old list action failed", 500, null);
+                        reject(apiResponse);
+                    } else { 
+                        //console.log("getOldList - save - else block ");                                               
+                        resolve(oldListData);
+                    }//else ended                        
+                })//save method ended
+            } //else of exec method ended
+        })//exec method ended
+    })//Promise ended
+}                
 //------------------------------------------------------
 module.exports={
     createList:createList,
@@ -423,10 +599,11 @@ module.exports={
     editList:editList,
     changeStatusList:changeStatusList,
     undoCreateList:undoCreateList, 
-    undoDeleteList:undoDeleteList,  
+    undoDeleteList:undoDeleteList,
+    undoEditList:undoEditList,  
     getAllListsByUserId:getAllListsByUserId,
-    //createNotification:createNotification,
-    getNotificationList:getNotificationList    
+    getAllNotifications:getAllNotifications,
+    getLatestNotification:getLatestNotification    
 }
 
 

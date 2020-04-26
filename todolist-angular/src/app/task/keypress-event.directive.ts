@@ -6,7 +6,7 @@ import { Directive, HostListener } from '@angular/core';
 export class KeypressEventDirective {
   @HostListener('keydown', ['$event']) onKeyDown(e) {
     if (e.ctrlKey && e.keyCode == 90) {
-      console.log('ctrl and z keys pressed');
+      //console.log('ctrl and z keys pressed');
     }
   }
 

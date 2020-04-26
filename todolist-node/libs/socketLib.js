@@ -12,7 +12,7 @@ const redisLib=require('./redisLib');
 const tokenLib=require('./tokenLib');
 //const userLib=require('./userLib');
 //const functionLib=require('./functionLib');
-const listLib=require('./listLib');
+// listLib=require('./listLib');
 //const itemLib=require('./itemLib');
 //const subItemLib=require('./subItemLib');
 require('./../models/notification');
@@ -78,15 +78,15 @@ let setServer=(server)=>{
             })//----verifyClaimsWithoutSecret ended----------------------------------------
 		})//-------------------end of set-user event listener------------------------------
 		socket.on('load-home-page-event', (data)=>{
-			myIo.emit('get-home-page-load', data);
+			socket.emit('get-home-page-load', data);
         })
         socket.on('load-friend-page-event', (data)=>{
             console.log(data);
-            myIo.emit('get-friend-page-load', data);
+            socket.emit('get-friend-page-load', data);
         })
         socket.on('show-contact-list-event', (data)=>{
             console.log(data);
-            myIo.emit('get-contact-list-response', data);
+            socket.emit('get-contact-list-response', data);
         })
         socket.on('send-friend-request-event', (data)=>{
             console.log(data);
@@ -96,9 +96,9 @@ let setServer=(server)=>{
             console.log(data);
             myIo.emit('accept-friend-request-response', data);
         })
-        socket.on('update-contact-friend-event', (data)=>{
+        socket.on('update-friend-event', (data)=>{
             console.log(data);
-            myIo.emit('update-contact-friend-response', data);
+            myIo.emit('update-friend-response', data);
             
         })
         socket.on('public-notification-event', (data)=>{
@@ -114,28 +114,35 @@ let setServer=(server)=>{
         });
         socket.on('show-notification-list-event', (data)=>{
             console.log(data);
-            myIo.emit('get-notification-list-response', data);
+            socket.emit('get-notification-list-response', data);
         })
         socket.on('update-list-page-event', (data)=>{
             console.log(data);
             myIo.emit('update-list-page-response', data);
         })
         socket.on('latest-change-event', (data)=>{
-            getLastChangeObject(data, function(notificationCB){ 
-                //console.log(data.friendList);
-                //console.log(data);
-                let friendList=data.friendList;
+            console.log(data);
+            console.log("***************************************");
+                let friendList=[];
+                friendList=data.friendList;
                 delete data.friendList;
-                for(let i=0; i<friendList.length; i++){
-                    let friendId=friendList[i].friendId;                    
-                    notificationCB.userId=friendId;
-                    myIo.emit('get-last-change-object', notificationCB);                
-                }                
-            })    
+                
+                    for(let i=0; i < friendList.length; i++){ 
+                        let friendId=friendList[i].friendId;                    
+    
+                        let data={
+                            userId:friendId
+                        }
+                        myIo.emit('get-last-change-object', data);                
+                    }
         })
 
-        socket.on('undo-last-action', (data)=>{
+        socket.on('undo-last-action', (data)=>{            
             socket.emit('undo-last-action-response', data);
+        })
+
+        socket.on('update-after-undo', (data)=>{            
+            myIo.emit('update-after-undo-response', data);
         })
 	    //-------------------disconnect socket - function defined------------------------------
 	    /*
@@ -164,40 +171,6 @@ module.exports={
     setServer:setServer
 }
 //------------------------------------------------------------------------------------------
-let getLastChangeObject=(data, notificationCB)=>{
-    NotificationModel.find({'sendId':data.userId, 'isActive':true})
-        .exec((err, result)=>{
-            if(err){                
-                let apiResponse=response.generate(true, "Last Notification fetching failed", 500, null);
-                notificationCB(apiResponse);
-            } else if(check.isEmpty(result)){                
-                let apiResponse=response.generate(true, "No Data found", 404, null);
-                notificationCB(apiResponse);
-            } else {                
-                let newArr=arrangeListsByDescendingOrder(result);                
-                let lastChangeObj=newArr[0].toObject();
-                delete lastChangeObj._id;
-                delete lastChangeObj.__v;
-                console.log(lastChangeObj);
-                let apiResponse=response.generate(false, "Last Change Object fetched successfully", 200, lastChangeObj);
-                notificationCB(apiResponse);
-            }
-        })
-
-}
-
-let arrangeListsByDescendingOrder=(list)=>{
-    list.sort(function(a, b){          
-      if(new Date(a.createdOn) < new Date(b.createdOn)){
-        return 1;
-      } else if(new Date(a.createdOn)  > new Date(b.createdOn)){
-        return -1;
-      } else {
-        return 0;
-      }      
-    });
-    return list;
-  }
 
 
 

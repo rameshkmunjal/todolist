@@ -28,23 +28,23 @@ export class LoginComponent implements OnInit {
   ngOnInit() {}
 //------------------function - to call service function - to login api call------------------
   public loginFunction():any{
-   console.log("loginFunction clicked");
+   //console.log("loginFunction clicked");
       let data={
         email:this.email,
         password:this.password
       }
-      console.log(data);
+      //console.log(data);
       //validate form inputs
       this.errorObj=this.utility.validateLoginInputs(data);
-      console.log(this.errorObj);
+      //console.log(this.errorObj);
       //if inputs are valid
       if(!this.errorObj.flag){
         this.UserService.loginFunction(data).subscribe(
           apiResponse=>{
-            console.log(apiResponse);
+            //console.log(apiResponse);
             if(apiResponse.status===200){ //if response status 200 - move to dashboard
                 this.errorMessage="";
-                console.log(apiResponse);
+                //console.log(apiResponse);
                 let userId=apiResponse.data.userDetails.userId;
                 let data={
                   authToken:apiResponse.data.authToken,
@@ -55,11 +55,11 @@ export class LoginComponent implements OnInit {
                   //this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);                  
                   this.router.navigate(['/home' ]);
               } else { //if response status not 200 - move to error page
-                console.log(apiResponse);
+                //console.log(apiResponse);
                 this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);              
               }          
         }, (err)=>{ // when no apiResponse
-          console.log(err);
+          //console.log(err);
           this.router.navigate(['/error-page', err.error.status, err.error.message]);
         }
       )

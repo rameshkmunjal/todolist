@@ -49,11 +49,12 @@ export class ListComponent implements OnInit {
     this.getHomePageLoad();
     this.getFriendPageLoad();
     this.updateListPageResponse();
-    this.undoResponse();    
+    this.undoResponse(); 
+    this.updateAfterUndoResponse();   
   }
   //-------------------------------------------------------------------------------------------
   
-  public getHomePageLoad:any=()=>{
+  public getHomePageLoad=():any=>{
     this.SocketService.getHomePageLoad()
       .subscribe((data)=>{
         if(this.pageOwnerId===data.pageOwnerId){
@@ -67,15 +68,15 @@ export class ListComponent implements OnInit {
       })
   }
   //-----------------------------------------------------------------------------------------
-public getFriendPageLoad:any=()=>{
+public getFriendPageLoad=():any=>{
   this.SocketService.getFriendPageLoad()
     .subscribe((data)=>{
       if(this.pageOwnerId===data.pageOwnerId){
         this.userId=data.userId;
         this.fullName=data.fullName;
         this.pageType=data.pageType;
-        console.log(data); 
-        console.log(this.userId); 
+        //console.log(data); 
+        //console.log(this.userId); 
         this.getAllListsOfAUser(this.authToken, data.userId);
       }
     }, (error)=>{
@@ -83,10 +84,11 @@ public getFriendPageLoad:any=()=>{
     })
 }
 //----------------------------------------------------------------------------------
-public updateListPageResponse:any=()=>{
+public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
-    .subscribe((data)=>{      
-      if(this.userId===data.userId){            
+    .subscribe((data)=>{          
+      if(this.userId===data.userId){ 
+        //console.log("userId matched");           
         this.getAllListsOfAUser(this.authToken, this.userId);                   
       }      
     }, (error)=>{
@@ -104,17 +106,18 @@ public changeStatus(listId){
   }
   this.TaskService.changeListStatus(this.authToken, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
+      //console.log(apiResponse);
       let data={
         userId:this.userId,
         //event:'update-list',
         //subEvent:'show-notif', 
-        //list:apiResponse.data
+        list:apiResponse.data
       }
+      //console.log(data);
       this.SocketService.updateListPage(data);
       
     }, (error)=>{
-      console.log(error);
+      //console.log(error);
     }
   )
 }
@@ -122,14 +125,13 @@ public changeStatus(listId){
 public getAllListsOfAUser(authToken, userId){
   this.TaskService.getAllListsOfAUser(authToken, userId).subscribe(
     apiResponse=>{
-      if(apiResponse.status===200){
+      if(apiResponse.status===200 && apiResponse.data !== null){
         //console.log(apiResponse);
         this.allLists=apiResponse.data;
         this.Utility.arrangeListsByDescendingOrder(this.allLists);
       } else {
         this.allLists=[];
-      }
-      
+      }      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message])
     }
@@ -138,14 +140,14 @@ public getAllListsOfAUser(authToken, userId){
 //---------------------------------------------------------------------------------
 //function - create list - involving DB operations
 public createList=()=>{
-  //console.log(this.newList);
+  ////console.log(this.newList);
   let data={
     listName:this.newList,    
     creatorId:this.userId,
     createdBy:this.pageOwnerName,
     type:"list"
   }
-  //console.log(data);
+  ////console.log(data);
   this.sendInputToCreateList(this.authToken, this.pageOwnerId, data);  
 }
 //function - when enter key is pressed - create list
@@ -156,15 +158,14 @@ public createListUsingKeypress: any = (event: any) => {
 } 
 
 public sendInputToCreateList(authToken, userId, data){
+  
   this.TaskService.createList(authToken, userId, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse.data);       
+      //console.log(apiResponse.data);       
 
       let data={
-        userId:this.userId,
-        //event:'update-list',
-        //subEvent:'show-notif', 
-        //list:apiResponse.data
+        userId:this.userId,        
+        list:apiResponse.data
       }
       this.SocketService.updateListPage(data);
   
@@ -188,15 +189,17 @@ public editList(){
   } 
   this.TaskService.editList(this.authToken, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
-      
-      let data={
-        userId:this.userId,
-        //event:'update-list',
-        //subEvent:'show-notif',
-        //list:apiResponse.data
-      }
-      this.SocketService.updateListPage(data);      
+      //console.log(apiResponse);
+      if(apiResponse.status===200 && apiResponse.data !==null){
+        let data={
+          userId:this.userId,
+          //event:'update-list',
+          //subEvent:'show-notif',
+          list:apiResponse.data
+        }
+        //console.log(data);
+        this.SocketService.updateListPage(data);
+      }      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
@@ -226,10 +229,8 @@ public deleteList(id){
     apiResponse=>{
       console.log(apiResponse);
       let data={
-        userId:this.userId,
-        //event:'update-list',
-        //subEvent:'show-notif',
-        //list:apiResponse.data
+        userId:this.userId,        
+        list:apiResponse.data
       }
       this.SocketService.updateListPage(data);
     }, (error)=>{
@@ -243,55 +244,86 @@ public deleteList(id){
 public undoResponse(){
   this.SocketService.undoResponse().subscribe(
     data=>{
-      //console.log(data);
-      if(data.userId===this.pageOwnerId && data.type==="list"){
-        console.log(data);
+      
+        //console.log(data);
         if(data.action==="create"){
           this.undoCreateList(data);
         } else if(data.action==="delete"){
           this.undoDeleteList(data);
-        }        
-      }    
+        } else if(data.action==="edit"){
+          this.undoEditList(data);
+        }       
+          
     }
   )
 }
 
 public undoCreateList(data){
-  console.log(data);
+  //console.log(data);
   this.TaskService.undoCreateList(this.authToken, data).subscribe(
+    apiResponse=>{
+      //console.log(apiResponse);
+      let data={
+        userId:apiResponse.data.creatorId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateAfterUndo(data);
+    }, (error)=>{
+      //console.log(error);
+    }
+  )
+}
+
+public undoEditList(data){
+  //console.log(data);
+  this.TaskService.undoEditList(this.authToken, data).subscribe(
     apiResponse=>{
       console.log(apiResponse);
       let data={
-        userId:apiResponse.data.creatorId,
-        //event:'update-list', 
-        //subEvent:'no-notif',
-        //list:apiResponse.data
+        userId:this.pageOwnerId,        
+        list:apiResponse.data
       }
-      this.SocketService.updateListPage(data);
+      this.SocketService.updateAfterUndo(data);      
     }, (error)=>{
-      console.log(error);
+        console.log(error);
     }
   )
 }
 
 public undoDeleteList(data){
-  console.log(data);
+  //console.log(data);
   this.TaskService.undoDeleteList(this.authToken, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
-      let data={
-        userId:apiResponse.data.creatorId,
-        //event:'update-list', 
-        //subEvent:'no-notif',
-        //list:apiResponse.data
-      }
-      this.SocketService.updateListPage(data);
+      //console.log(apiResponse);
+      if(apiResponse.status===200){
+        let data={
+          userId:apiResponse.data.creatorId,          
+          list:apiResponse.data
+        }
+        this.SocketService.updateAfterUndo(data);
+      }       
     }, (error)=>{
-      console.log(error);
+      //console.log(error);
     }
   )
 }
 //---------------------------------------------------------------------
+public updateAfterUndoResponse(){
+  this.SocketService.updateAfterUndoResponse().subscribe(
+    data=>{
+      //console.log("inside updateAfterUndoResponse");
+      console.log(data);
+      //console.log(this.userId);
+      //console.log(data.list.creatorId);
+      if(this.userId===data.list.creatorId){
+        //console.log("userId matched");
+        //console.log(this.userId);
+        this.getAllListsOfAUser(this.authToken, this.userId);      
+      }          
+    }
+  )
+
+}
 //end of class definition
 }
 

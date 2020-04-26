@@ -13,10 +13,11 @@ import { UtilityService } from 'src/app/utility.service';
   styleUrls: ['./items.component.css']
 })
 export class ItemsComponent implements OnInit {
+  /*
   @Input() userId:string;
   
   public fullName:string;
-  /*
+  
   
   public pageOwnerName:string;
   public pageType:string;
@@ -66,7 +67,7 @@ export class ItemsComponent implements OnInit {
   public getAllItems(){
     this.SocketService.getAllItems().subscribe(
       data=>{ 
-        //console.log("Get All Items response -- " + JSON.stringify(data));    
+        ////console.log("Get All Items response -- " + JSON.stringify(data));    
         if(data.status===200){ 
           if(data.socketLoginId===this.userId){         
               this.items=data.data;            
@@ -74,10 +75,10 @@ export class ItemsComponent implements OnInit {
             }
           } else {
             this.items=[];
-            console.log("There is no items in this list");          
+            //console.log("There is no items in this list");          
           }//else closed               
         }, (err)=>{
-          console.log(err);            
+          //console.log(err);            
           this.router.navigate(['/error-page', err.error.status, err.error.message]);
         })
   }
@@ -86,13 +87,13 @@ export class ItemsComponent implements OnInit {
     this.SocketService.getListDetails().subscribe(
       data=>{
       if(data.pageOwnerId===this.pageOwnerId){
-        console.log(data.pageOwnerId);
-        console.log(this.pageOwnerId);
+        //console.log(data.pageOwnerId);
+        //console.log(this.pageOwnerId);
           this.listName=data.listName; 
           this.listId=data.listId;  
           this.userId=data.userId; 
           this.fullName=data.fullName; 
-          console.log(this.listName);
+          //console.log(this.listName);
           this.SocketService.getItemsByListId({
             listName:this.listName, 
             listId:this.listId, 
@@ -101,7 +102,7 @@ export class ItemsComponent implements OnInit {
           });
         }             
       }, (err)=>{
-        console.log(err);
+        //console.log(err);
       }
     )
   }
@@ -141,7 +142,7 @@ public createItemUsingKeypress: any = (event: any) => {
       listId:this.listId,
       type:"item"     
     }
-    //console.log(data);
+    ////console.log(data);
     this.SocketService.editTask(data);        
   }
   //------------------------------------------------
@@ -156,7 +157,7 @@ public createItemUsingKeypress: any = (event: any) => {
         this.listName="";        
         this.message=data;
       }, (err)=>{
-        console.log(err);
+        //console.log(err);
       }
     )
   }
@@ -173,7 +174,7 @@ public createItemUsingKeypress: any = (event: any) => {
   }
 //-----------------------------------------------------------------------------------------------------
 public showSubItems(itemId, itemName){
-  //console.log(itemId+" : "+itemName);  
+  ////console.log(itemId+" : "+itemName);  
   this.itemName=itemName;
   this.itemId=itemId;
   let data={
@@ -193,7 +194,7 @@ public showSubItems(itemId, itemName){
 public sendInputForNotification(data){
   let message="";
   let happened="";
-  console.log(this.fullName);
+  //console.log(this.fullName);
   if(data.action=="create"){
     happened="created";
     message=`Item "${data.itemName}" is ${happened}  by  ${this.fullName}`; 
@@ -224,7 +225,7 @@ public getChangeStatusItem(){
   this.SocketService.getChangeStatusItem().subscribe(
     data=>{
       if(data.status===200){
-      //console.log(apiResponse);
+      ////console.log(apiResponse);
       this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
       this.getAllItems();
     }else {
@@ -236,7 +237,7 @@ public getChangeStatusItem(){
   )
 }
 public changeStatus(originId){
-  //console.log(originId);
+  ////console.log(originId);
   let data={
     type:"item",
     originId:originId
@@ -268,7 +269,7 @@ public getSuccessMessage():any{
 public getUndoSuccessMessage():any{
   this.SocketService.getUndoSuccessMessage().subscribe(
     data=>{
-      console.log(data);
+      //console.log(data);
       if(data.status===200){       
         if(data.data.type==="item"  && data.data.creatorId===this.userId){          
           this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});

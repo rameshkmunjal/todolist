@@ -44,7 +44,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {//lifecycle hook when component destroyed
-    console.log("Sign up component destroyed");
+    //console.log("Sign up component destroyed");
   }
 //-------------------------------class functions--------------------------------------
 //signupFunction to accept form values and make a service function call
@@ -59,7 +59,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
       countryCode:this.countryCode,
       mobile:this.mobile
     }
-    console.log(data);
+    //console.log(data);
    //validate inputs 
     this.errorObj=this.utility.validateInput(data);
     //if all input values are filled up
@@ -69,15 +69,15 @@ export class SignUpComponent implements OnInit, OnDestroy {
         apiResponse=>{
           if(apiResponse.status===200){
             this.errorMessage="";
-            console.log(apiResponse);
+            //console.log(apiResponse);
             this.toastr.success(apiResponse.message);
             this.router.navigate(['/login']);
           } else { 
-              console.log(apiResponse);             
+              //console.log(apiResponse);             
               this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
           }            
         }, (err)=>{
-            console.log(err);            
+            //console.log(err);            
             this.router.navigate(['/error-page', err.error.status, err.error.message]);
           }
         )
@@ -89,7 +89,7 @@ export class SignUpComponent implements OnInit, OnDestroy {
   //to get list from country code service
   public sendCountryObjects=()=>{
     this.countryCodeList=this.CountryCodeService.sendCountryObjects();
-    //console.log(this.countryCodeList);
+    ////console.log(this.countryCodeList);
   }
 //Only when country name is selected - assign country code
   public getCountryCode=()=>{

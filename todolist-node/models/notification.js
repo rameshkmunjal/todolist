@@ -6,6 +6,7 @@ const NotificationSchema=new Schema({
     type:{type:String, default:''},//which type of table - list/item/subitem
     action:{type:String, default:''},//which action - create/edit/delete/undo
     typeId:{type:String, default:''}, //example - list id/item id/sub item id
+    refkey:{type:String, default:''},//ref id of previous list/item/sub item
     message:{type:String, default:''},
     createdOn:{type:Date, default:Date.now()},
     sendId:{type:String, default:''},//login id

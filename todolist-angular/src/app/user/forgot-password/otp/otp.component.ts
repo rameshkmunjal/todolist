@@ -26,7 +26,7 @@ export class OtpComponent implements OnInit {
   ngOnInit() {
     this.userId=this._route.snapshot.paramMap.get('userId');
     this.mode="otp";
-    console.log(this.userId);
+    //console.log(this.userId);
   }
 //function to send OTP - service function
   public submitOTP():any{
@@ -35,7 +35,7 @@ export class OtpComponent implements OnInit {
     } else {
       this.userService.matchOTP(this.userId, this.otp).subscribe(
         apiResponse=>{          
-          console.log(apiResponse);
+          //console.log(apiResponse);
           if(apiResponse.status===200){ 
             this.code=apiResponse.data.emailDecryptLink;                      
             this.router.navigate(['/forgot-password/reset', this.code]);
@@ -43,7 +43,7 @@ export class OtpComponent implements OnInit {
             this.router.navigate(['/error-page', apiResponse.status, apiResponse.message]);
           } 
         }, (err)=>{
-          console.log(err);
+          //console.log(err);
           this.router.navigate(['/error-page', err.error.status, err.error.message]);
         }
       )      

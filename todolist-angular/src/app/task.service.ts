@@ -16,7 +16,11 @@ export class TaskService {
     return this.http.get(`${this.url}/${authToken}/all-lists/${userId}`);
   }
 
-  public getNotificationList(authToken, userId):Observable<any>{
+  public getAllNotifications(authToken, userId):Observable<any>{
+    return this.http.get(`${this.url}/${authToken}/all-notifications/${userId}`);
+  }
+
+  public getLatestNotification(authToken, userId):Observable<any>{
     return this.http.get(`${this.url}/${authToken}/notifications/${userId}`);
   }
   public createNotification(authToken, userId, data):Observable<any>{
@@ -72,7 +76,7 @@ export class TaskService {
   }
 
   public undoCreateList(authToken, data):Observable<any>{
-    console.log(data);
+    //console.log(data);
     let params=new HttpParams()
       .set('userId', data.userId)
       .set('id', data.id)
@@ -82,8 +86,20 @@ export class TaskService {
     return this.http.post(`${this.url}/${authToken}/undo-create-list`, params); 
   }
 
+  public undoEditList(authToken, data):Observable<any>{
+    //console.log(data);
+    let params=new HttpParams()
+      .set('userId', data.userId)
+      .set('id', data.id)
+      .set('refkey', data.refkey)
+      .set('type', data.type)
+      .set('notificationId', data.notificationId);
+
+    return this.http.post(`${this.url}/${authToken}/undo-edit-list`, params); 
+  }
+
   public undoDeleteList(authToken, data):Observable<any>{
-    console.log(data);
+    //console.log(data);
     let params=new HttpParams()
       .set('userId', data.userId)
       .set('id', data.id)
@@ -92,5 +108,6 @@ export class TaskService {
 
     return this.http.post(`${this.url}/${authToken}/undo-delete-list`, params); 
   }
+  
   //---------------------Definition of class ended----------------------------
 }

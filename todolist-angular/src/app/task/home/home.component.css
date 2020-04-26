@@ -1,6 +1,12 @@
 .home-container{
     background:white;
 }
+.info-text{
+    text-align:center;
+    font-size:12px;
+    padding-top:10px;
+    font-weight:bold;
+}
 
 
 

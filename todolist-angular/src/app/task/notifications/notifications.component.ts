@@ -41,16 +41,16 @@ export class NotificationsComponent implements OnInit {
   }
 
   public getAllNotifications():any{
-    console.log("getAllNotifications called");
+    //console.log("getAllNotifications called");
     this.SocketService.getAllNotifications().subscribe(
       data=>{      
         this.notificationList=data.data;
-        console.log(this.notificationList);
+        //console.log(this.notificationList);
         this.notificationList=this.Utility.arrangeListsByDescendingOrder(this.notificationList);        
       }, (error)=>{
-        console.log(error);
+        //console.log(error);
       }
-    )  
-  }
-*/
+    )
+    */  
+  //}
 }

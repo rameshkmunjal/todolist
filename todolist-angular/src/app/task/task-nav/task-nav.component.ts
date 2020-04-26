@@ -1,8 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { UserService} from './../../user.service';
 import {SocketService} from './../../socket.service';
-import * as $ from 'jquery';
-
 
 @Component({
   selector: 'app-task-nav',
@@ -28,7 +26,6 @@ export class TaskNavComponent implements OnInit {
   }
 
   public showContactList=()=>{
-
     if(this.showList===false){
       this.showList=true;
     } else {
@@ -44,7 +41,6 @@ export class TaskNavComponent implements OnInit {
   }
 //-------------------------------------------------------------------------------
 public showNotificationList=()=>{
-
   if(this.showNotif===false){
     this.showNotif=true;
   } else {

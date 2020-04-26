@@ -468,7 +468,9 @@ let getFriendList=(req, res)=>{
 }
 //------------------------------------------------------------------------------------------------------------
 let getContactList=(req, res)=>{
-    let userId=req.params.userId;
+    console.log("************************");
+    console.log("getContactList called");
+
     let getFriendList=()=>{
         return new Promise((resolve, reject)=>{
             UserModel.findOne({'userId':req.params.userId})
@@ -483,6 +485,8 @@ let getContactList=(req, res)=>{
                     reject(apiResponse);
                 } else {
                     let friends=user.friends;
+                    console.log(friends);
+                    console.log("************************");
                     /*
                      
                     */
@@ -534,7 +538,9 @@ let getContactList=(req, res)=>{
     getFriendList(req, res)
         .then(getNonFriendContacts)
         .then((resolve)=>{
+            console.log("_________________________");
             console.log("resolve :"+JSON.stringify(resolve));
+            console.log("_________________________");
             let apiResponse=response.generate(false, "Non friends contacts fetched successfully", 200, resolve);
             res.send(apiResponse);
         })

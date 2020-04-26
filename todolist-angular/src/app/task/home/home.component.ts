@@ -1,37 +1,39 @@
+//import dependencies
 import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
+//importing user defined services
 import { UserService } from './../../user.service';
 import { SocketService } from './../../socket.service';
 import {TaskService} from './../../task.service';
+//import jquery
 import * as $ from 'jquery';
-//import { TaskService } from 'src/app/task.service';
-import { UtilityService } from 'src/app/utility.service';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {  
+export class HomeComponent implements OnInit { 
+  //variables for user details 
   public authToken:string;
-
   public pageOwnerId:string;
-  public pageOwnerName:string;
-  public contactList:any=[];
-  public notificationList:any=[];
-
+  public pageOwnerName:string;  
+  //alternatively used for pageowner or friend
   public userId:string; 
   public fullName:string;
+//arrays to store contacts , notifications , friends
+  public contactList:any=[];
+  public notificationList:any=[];
+  public friendList:any=[];
 
   public senderId:string;
   public senderName:string;
-  public message:string;
-  public friendRequest=false;
+  public message:string;  
+  public friendRequest=false;//boolean value
 
-  public latestNotification="";
-  public lastChangeMessage="";
-  public lastChangeObject:any;
-  
+  public latestNotification="";//current notification
+  public lastChangeMessage="";//latest notification from any friend
+  public lastChangeObject:any;//details of last change by any friend  
 
   constructor(
     private UserService:UserService,
@@ -42,32 +44,27 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(){
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
-    this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;
-    //console.log(this.pageOwnerId);
+    this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;    
     this.pageOwnerName=this.UserService.getUserFromLocalStorage().fullName;
-    this.userId=this.pageOwnerId;
-    //console.log(this.userId);
+    this.userId=this.pageOwnerId;    
     this.fullName=this.pageOwnerName;
+    //setting up socket connection
     this.checkStatus();
     this.verifyUserConfirmation();
     this.getOnlineUserList();
-    this.loadHomePage();
-    this.getHomePageLoad();
-    this.getFriendPageLoad();
-    this.getContactListResponse();
-    this.getNotificationListResponse();
-    //this.getFriendRequestResponse();
-    this.acceptFriendRequestResponse();
-
-    //this.getMessageFromAUser();
-    this.getFriendRequest(); 
-    this.getContactsFriendsUpdated();
-    this.getPublishNotification();
-    this.getLastChangeObject();
-    //this.updateListPageResponse();
+    this.loadHomePage();//default page load or move from friend page
+    this.getHomePageLoad();//socket event handler
+    this.getFriendPageLoad(); //when option to move friend page clicked   
+    this.getContactListResponse();//when button to see contact is pressed - socket event handler
+    this.getNotificationListResponse(); //when notification icon is pressed - socket event handler   
+    this.getFriendRequest();//to send friend request
+    this.getPublishNotification();//to flash notification on friend page
+    this.getLastChangeObject();//to get last change object
+    this.updateListPageResponse();//when list is updated -
+    this.updateAfterUndoResponse(); 
   }
 //------------------------------------------------------------------------------------------------
-public checkStatus: any = () => {
+public checkStatus=():any=> {
   if (this.authToken === undefined || 
        this.authToken === '' || 
         this.authToken === null) {
@@ -82,10 +79,10 @@ public verifyUserConfirmation():any{
   this.SocketService.verifyUser()
       .subscribe(
         (data)=>{
-          console.log(data);
+          ////console.log(data);
           this.SocketService.setUser(this.authToken);
         }, (err)=>{
-          console.log(err);
+          //console.log(err);
         }
       )
 }
@@ -97,7 +94,8 @@ public getOnlineUserList=():any=>{
     }
   )
 }
-//------------------------------------------------------------------------------------------
+//-----------------When Home page is loaded---by default or press of button---------------
+//----function to load Home Page to fire socket event-------
 public loadHomePage=():any=>{
   let data={
     pageOwnerId:this.pageOwnerId,
@@ -105,53 +103,39 @@ public loadHomePage=():any=>{
     fullName:this.pageOwnerName,
     pageType:'self',
     event:'load-home-page'
-  }
-  //console.log(data);
+  }  
   this.SocketService.loadHomePage(data);
 }
-
-public getHomePageLoad:any=()=>{
+//-----HOme Page Load --- Socket Event Handler----
+public getHomePageLoad=():any=>{
   this.SocketService.getHomePageLoad()
-    .subscribe((data)=>{
-      if(this.pageOwnerId===data.pageOwnerId){ 
-        console.log(data);        
-        this.getContactList(this.authToken, this.userId);
-        this.getNotificationList(this.authToken, this.userId);        
-      }
+    .subscribe((data)=>{                    
+      this.getContactList(this.authToken, this.userId);
+      this.getLatestNotification(this.authToken, this.userId);      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
 }
-//-------------------------------------Friend Related Events and Handlers----------------------------------------------------
-public getFriendPageLoad:any=()=>{
+//When Move To Home Page button is clicked
+public moveToHomePage(){
+  this.loadHomePage();
+}
+//-----------Friend Related Events and Handlers----------------------------------------------------
+
+//----------------When a friend page is loaded ----- by clicking friend name-----------
+
+public getFriendPageLoad=():any=>{
   this.SocketService.getFriendPageLoad()
-    .subscribe((data)=>{
-      if(this.pageOwnerId===data.pageOwnerId){ 
-        this.userId=data.userId;
-        this.fullName=data.fullName;
-        console.log(this.userId + " : "+this.fullName); 
-      }
+    .subscribe((data)=>{      
+      this.userId=data.userId;
+      this.fullName=data.fullName;      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
 }
-
-public acceptFriendRequestResponse:any=()=>{
-  this.SocketService.acceptFriendRequestResponse()
-    .subscribe((data)=>{
-      if(this.userId===data.userId){
-        //console.log("friend request accepted");
-        this.message=data.message;
-        $("#friendship-modal").fadeIn(2000).delay(5000).fadeOut(2000);
-        //console.log(data);
-        this.includeAContactInFriendList(data);
-      }
-    }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    })
-}
-
-public sendFriendRequest=(id, firstName, lastName)=>{ 
+//---------------Sending Friend request-------------------------------------------------
+//---function to send request------
+public sendFriendRequest=(id, firstName, lastName):any=>{ 
   $("#contacts-modal").slideUp(1000);
   let fullName=firstName+" "+lastName; 
   let data={
@@ -162,16 +146,15 @@ public sendFriendRequest=(id, firstName, lastName)=>{
     event:"friend-request",
     message:this.pageOwnerName+" has sent you a friend request"
   }
-  //console.log(data);
+  ////console.log(data);
   this.SocketService.sendFriendRequest(data);   
 }
-
-public getFriendRequest=()=>{
+//-----function get friend request from other contacts----
+public getFriendRequest=():any=>{
   this.SocketService.getFriendRequest().subscribe(
     data=>{
-      //console.log(data);
       if(this.userId===data.receiverId){
-        console.log("friend request");
+        //console.log("friend request");
         this.friendRequest=true;
         this.senderId=data.senderId;
         this.senderName=data.senderName;
@@ -183,115 +166,120 @@ public getFriendRequest=()=>{
     }
   )
 }
-
-public acceptFriendRequest=(senderId, senderName)=>{
+//------------When freind request is accepted-----------------------------------------
+//---on click of accept button---------------
+public acceptFriendRequest=(senderId, senderName):any=>{
   $("#friendship-modal").fadeOut(2000);
   let data={
-    userId:senderId,
-    senderId:this.userId,
-    senderName:this.pageOwnerName,
-    receiverId:senderId,
-    receiverName:senderName,
-    message:this.pageOwnerName+" has accepted your friend request",
-    event:'accept-request'
+    userId:this.pageOwnerId,
+    userName:this.pageOwnerName,
+    friendId:senderId,
+    friendName:senderName
   }
-  this.SocketService.acceptFriendRequest(data);
+  this.UserService.acceptFriendRequest(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      //console.log(apiResponse);
+      this.getContactList(this.authToken, this.pageOwnerId);
+      this.notifyFriends(false, null);
+      this.SocketService.updateFriendList({userId:this.userId, friendId:senderId});
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
 }
 
-public declineFriendRequest:any=()=>{
+//----------------------When a friend request is declined---------------------------------
+//---to make disappear modal ---no other action----
+public declineFriendRequest=():any=>{
   $("#friendship-modal").fadeOut(2000);
 }
 //-------------------Contact Related functions , event emitters and handlers-------------------------------
-
-public getContactListResponse:any=()=>{
+public getContactList(authToken, userId){  
+  this.UserService.getContactList(authToken, userId).subscribe(
+    apiResponse=>{
+      //console.log(apiResponse);
+      if(apiResponse.data !== null){
+        this.contactList=apiResponse.data;
+      }     
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+        //------------socket event handler---------------
+public getContactListResponse=():any=>{
   this.SocketService.getContactListResponse()
     .subscribe((data)=>{
-      if(this.userId===data.userId){ 
-        if(data.showList){
-          this.showContactModal();
-        } else {
-          this.closeContactModal();
-        } 
-      }
+      //console.log(data);      
+      if(data.showList){
+        //console.log("show contact modal");
+        this.getContactList(this.authToken, this.userId);
+        $("#contacts-modal").slideDown(1500);
+      } else {
+          $("#contacts-modal").slideUp(1000);
+      }       
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
 }
 
-public getContactList(authToken, userId){
-  this.UserService.getContactList(authToken, userId).subscribe(
-    apiResponse=>{
-      this.contactList=apiResponse.data;
-      // console.log(this.contactList);
-    }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    }
-  )
-}
-
-public showContactModal(){    
-  $("#contacts-modal").slideDown(1500);
-}
-
 public closeContactModal(){
-  $("#contacts-modal").slideUp(1000);
+  $("#contacts-modal").fadeOut(1000);  
 }
-
-public includeAContactInFriendList(data){
-  let userData={
-    userId:data.receiverId,
-    userName:data.receiverName,
-    friendId:data.senderId,
-    friendName:data.senderName
-  }
-  this.UserService.includeAContactInFriendList(this.authToken, this.userId, userData)
-    .subscribe(
-      apiResponse=>{
-        console.log(apiResponse.data);
-        this.SocketService.updateContactAndFriendList(userData);
-      }, (error)=>{
-        //console.log(error);
-        //this.router.navigate(['/error-page', error.error.status, error.error.message]);
-      }
-    )
-}
-public getContactsFriendsUpdated:any =()=>{   
-  this.SocketService.getContactsFriendsUpdated()
-  .subscribe((data)=>{ 
-    //console.log(data);   
-    
-    if(this.userId===data.userId || this.userId===data.friendId){ 
-        this.getContactList(this.authToken, this.userId); 
-    }    
-  });//end subscribe
-}// end get message from a user 
-
-//-----------------------------------------------------------------------------------------------
+//---to get friend list to send notifications---when some action with any task happens--
 
 
-//---------------------------Notification Related functions , event emitters and handlers---------------------
-public getNotificationList(authToken, userId){
-  this.TaskService.getNotificationList(authToken, userId).subscribe(
+public notifyFriends=(showNotif, list):any=>{
+  this.UserService.getFriendList(this.authToken, this.userId).subscribe(
     apiResponse=>{
-      this.notificationList=apiResponse.data;
-      //console.log(this.notificationList);
+      console.log(showNotif);
+      console.log(list);
+      if(apiResponse.data !==null){
+        this.friendList=apiResponse.data;
+        let data={          
+          friendList:this.friendList
+        }
+        this.SocketService.fireLastChangeEvent(data);
+        if(showNotif){
+          let obj={
+            friendList:this.friendList,
+            list:list
+          }
+          this.SocketService.publishNotification(obj);
+        }
+        
+      }//if block ended      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
   )
 }
-
-
-public getNotificationListResponse:any=()=>{
+//---------------------------Notification Related functions , event emitters and handlers---------------------
+public getLatestNotification(authToken, userId){
+  this.TaskService.getLatestNotification(authToken, userId).subscribe(
+    apiResponse=>{
+      console.log("Dsnkry",apiResponse.data);
+      if(apiResponse.data !== null && apiResponse.data !== undefined){
+        console.log("sljfsljfs");
+        this.lastChangeObject=apiResponse.data;
+        this.lastChangeMessage=this.lastChangeObject.message;
+      }           
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }    
+  )
+}
+public getNotificationListResponse=():any=>{
   this.SocketService.getNotificationListResponse()
     .subscribe((data)=>{
-      if(this.userId===data.userId){
+      
         if(data.showNotif){
+          this.getAllNotifications(this.authToken, this.userId);
           this.showNotificationModal();
         } else {
           this.closeNotificationModal();
         } 
-      }
+      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
@@ -303,90 +291,86 @@ public showNotificationModal(){
 public closeNotificationModal(){
   $("#all-notification-modal").slideUp(1000);  
 }
-//-------------------------------Current Notification------------------------------------------
-public getPublishNotification(){
+
+public getAllNotifications(authToken, userId){
+  this.TaskService.getAllNotifications(authToken, userId).subscribe(
+   apiResponse=>{
+     //console.log(apiResponse.data);
+     this.notificationList=apiResponse.data;
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+
+public getPublishNotification(){  
   this.SocketService.getPublishNotification().subscribe(
     data=>{
       //console.log(data);      
          if(this.pageOwnerId===data.userId){
-           this.latestNotification=data.notification;                     
+           this.latestNotification=data.list.message;                     
            $("#notification-modal").fadeIn(2000);            
          }
-    }
-  )
+    })
 }
 
 public closeCurrentNotifModal(){
   $("#notification-modal").fadeOut(1000);  
 }
-//-----------------------------------------------------------------------------------------------
-/*
-public getMessageFromAUser:any=()=>{   
-  this.SocketService.messageByUserId(this.userId)
-  .subscribe((data)=>{ 
-    
-       if(data.event==="notification-list"){
-        if(this.userId===data.userId){
-          if(data.showNotif){
-            this.showNotificationModal();
-          } else {
-            this.closeNotificationModal();
-          } 
-        }                     
-      }                     
-   });//end subscribe
-}// end get message from a user 
-*/
-//-------------------------------------------------------------------------------------------------------
-public getLastChangeObject(){
+
+public getLastChangeObject=():any=>{
   this.SocketService.getLastChangeObject().subscribe(
-    data=>{
-      
-      if(data.userId===this.userId && data.data !== null){
+    data=>{          
+      if(this.pageOwnerId===data.userId){
         console.log(data);
-        this.lastChangeMessage=data.data.message;
-        this.lastChangeObject=data.data;
-        console.log(this.lastChangeMessage);
-      }      
+        this.getLatestNotification(this.authToken, data.userId);        
+      }       
     }, (error)=>{
-      console.log(error);
-    }
-  )
-}
-//-------------------------------------------------------------------------------
-public undoLastChange(){
-  console.log(this.lastChangeObject);  
-  let data={
-    userId:this.userId,
-    notificationId:this.lastChangeObject.id,
-    type:this.lastChangeObject.type,
-    action:this.lastChangeObject.action,
-    id:this.lastChangeObject.typeId
-  }
-  console.log(data);
-  this.SocketService.undoLastAction(data);  
-}
-//-----------------------------------------------------------------------------------------
-
-
-//-------------------------------------------------------------------------------------
-public moveToHomePage(){
-  this.loadHomePage();
+      //console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
 }
 //-------------------------------------------------------------------------------------
-/*
-public updateListPageResponse:any=()=>{
+public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
-    .subscribe((data)=>{      
-      if(this.userId===data.userId){         
-          this.getLastChangeObject();   
-      }  
-             
+    .subscribe((data)=>{ 
+      //console.log(data);         
+      if(this.userId===data.userId) {        
+          this.notifyFriends(true, data.list);
+      }             
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
 }
-*/
 //--------------------------------------------------------------------------------------
+public undoLastChange(){
+  let data={
+    userId:this.pageOwnerId,
+    notificationId:this.lastChangeObject.id,
+    type:this.lastChangeObject.type,
+    action:this.lastChangeObject.action,
+    id:this.lastChangeObject.typeId,
+    refkey:this.lastChangeObject.refkey
+  }
+  this.SocketService.undoLastAction(data);
+}
+
+public updateAfterUndoResponse(){
+  this.SocketService.updateAfterUndoResponse().subscribe(
+    data=>{      
+      console.log(data);
+      console.log(this.userId);
+      if(data.list !== null){
+        if(this.userId===data.userId || this.userId===data.creatorId){
+          console.log("userId matched");          
+          this.notifyFriends(false, data.list);    
+        } 
+      }
+               
+    }
+  )
+
+}
+//----------------------------------------------------------------------------------------
 }
 //--------------------------------------------------------------------------------------
