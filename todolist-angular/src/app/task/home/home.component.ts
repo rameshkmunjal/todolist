@@ -149,7 +149,7 @@ public sendFriendRequest=(id, firstName, lastName):any=>{
   ////console.log(data);
   this.SocketService.sendFriendRequest(data);   
 }
-//-----function get friend request from other contacts----
+//------function get friend request from other contacts----
 public getFriendRequest=():any=>{
   this.SocketService.getFriendRequest().subscribe(
     data=>{
@@ -232,8 +232,8 @@ public closeContactModal(){
 public notifyFriends=(showNotif, list):any=>{
   this.UserService.getFriendList(this.authToken, this.userId).subscribe(
     apiResponse=>{
-      console.log(showNotif);
-      console.log(list);
+      //console.log(showNotif);
+      //console.log(list);
       if(apiResponse.data !==null){
         this.friendList=apiResponse.data;
         let data={          
@@ -258,9 +258,9 @@ public notifyFriends=(showNotif, list):any=>{
 public getLatestNotification(authToken, userId){
   this.TaskService.getLatestNotification(authToken, userId).subscribe(
     apiResponse=>{
-      console.log("Dsnkry",apiResponse.data);
+      //console.log("Dsnkry",apiResponse.data);
       if(apiResponse.data !== null && apiResponse.data !== undefined){
-        console.log("sljfsljfs");
+        //console.log("sljfsljfs");
         this.lastChangeObject=apiResponse.data;
         this.lastChangeMessage=this.lastChangeObject.message;
       }           
@@ -320,9 +320,10 @@ public closeCurrentNotifModal(){
 
 public getLastChangeObject=():any=>{
   this.SocketService.getLastChangeObject().subscribe(
-    data=>{          
+    data=>{ 
+      console.log(data);         
       if(this.pageOwnerId===data.userId){
-        console.log(data);
+        //console.log(data);
         this.getLatestNotification(this.authToken, data.userId);        
       }       
     }, (error)=>{
@@ -347,11 +348,12 @@ public undoLastChange(){
   let data={
     userId:this.pageOwnerId,
     notificationId:this.lastChangeObject.id,
-    type:this.lastChangeObject.type,
+    type:this.lastChangeObject.type,    
     action:this.lastChangeObject.action,
     id:this.lastChangeObject.typeId,
     refkey:this.lastChangeObject.refkey
   }
+  console.log(data);
   this.SocketService.undoLastAction(data);
 }
 
@@ -361,7 +363,7 @@ public updateAfterUndoResponse(){
       console.log(data);
       console.log(this.userId);
       if(data.list !== null){
-        if(this.userId===data.userId || this.userId===data.creatorId){
+        if(this.userId===data.userId || this.userId===data.list.personId){
           console.log("userId matched");          
           this.notifyFriends(false, data.list);    
         } 

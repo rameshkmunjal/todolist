@@ -54,8 +54,8 @@ function onListening(){
     let db=mongoose.connect(appConfig.db.uri, {useNewUrlParser:true})
 }
 
-function onError(){
-    console.log("Error happened in connecting with server");
+function onError(err){
+    console.log("Error happened in connecting with server"+ JSON.stringify(err));
 }
 //---------------------------------------------------------------------------
 mongoose.connection.on('error', function(err){

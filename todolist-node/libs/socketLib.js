@@ -1,23 +1,10 @@
 //including packages
 //********************************* Including Packages *********************
+const express=require('express');
 const socketio=require('socket.io');
-//const shortId=require('shortid');
-const mongoose=require('mongoose');
-const check=require('./checkLib');
-const response=require('./responseLib');
-
-
 // ************************* Including User defined libraries *************************
 const redisLib=require('./redisLib');
 const tokenLib=require('./tokenLib');
-//const userLib=require('./userLib');
-//const functionLib=require('./functionLib');
-// listLib=require('./listLib');
-//const itemLib=require('./itemLib');
-//const subItemLib=require('./subItemLib');
-require('./../models/notification');
-const NotificationModel=mongoose.model('notification');
-
 
 let setServer=(server)=>{
     let io=socketio.listen(server);
@@ -115,6 +102,14 @@ let setServer=(server)=>{
         socket.on('show-notification-list-event', (data)=>{
             console.log(data);
             socket.emit('get-notification-list-response', data);
+        })
+        socket.on('list-click-event', (data)=>{
+            socket.emit('list-click-response', data);
+            socket.emit('vacate-sub-item-box', "sub-item");
+        })
+        socket.on('item-click-event', (data)=>{
+            console.log(data);
+            socket.emit('item-click-response', data);
         })
         socket.on('update-list-page-event', (data)=>{
             console.log(data);

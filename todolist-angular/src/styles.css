@@ -373,7 +373,7 @@ input{
       background:rgb(57, 81, 216);
       color:white;    
   }
-  #subItemEditModal{
+  #editSubItemModal{
       display:none; 
       width:30vw;
       height:auto;   

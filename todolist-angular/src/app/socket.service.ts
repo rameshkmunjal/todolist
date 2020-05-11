@@ -73,11 +73,30 @@ public getNotificationListResponse():Observable<any>{
     }); // end Socket
   }); // end Observable
 }
-
+/*
 public getFriendRequestResponse():Observable<any>{  
   return Observable.create((observer) => {      
     this.socket.on('get-friend-request-response', (data) => {
       //console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+*/
+public listClickResponse():Observable<any>{ 
+  //console.log("update list page response"); 
+  return Observable.create((observer) => {      
+    this.socket.on('list-click-response', (data) => {
+      //console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable
+}
+public itemClickResponse():Observable<any>{ 
+  console.log("update sub item page response"); 
+  return Observable.create((observer) => {      
+    this.socket.on('item-click-response', (data) => {
+      console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable
@@ -140,10 +159,20 @@ public updateAfterUndoResponse():Observable<any>{
   //console.log("undoAterUndoResponse happened at FE side");
   return Observable.create((observer) => {      
     this.socket.on('update-after-undo-response', (data) => {
-      //console.log(data);
+      console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable 
+}
+
+public vacateSubItemBox(){
+  return Observable.create((observer) => {      
+    this.socket.on('vacate-sub-item-box', (data) => {
+      console.log(data);
+      observer.next(data);
+    }); // end Socket
+  }); // end Observable 
+  
 }
 
 //-------------------Events-----------------------------------------------
@@ -186,7 +215,16 @@ public fireLastChangeEvent(data){
   this.socket.emit('latest-change-event', data);
 }
 
+
+
 //--------------------------------------------------------------------------------------
+public listClicked(data){
+  this.socket.emit('list-click-event', data);
+}
+public itemClicked(data){
+  console.log(data);
+  this.socket.emit('item-click-event', data);
+}
 public updateListPage(data){
   //console.log(data);
   this.socket.emit('update-list-page-event', data);
@@ -197,7 +235,7 @@ public undoLastAction(data){
 }
 public updateAfterUndo(data){
   //console.log("update after undo");
-  //console.log(data);
+  console.log(data);
   this.socket.emit('update-after-undo', data);
 }
 //---------------------------------------------------------------------------------------

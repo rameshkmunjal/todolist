@@ -7,6 +7,7 @@ import { UserService } from 'src/app/user.service';
 import { UtilityService} from './../../utility.service';
 //import user denfined services
 import * as $ from 'jquery';
+import { TaskService } from 'src/app/task.service';
 
 
 @Component({
@@ -15,13 +16,9 @@ import * as $ from 'jquery';
   styleUrls: ['./sub-items.component.css']
 })
 export class SubItemsComponent implements OnInit {
-  /*
-  @Input() userId:string;
-  
+  public authToken:string;
+  public userId:string;  
   public fullName:string;
-  
-  public pageOwnerName:string;
-  
 
   public subItems:any=[];
   public subItemId:string;
@@ -33,65 +30,68 @@ export class SubItemsComponent implements OnInit {
   public message:string;
   public errorMessage:string;
   public msgObj:any;
-*/
+
   constructor(
     //instances : services
     private SocketService:SocketService,
     private UserService:UserService,
     private Utility:UtilityService,
+    private TaskService:TaskService,
     //others
     private router:Router 
   ) { }
 
-  ngOnInit() {
-   /*  
-    this.fullName=this.UserService.getUserFromLocalStorage().fullName;
-   
-    this.getItemDetails();    
-    this.getAllSubItems();
-    this.vacateSubItemBox();    
-    this.getChangeStatusSubItem();
-    this.getSuccessMessage();
-    this.getUndoSuccessMessage();
-   */ 
+  ngOnInit() { 
+    this.authToken=this.UserService.getUserFromLocalStorage().authToken;
+    this.itemClickResponse();  
+    this.updateListPageResponse();
+    this.undoResponse();  
+    this.updateAfterUndoResponse();
+    this.vacateSubItemBox();
   }
-//------------------------------------------------------------------------------------------
-
-//--------------------------------------------------------------------------------------------
-/*
-public getItemDetails(){
-  this.SocketService.getItemDetails().subscribe(
+  //----------------------------------------------------------------
+public itemClickResponse(){  
+  this.itemName="";
+  this.SocketService.itemClickResponse().subscribe(
     data=>{
-      if(this.pageOwnerId===data.pageOwnerId){
-        //console.log(data); 
-        this.itemName=data.itemName;
-        this.itemId=data.itemId; 
-        //console.log(this.itemName+ " : "+this.itemId);    
-        this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});
-      }            
-    }, (err)=>{      
-      //console.log(err);            
-      this.router.navigate(['/error-page', err.error.status, err.error.message]);
+      console.log(data);      
+      this.userId=data.userId;
+      this.fullName=data.fullName;
+      this.itemId=data.itemId;
+      this.itemName=data.itemName;
+      this.getSubItemsByItemId(this.userId, this.itemId);
+    })
+}
+
+public getSubItemsByItemId(userId, itemId){  
+  this.TaskService.getSubItemsByItemId(this.authToken, userId, itemId).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      if(apiResponse.data !==null && apiResponse.data !==undefined){
+        this.subItems=apiResponse.data;
+      } else {        
+        this.subItems="";
+        console.log(apiResponse.message);
+      }     
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
   )
 }
-//----------------------------------------------------------------------------------------------
+
 public createSubItem(){
   if(!this.newSubItem){
-    this.errorMessage="Please enter task item";
+    this.errorMessage="Please input sub item name";
   }else if(this.newSubItem){
-    let data={            
+    let data={      
       subItemName:this.newSubItem,
+      itemId:this.itemId,
       createdBy:this.fullName,
       creatorId:this.userId,
-      userId:this.userId,      
-      itemId:this.itemId,
-      type:"subItem"      
-    }
-    //console.log(data);     
-    this.SocketService.createTask(data);    
-    this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});  
-    this.newSubItem="";     
+      type:"subItem"
+    }        
+    this.createNewSubItem(data);
   }    
 }
 
@@ -100,167 +100,224 @@ public createSubItemUsingKeypress: any = (event: any) => {
     this.createSubItem();
   }  
 }
-//-----------------------------------------------------------------------------------------------
-public editSubItem(subItemId, subItemName){
-  $("#subItemEditModal").hide(2000);   
-  
-  let data={    
-    subItemId:subItemId,
-    subItemName:subItemName,
-    itemId:this.itemId,
-    userId:this.userId,    
-    changeId:this.userId,
-    changeName:this.fullName,
-    type:"subItem"      
-  }
-  ////console.log(data);
-  this.SocketService.editTask(data);      
-}
-//-----------------------------------------------------------------------------------------------
-public deleteSubItem(id){  
-  this.SocketService.deleteTask({subItemId:id, itemId:this.itemId, type:"subItem"});
+
+public createNewSubItem(data){
+  this.TaskService.createSubItem(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      this.newSubItem="";
+      let data={
+        type:"subItem",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
 }
 
-//-------------------------------------------------------------------------------------
-public getAllSubItems(){
-    this.SocketService.getAllSubItems().subscribe(
-      data=>{
-        if(data.status===200 ){
-        if(data.socketLoginId===this.userId){               
-          this.subItems=data.data; 
-          //console.log(this.subItems);
-          this.subItems=this.Utility.arrangeListsByDescendingOrder(this.subItems);
-        } else {
-          this.subItems=[];
-          //console.log("No sub-item in this item");
-        } 
-      } else{
-        this.subItems=[];
+public deleteSubItem=(subItemId)=>{
+  console.log(subItemId);
+  let data={
+    subItemId:subItemId,
+    changeBy:this.fullName,
+    changeId:this.userId,
+    type:"subItem",
+    action:"delete"
+  }
+  this.TaskService.deleteSubItem(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        type:"subItem",
+        userId:this.userId,        
+        list:apiResponse.data
       }
-    }, (err)=>{
-        //console.log(err);
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+
+//------------------------------------------------------------------------------------------------
+public showSubItemEditModal(subItemId, subItemName){
+  //this.vacateItemBox();    
+  this.subItemName=subItemName;
+  this.subItemId=subItemId;
+  console.log(this.subItemId, this.subItemName);
+  $("#editSubItemModal").show();    
+}
+
+public closeEditModal(){
+  $("#editSubItemModal").hide(2000); 
+}
+
+public editSubItem(subItemId){
+  $("#editSubItemModal").hide(2000);    
+  
+  let data={            
+    subItemId:subItemId,
+    subItemName:this.subItemName,
+    changeId:this.userId,
+    changeName:this.fullName, 
+    itemId:this.itemId,
+    type:"subItem"     
+  }
+  console.log(data);
+  this.editASubItem(data);        
+}
+
+public editASubItem(data){
+  this.TaskService.editSubItem(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        type:"subItem",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//-----------------------------------------------------------------------------------------------------
+public changeStatus(subItemId){
+  ////console.log(originId);
+  let data={    
+    subItemId:subItemId
+  }
+  this.changeSubItemStatus(data);
+}
+
+public changeSubItemStatus(data){
+  this.TaskService.changeSubItemStatus(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        type:"subItem",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//-----------------------------------------------------------------------------------
+public updateListPageResponse=():any=>{
+  this.SocketService.updateListPageResponse()
+    .subscribe((data)=>{
+      console.log(data);          
+      if(this.userId===data.userId && data.type==="subItem"){ 
+        console.log("userId matched"); 
+        console.log(this.userId);
+        console.log(data.list.listId);          
+        this.getSubItemsByItemId(this.userId, data.list.listId);                   
+      }      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
+  //-------------------------------------------------------------------------
+  public undoCreateSubItem(data){
+    //console.log(data);
+    this.TaskService.undoCreateSubItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        console.log(apiResponse);
+        let data={
+          userId:apiResponse.data.creatorId,        
+          list:apiResponse.data
+        }
+        this.SocketService.updateAfterUndo(data);
+      }, (error)=>{
+        console.log(error);
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
       }
     )
   }
+
+  public undoEditSubItem(data){
+    this.userId=data.userId;    
+    this.TaskService.undoEditSubItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        console.log(apiResponse);
+        let data={
+          userId:this.userId,        
+          list:apiResponse.data
+        }
+        console.log(data);
+        this.SocketService.updateAfterUndo(data);      
+      }, (error)=>{
+          //console.log(error);
+          this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      }
+    )
+  }
+  public undoResponse(){
+    this.SocketService.undoResponse().subscribe(
+      data=>{ 
+        console.log(data);   
+          if(data.type==="subItem"){
+            if(data.action==="create"){
+              this.undoCreateSubItem(data);
+            } else if(data.action==="delete"){
+              this.undoDeleteSubItem(data);
+            } else if(data.action==="edit"){
+              this.undoEditSubItem(data);
+            }
+          }         
+      }
+    )
+  }
+  public updateAfterUndoResponse(){
+    this.SocketService.updateAfterUndoResponse().subscribe(
+      data=>{
+        console.log("inside updateAfterUndoResponse");
+        console.log(data);      
+        if(this.userId===data.list.creatorId){        
+          this.getSubItemsByItemId(this.authToken, data.list.itemId);      
+        }          
+      }
+    )
+  }
+  //-------------------------------------------------------------------------
+  
+  public undoDeleteSubItem(data){
+    console.log(data);
+    this.TaskService.undoDeleteSubItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        console.log(apiResponse);
+        if(apiResponse.status===200){
+          let data={
+            userId:apiResponse.data.creatorId,          
+            list:apiResponse.data
+          }
+          //console.log(data);
+          this.SocketService.updateAfterUndo(data);
+        }       
+      }, (error)=>{
+        //console.log(error);
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      }
+    )
+  }
+  
   public vacateSubItemBox(){
     this.SocketService.vacateSubItemBox().subscribe(
-      data=>{
-        this.subItems=[];
-        this.itemName="";
-        //console.log(data);
-        this.message=data;
-      }, (err)=>{
-        //console.log(err);
+      data=>{ 
+        console.log(data);   
+        this.subItems="";
+        this.itemName="";          
       }
     )
-  }
-  //--------------------------------------------------------------------------------------------------------
-public sendInputForNotification(data){
-  let message="";
-  let happened="";
-  //console.log(this.fullName);
-  if(data.action=="create"){
-    happened="created";
-    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`; 
-  } else if(data.action=="edit"){
-    happened="edited";
-    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`;
-  } else if(data.action=="delete"){
-    happened="deleted";
-    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`;
-  }else{
-    happened = "changed";
-    message=`Sub-Item "${data.subItemName}" is ${happened}  by  ${this.fullName}`;
-  }
-  let temp={
-    type:"subItem",
-    action:data.action,
-    typeId:data.subItemId,
-    originId:data.originId,
-    message:message,
-    sendId:this.userId,
-    sendName:this.fullName
-  }
-  this.SocketService.sendCurrentNotification(temp);
-}
-//------------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------
-public showSubItemEditModal(subItemId, subItemName){
-  $("#subItemEditModal").show();
-  this.subItemId=subItemId;
-  this.subItemName=subItemName;  
-}
-
-public closeSubItemEditModal(){
-  $("#subItemEditModal").hide(2000); 
-}
-//-----------------------------------------------------------------------------------------
-
-public getChangeStatusSubItem(){
-  this.SocketService.getChangeStatusSubItem().subscribe(
-    apiResponse=>{
-      //console.log(apiResponse);
-      this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId}); 
-      this.getAllSubItems();
-    }, (error)=>{
-      //console.log(error);
-    }
-  )
-}
-
-
-public changeStatus(originId){
-  //console.log(originId);
-  let data={
-    type:"subitem",
-    originId:originId
-  }
-  this.SocketService.changeStatus(data);
-}
-
-//------------------------------------------------------------------------------------
-//-------------------------------------------------------
-public getSuccessMessage():any{
-  this.SocketService.getSuccessMessage().subscribe(
-    data=>{
-      ////console.log(data);
-      if(data.status===200){
-        if(data.data.type==="subItem" && data.data.creatorId===this.userId){
-          this.sendInputForNotification(data.data); 
-          this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});
-          this.getAllSubItems();
-          this.newSubItem="";
-        } 
-      }else{             
-        this.router.navigate(['/error-page', data.status, data.message]);
-      }
-    }, (error)=>{      
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    }
-  )
-}
-
-//------------------------------------------------------
-public getUndoSuccessMessage():any{
-  this.SocketService.getUndoSuccessMessage().subscribe(
-    data=>{
-      //console.log(data);
-      if(data.status===200){       
-        if(data.data.type==="subItem"  && data.data.creatorId===this.userId){
-          //console.log("matched");          
-          this.SocketService.getSubItemsByItemId({userId:this.userId, itemId:this.itemId});
-          this.getAllSubItems();
-          this.newSubItem="";
-        }      
-    } else {
-        this.subItems=[];
-    } 
-   }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    }
-  )
- 
-}
-*/
-//----------------------------------------------------------------------------
+  } 
+//--------------------------------------------------------
 }

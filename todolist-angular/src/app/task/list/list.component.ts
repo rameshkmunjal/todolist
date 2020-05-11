@@ -229,7 +229,8 @@ public deleteList(id){
     apiResponse=>{
       console.log(apiResponse);
       let data={
-        userId:this.userId,        
+        userId:this.userId, 
+        type:"list",       
         list:apiResponse.data
       }
       this.SocketService.updateListPage(data);
@@ -243,17 +244,16 @@ public deleteList(id){
 
 public undoResponse(){
   this.SocketService.undoResponse().subscribe(
-    data=>{
-      
-        //console.log(data);
-        if(data.action==="create"){
-          this.undoCreateList(data);
-        } else if(data.action==="delete"){
-          this.undoDeleteList(data);
-        } else if(data.action==="edit"){
-          this.undoEditList(data);
-        }       
-          
+    data=>{    
+        if(data.type==="list"){
+          if(data.action==="create"){
+            this.undoCreateList(data);
+          } else if(data.action==="delete"){
+            this.undoDeleteList(data);
+          } else if(data.action==="edit"){
+            this.undoEditList(data);
+          }
+        }         
     }
   )
 }
@@ -270,6 +270,7 @@ public undoCreateList(data){
       this.SocketService.updateAfterUndo(data);
     }, (error)=>{
       //console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
   )
 }
@@ -280,12 +281,13 @@ public undoEditList(data){
     apiResponse=>{
       console.log(apiResponse);
       let data={
-        userId:this.pageOwnerId,        
+        userId:apiResponse.data.creatorId,        
         list:apiResponse.data
       }
       this.SocketService.updateAfterUndo(data);      
     }, (error)=>{
         console.log(error);
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
   )
 }
@@ -312,18 +314,25 @@ public updateAfterUndoResponse(){
   this.SocketService.updateAfterUndoResponse().subscribe(
     data=>{
       //console.log("inside updateAfterUndoResponse");
-      console.log(data);
-      //console.log(this.userId);
-      //console.log(data.list.creatorId);
-      if(this.userId===data.list.creatorId){
-        //console.log("userId matched");
-        //console.log(this.userId);
+      console.log(data);      
+      if(this.userId===data.list.creatorId){        
         this.getAllListsOfAUser(this.authToken, this.userId);      
       }          
     }
   )
-
 }
+//-------------------------------------------------------------------------
+public listClicked(id, listName){
+  console.log("id of list clicked "+id);
+  let data={
+    userId:this.userId,
+    fullName:this.fullName,
+    listId:id, 
+    listName:listName
+  }
+  this.SocketService.listClicked(data);
+}
+//---------------------------------------------------------------------------------
 //end of class definition
 }
 

@@ -6,6 +6,7 @@ import { SocketService } from 'src/app/socket.service';
 import { UserService } from 'src/app/user.service';
 import * as $ from 'jquery';
 import { UtilityService } from 'src/app/utility.service';
+import { TaskService } from 'src/app/task.service';
 
 @Component({
   selector: 'app-items',
@@ -13,100 +14,68 @@ import { UtilityService } from 'src/app/utility.service';
   styleUrls: ['./items.component.css']
 })
 export class ItemsComponent implements OnInit {
-  /*
-  @Input() userId:string;
-  
+  public authToken:string;
+  public userId:string;
   public fullName:string;
+  public listId:string;
+  public listName:string;
   
-  
-  public pageOwnerName:string;
-  public pageType:string;
-
-  public items:any=[];
   public itemId:string;
   public itemName:string;
   public newItem:string;
+  public items:any=[];
 
-  public listId:string;
-  public listName:string;
-
-  public message:string="No item to display";
-  public msgObj:any;
-  public errorMessage:string;
-*/
+  public errorMessage:string="";
+  
   constructor(
-    private SocketService:SocketService,    
+    private SocketService:SocketService,
+    private UserService:UserService,
+    private TaskService:TaskService,    
     private Utility:UtilityService,
     private router:Router
   ) { }
 
   ngOnInit() { 
-    /*   
-    this.getListDetails();
-    this.getAllItems();
-    this.vacateItemBox();    
-    this.getChangeStatusItem();
-    this.getSuccessMessage();
-    this.getUndoSuccessMessage();
-    */
+    this.authToken=this.UserService.getUserFromLocalStorage().authToken;
+    this.listClickResponse();  
+    this.updateListPageResponse();
+    this.undoResponse();  
+    this.updateAfterUndoResponse();
   }
   //----------------------------------------------------------------
-  /*
-  public getUserDetails(){
-    this.SocketService.getUserDetails().subscribe(
-      data=>{
-        this.pageOwnerId=data.pageOwnerId;
-        this.userId=data.userId;
-        this.fullName=data.fullName; 
-        this.pageType=data.pageType;
-      }
-    )   
-  }
+public listClickResponse(){
   
-//----------------------------------------------------------------------------------
-  public getAllItems(){
-    this.SocketService.getAllItems().subscribe(
-      data=>{ 
-        ////console.log("Get All Items response -- " + JSON.stringify(data));    
-        if(data.status===200){ 
-          if(data.socketLoginId===this.userId){         
-              this.items=data.data;            
-              this.items=this.Utility.arrangeListsByDescendingOrder(this.items);
-            }
-          } else {
-            this.items=[];
-            //console.log("There is no items in this list");          
-          }//else closed               
-        }, (err)=>{
-          //console.log(err);            
-          this.router.navigate(['/error-page', err.error.status, err.error.message]);
-        })
-  }
+  this.SocketService.listClickResponse().subscribe(
+    data=>{
+      //console.log(data);
+      this.userId=data.userId;
+      this.fullName=data.fullName;
+      this.listId=data.listId;
+      this.listName=data.listName;
+      
+      this.getItemsByListId(this.userId, this.listId);
+    }
+  )
+}
 
-  public getListDetails(){
-    this.SocketService.getListDetails().subscribe(
-      data=>{
-      if(data.pageOwnerId===this.pageOwnerId){
-        //console.log(data.pageOwnerId);
-        //console.log(this.pageOwnerId);
-          this.listName=data.listName; 
-          this.listId=data.listId;  
-          this.userId=data.userId; 
-          this.fullName=data.fullName; 
-          //console.log(this.listName);
-          this.SocketService.getItemsByListId({
-            listName:this.listName, 
-            listId:this.listId, 
-            userId:this.userId,
-            fullName:this.fullName
-          });
-        }             
-      }, (err)=>{
-        //console.log(err);
-      }
-    )
-  }
-//-----------------------------------------------------------------------------------------
+public getItemsByListId(userId, listId){
+  
+  this.TaskService.getItemsByListId(this.authToken, userId, listId).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      if(apiResponse.data !==null && apiResponse.data !==undefined){
+        this.items=apiResponse.data;
+      } else {
+        this.items="";
+        console.log(apiResponse.message);
+      }     
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+
 public createItem(){
   if(!this.newItem){
     this.errorMessage="Please input item name";
@@ -118,7 +87,7 @@ public createItem(){
       creatorId:this.userId,
       type:"item"
     }        
-    this.SocketService.createTask(data);
+    this.createNewItem(data);
   }    
 }
 
@@ -128,163 +97,227 @@ public createItemUsingKeypress: any = (event: any) => {
   }  
 }
 
-
-//-----------------------------------------------------------------------------------------------------
-
-  public editItem(itemId){
-    $("#editItemModal").hide(2000);    
-    
-    let data={            
-      itemId:this.itemId,
-      itemName:this.itemName,
-      userId:this.userId,
-      changeName:this.fullName, 
-      listId:this.listId,
-      type:"item"     
+public createNewItem(data){
+  this.TaskService.createItem(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      this.newItem="";
+      let data={
+        type:"item",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+      //this.itemClicked(apiResponse.data.typeId, apiResponse.data.name);
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
     }
-    ////console.log(data);
-    this.SocketService.editTask(data);        
+  )
+}
+
+public deleteItem=(itemId)=>{
+  console.log(itemId);
+  let data={
+    itemId:itemId,
+    changeBy:this.fullName,
+    changeId:this.userId,
+    type:"item",
+    action:"delete"
   }
-  //------------------------------------------------
-  public deleteItem(id){    
-    this.SocketService.deleteTask({itemId:id, listId:this.listId, type:"item"});
+  this.TaskService.deleteItem(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        type:"item",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      console.log(error);
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+
+//------------------------------------------------------------------------------------------------
+public showEditModal(itemId, itemName){
+  //this.vacateItemBox();    
+  this.itemName=itemName;
+  this.itemId=itemId;
+  console.log(this.itemId, this.itemName);
+  $("#editItemModal").show();    
+}
+
+public closeEditModal(){
+  $("#editItemModal").hide(2000); 
+}
+
+public editItem(itemId){
+  $("#editItemModal").hide(2000);    
+  
+  let data={            
+    itemId:this.itemId,
+    itemName:this.itemName,
+    changeId:this.userId,
+    changeName:this.fullName, 
+    listId:this.listId,
+    type:"item"     
   }
-  //----------------------------------------------------------------
-  public vacateItemBox(){
-    this.SocketService.vacateItemBox().subscribe(
-      data=>{
-        this.items=[];
-        this.listName="";        
-        this.message=data;
-      }, (err)=>{
-        //console.log(err);
+  ////console.log(data);
+  this.editAItem(data);        
+}
+
+public editAItem(data){
+  this.TaskService.editItem(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        type:"item",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//-----------------------------------------------------------------------------------------------------
+public changeStatus(itemId){
+  ////console.log(originId);
+  let data={    
+    itemId:itemId
+  }
+  this.changeItemStatus(data);
+}
+
+public changeItemStatus(data){
+  this.TaskService.changeItemStatus(this.authToken, this.userId, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      let data={
+        type:"item",
+        userId:this.userId,        
+        list:apiResponse.data
+      }
+      this.SocketService.updateListPage(data);
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    }
+  )
+}
+//-----------------------------------------------------------------------------------
+public updateListPageResponse=():any=>{
+  this.SocketService.updateListPageResponse()
+    .subscribe((data)=>{
+      console.log(data);          
+      if(this.userId===data.userId && data.type==="item"){ 
+        console.log("userId matched"); 
+        console.log(this.userId);
+        console.log(data.list.listId);          
+        this.getItemsByListId(this.userId, data.list.listId);                   
+      }      
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
+  //-------------------------------------------------------------------------
+  public undoCreateItem(data){
+    //console.log(data);
+    this.TaskService.undoCreateItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        console.log(apiResponse);
+        let data={
+          userId:apiResponse.data.creatorId,        
+          list:apiResponse.data
+        }
+        this.SocketService.updateAfterUndo(data);
+      }, (error)=>{
+        console.log(error);
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
       }
     )
   }
-//------------------------------------------------------------------------------------------------
-  public showEditModal(itemId, itemName){
-    //this.vacateItemBox();    
-    this.itemName=itemName;
-    this.itemId=itemId;
-    $("#editItemModal").show();    
+
+  public undoEditItem(data){
+    this.userId=data.userId;    
+    this.TaskService.undoEditItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        //console.log(apiResponse);
+        let data={
+          userId:this.userId,        
+          list:apiResponse.data
+        }
+        //console.log(data);
+        this.SocketService.updateAfterUndo(data);      
+      }, (error)=>{
+          //.log(error);
+          this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      }
+    )
+  }
+  public undoResponse(){
+    this.SocketService.undoResponse().subscribe(
+      data=>{ 
+        //console.log(data);   
+          if(data.type==="item"){
+            if(data.action==="create"){
+              this.undoCreateItem(data);
+            } else if(data.action==="delete"){
+              this.undoDeleteItem(data);
+            } else if(data.action==="edit"){
+              this.undoEditItem(data);
+            }
+          }         
+      }
+    )
+  }
+  public updateAfterUndoResponse(){
+    this.SocketService.updateAfterUndoResponse().subscribe(
+      data=>{
+        //console.log("inside updateAfterUndoResponse");
+        //console.log(data);      
+        if(this.userId===data.list.creatorId){        
+          this.getItemsByListId(this.authToken, data.list.listId);      
+        }          
+      }
+    )
+  }
+  //-------------------------------------------------------------------------
+  
+  public undoDeleteItem(data){
+    //console.log(data);
+    this.TaskService.undoDeleteItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        //console.log(apiResponse);
+        if(apiResponse.status===200){
+          let data={
+            userId:apiResponse.data.creatorId,          
+            list:apiResponse.data
+          }
+          //console.log(data);
+          this.SocketService.updateAfterUndo(data);
+        }       
+      }, (error)=>{
+        //console.log(error);
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      }
+    )
   }
 
-  public closeEditModal(){
-    $("#editItemModal").hide(2000); 
-  }
-//-----------------------------------------------------------------------------------------------------
-public showSubItems(itemId, itemName){
-  ////console.log(itemId+" : "+itemName);  
-  this.itemName=itemName;
-  this.itemId=itemId;
-  let data={
-    itemId:itemId,
-    userId:this.userId
-  }  
-  this.SocketService.getSubItemsByItemId(data); 
-  let d={
-    itemId:itemId,
-    itemName:itemName, 
-    userId:this.userId,
-    pageOwnerId:this.pageOwnerId
-  }
-  this.SocketService.sendItemDetailsToSubItemBox(d); 
-}
-//--------------------------------------------------------------------------------------------------------
-public sendInputForNotification(data){
-  let message="";
-  let happened="";
-  //console.log(this.fullName);
-  if(data.action=="create"){
-    happened="created";
-    message=`Item "${data.itemName}" is ${happened}  by  ${this.fullName}`; 
-  } else if(data.action=="edit"){
-    happened="edited";
-    message=`Item "${data.itemName}" is ${happened}  by  ${this.fullName}`;
-  } else if(data.action=="delete"){
-    happened="deleted";
-    message=`Item "${data.itemName}" is ${happened}  by  ${this.fullName}`;
-  }else{
-    happened = "changed";
-    message=`Item "${data.itemName}" is ${happened}  by  ${this.fullName}`;
-  }
-  let temp={
-    type:"item",
-    action:data.action,
-    typeId:data.itemId,
-    originId:data.originId,
-    message:message,
-    sendId:this.userId,
-    sendName:this.fullName
-  }
-  this.SocketService.sendCurrentNotification(temp);
-}
-//------------------------------------------------------------------------------------------------
-
-public getChangeStatusItem(){
-  this.SocketService.getChangeStatusItem().subscribe(
-    data=>{
-      if(data.status===200){
-      ////console.log(apiResponse);
-      this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
-      this.getAllItems();
-    }else {
-      this.router.navigate(['/error-page', data.status, data.message]);
-    } 
-   }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+  public itemClicked(id, itemName){
+    console.log("id of item clicked "+id);
+    let data={
+      userId:this.userId,
+      fullName:this.fullName,
+      itemId:id, 
+      itemName:itemName
     }
-  )
-}
-public changeStatus(originId){
-  ////console.log(originId);
-  let data={
-    type:"item",
-    originId:originId
+    this.SocketService.itemClicked(data);
   }
-  this.SocketService.changeStatus(data);
-}
-
-//-----------------------------------------------------------------------------------------------
-public getSuccessMessage():any{
-  this.SocketService.getSuccessMessage().subscribe(
-    data=>{
-      if(data.status===200){ 
-        if(data.data.type==="item" && data.data.creatorId===this.userId){
-          
-          this.sendInputForNotification(data.data);         
-          this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
-          this.getAllItems();
-          this.newItem="";
-        }           
-    } else {
-      this.router.navigate(['/error-page', data.status, data.message]);
-    } 
-   }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    }
-  )
-}
-//-------------------------------------------------------------------------
-public getUndoSuccessMessage():any{
-  this.SocketService.getUndoSuccessMessage().subscribe(
-    data=>{
-      //console.log(data);
-      if(data.status===200){       
-        if(data.data.type==="item"  && data.data.creatorId===this.userId){          
-          this.SocketService.getItemsByListId({listId:this.listId, userId:this.userId});
-          this.getAllItems();
-          this.newItem="";
-        }      
-    } else {
-      this.router.navigate(['/error-page', data.status, data.message]);
-    } 
-   }, (error)=>{
-      this.router.navigate(['/error-page', error.error.status, error.error.message]);
-    }
-  )
-}
-//---------------------------------------------------------------
-*/
-
+  
+  
+//--------------------------------------------------------
 }

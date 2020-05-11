@@ -1,5 +1,3 @@
-<div class="item-box"></div>
-<!--
 <div class="item-box" *ngIf="listName">
     <div class="heading-btn text-center" >{{listName}}</div>
     <div class="input-btn input-group  mb-3">
@@ -8,26 +6,26 @@
         <button class="addItemBtn" type="submit" (click)="createItem()">Add Item</button>
       </div>
     </div>
-
-    <div *ngIf="items.length > 0 ; else infoText ">
-        <div  *ngFor="let item of items"  class="list-btn" (click)="showSubItems(item.itemId, item.itemName)">            
+<!--(click)="showSubItems(item.itemId, item.itemName)"-->
+    <div *ngIf="items.length > 0 ; else infoText " >
+        <div  *ngFor="let item of items"  class="list-btn" (click)="itemClicked(item.itemId, item.itemName)">            
             <span class="ml-3 light-color-text" >{{item.itemName}}</span>
 
             <span class="pull-right mr-3">
-              <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteItem(item.originId)"></i>
+              <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteItem(item.itemId)"></i>
             </span>
             <span class="pull-right reqBtn mr-3"
             [ngClass]="{'reqBtn': item.status == 'open', 'doneBtn': item.status == 'done' }"
-                (click)="changeStatus(item.originId)" >{{item.status}}</span>
-            <span class="pull-right reqBtn mr-3" (click)="showEditModal(item.originId, item.itemName)">Edit</span>
+                (click)="changeStatus(item.itemId)" >{{item.status}}</span>
+            <span class="pull-right reqBtn mr-3" (click)="showEditModal(item.itemId, item.itemName)">Edit</span>
         </div>         
     </div> 
     <ng-template #infoText>
             <p class="text-center message-para">No Item to display</p>
     </ng-template></div>
-    -->
+    
 <!-------------------------------------------------------------------------------------------------------------->
-<!--
+
 <div id="editItemModal">
     <div class="mb-3" style="font-size:18px;">
         <span class="pull-right mr-3">
@@ -46,5 +44,5 @@
       </div>
   </form>  
 </div>
--->
+<!---->
 <!----------------------------------------------------------------------------------------->

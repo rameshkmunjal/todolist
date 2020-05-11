@@ -24,6 +24,28 @@ let setRouter=(app)=>{
     app.post(baseUrl+'/:authToken/undo-edit-list', auth.isAuthorised,  taskController.undoEditList);
     app.post(baseUrl+'/:authToken/undo-delete-list', auth.isAuthorised,  taskController.undoDeleteList);
 
+    app.get(baseUrl+'/:authToken/items-by-listId/:userId/:listId', auth.isAuthorised, taskController.getItemsByListId);
+    app.post(baseUrl+'/:authToken/create-item/:userId', auth.isAuthorised, taskController.createItem);
+    app.post(baseUrl+'/:authToken/edit-item/:userId', auth.isAuthorised, taskController.editItem);
+    app.post(baseUrl+'/:authToken/delete-item/:userId', auth.isAuthorised, taskController.deleteItem);
+    app.post(baseUrl+'/:authToken/change-item-status/:userId', auth.isAuthorised, taskController.changeItemStatus);
+    app.post(baseUrl+'/:authToken/undo-create-item', auth.isAuthorised,  taskController.undoCreateItem);
+    app.post(baseUrl+'/:authToken/undo-delete-item', auth.isAuthorised,  taskController.undoDeleteItem);
+    app.post(baseUrl+'/:authToken/undo-edit-item', auth.isAuthorised,  taskController.undoEditItem);
+
+    app.get(baseUrl+'/:authToken/sub-items-by-itemId/:userId/:itemId', auth.isAuthorised, taskController.getSubItemsByItemId);
+    app.post(baseUrl+'/:authToken/create-sub-item/:userId', auth.isAuthorised, taskController.createSubItem);
+    
+    app.post(baseUrl+'/:authToken/edit-sub-item/:userId', auth.isAuthorised, taskController.editSubItem);
+    app.post(baseUrl+'/:authToken/delete-sub-item/:userId', auth.isAuthorised, taskController.deleteSubItem);
+    
+    app.post(baseUrl+'/:authToken/change-sub-item-status/:userId', auth.isAuthorised, taskController.changeSubItemStatus);
+    
+    app.post(baseUrl+'/:authToken/undo-create-sub-item', auth.isAuthorised,  taskController.undoCreateSubItem);
+    app.post(baseUrl+'/:authToken/undo-delete-sub-item', auth.isAuthorised,  taskController.undoDeleteSubItem);
+
+    app.post(baseUrl+'/:authToken/undo-edit-sub-item', auth.isAuthorised,  taskController.undoEditSubItem);
+
 }
 
 module.exports={
