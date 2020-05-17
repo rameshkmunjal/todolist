@@ -58,6 +58,7 @@ public itemClickResponse(){
       this.userId=data.userId;
       this.fullName=data.fullName;
       this.itemId=data.itemId;
+      console.log(this.itemId);
       this.itemName=data.itemName;
       this.getSubItemsByItemId(this.userId, this.itemId);
     })
@@ -69,6 +70,7 @@ public getSubItemsByItemId(userId, itemId){
       console.log(apiResponse);
       if(apiResponse.data !==null && apiResponse.data !==undefined){
         this.subItems=apiResponse.data;
+        console.log(this.subItems);
       } else {        
         this.subItems="";
         console.log(apiResponse.message);
@@ -111,6 +113,7 @@ public createNewSubItem(data){
         userId:this.userId,        
         list:apiResponse.data
       }
+      console.log(data);
       this.SocketService.updateListPage(data);
     }, (error)=>{
       console.log(error);
@@ -153,7 +156,8 @@ public showSubItemEditModal(subItemId, subItemName){
   $("#editSubItemModal").show();    
 }
 
-public closeEditModal(){
+public closeSubItemEditModal(){
+  console.log("closeSubItemEditModal clicked");
   $("#editSubItemModal").hide(2000); 
 }
 
@@ -193,6 +197,7 @@ public changeStatus(subItemId){
   let data={    
     subItemId:subItemId
   }
+  console.log(subItemId);
   this.changeSubItemStatus(data);
 }
 
@@ -221,6 +226,11 @@ public updateListPageResponse=():any=>{
         console.log(this.userId);
         console.log(data.list.listId);          
         this.getSubItemsByItemId(this.userId, data.list.listId);                   
+      } 
+      else if(this.userId===data.userId && data.type==="item"){ 
+        console.log(data);
+        this.itemName=data.list.name; 
+        this.getSubItemsByItemId(this.userId, data.list.originId);                 
       }      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);

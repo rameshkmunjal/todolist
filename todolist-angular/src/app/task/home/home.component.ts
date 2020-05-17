@@ -22,14 +22,14 @@ export class HomeComponent implements OnInit {
   public userId:string; 
   public fullName:string;
 //arrays to store contacts , notifications , friends
-  public contactList:any=[];
-  public notificationList:any=[];
-  public friendList:any=[];
+  public contactList:any=[];//list of contacts
+  public notificationList:any=[];//list of notifications
+  public friendList:any=[];//list of friends
 
   public senderId:string;
   public senderName:string;
   public message:string;  
-  public friendRequest=false;//boolean value
+  public friendRequest=false;//boolean value - if true show complete modal or only message
 
   public latestNotification="";//current notification
   public lastChangeMessage="";//latest notification from any friend
@@ -52,7 +52,9 @@ export class HomeComponent implements OnInit {
     this.checkStatus();
     this.verifyUserConfirmation();
     this.getOnlineUserList();
+    //events
     this.loadHomePage();//default page load or move from friend page
+    //event listeners
     this.getHomePageLoad();//socket event handler
     this.getFriendPageLoad(); //when option to move friend page clicked   
     this.getContactListResponse();//when button to see contact is pressed - socket event handler
@@ -90,7 +92,7 @@ public verifyUserConfirmation():any{
 public getOnlineUserList=():any=>{
   this.SocketService.onlineUserList().subscribe(
     (data)=>{
-      //console.log(data);
+      console.log(data);
     }
   )
 }
@@ -321,9 +323,9 @@ public closeCurrentNotifModal(){
 public getLastChangeObject=():any=>{
   this.SocketService.getLastChangeObject().subscribe(
     data=>{ 
-      console.log(data);         
+      //console.log(data);         
       if(this.pageOwnerId===data.userId){
-        //console.log(data);
+        console.log(data);
         this.getLatestNotification(this.authToken, data.userId);        
       }       
     }, (error)=>{
@@ -353,15 +355,15 @@ public undoLastChange(){
     id:this.lastChangeObject.typeId,
     refkey:this.lastChangeObject.refkey
   }
-  console.log(data);
+  //console.log(data);
   this.SocketService.undoLastAction(data);
 }
 
 public updateAfterUndoResponse(){
   this.SocketService.updateAfterUndoResponse().subscribe(
     data=>{      
-      console.log(data);
-      console.log(this.userId);
+      //console.log(data);
+      //console.log(this.userId);
       if(data.list !== null){
         if(this.userId===data.userId || this.userId===data.list.personId){
           console.log("userId matched");          

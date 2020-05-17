@@ -40,7 +40,7 @@ public messageByUserId(userId):Observable<any>{
     }); // end Socket
   }); // end Observable
 } // end chatByUserId
-
+//listed
 public getHomePageLoad():Observable<any>{  
   return Observable.create((observer) => {      
     this.socket.on('get-home-page-load', (data) => {     
@@ -48,7 +48,7 @@ public getHomePageLoad():Observable<any>{
     }); // end Socket
   }); // end Observable
 } 
-
+//listed
 public getFriendPageLoad():Observable<any>{  
   return Observable.create((observer) => {      
     this.socket.on('get-friend-page-load', (data) => {     
@@ -93,10 +93,10 @@ public listClickResponse():Observable<any>{
   }); // end Observable
 }
 public itemClickResponse():Observable<any>{ 
-  console.log("update sub item page response"); 
+  //console.log("update sub item page response"); 
   return Observable.create((observer) => {      
     this.socket.on('item-click-response', (data) => {
-      console.log(data);
+      //console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable
@@ -118,7 +118,8 @@ public getFriendRequest():Observable<any>{
     }); // end Socket
   }); // end Observable
 }
-//'update-contact-friend-response', data
+//listed
+//update-contact-friend-response', data
 public getFriendsUpdated():Observable<any>{  
   return Observable.create((observer) => {      
     this.socket.on('update-friend-response', (data) => {
@@ -140,7 +141,7 @@ public getPublishNotification():Observable<any>{
 public getLastChangeObject():Observable<any>{  
   return Observable.create((observer) => {      
     this.socket.on('get-last-change-object', (data) => {
-      console.log(data);
+      //console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable
@@ -168,7 +169,7 @@ public updateAfterUndoResponse():Observable<any>{
 public vacateSubItemBox(){
   return Observable.create((observer) => {      
     this.socket.on('vacate-sub-item-box', (data) => {
-      console.log(data);
+      //console.log(data);
       observer.next(data);
     }); // end Socket
   }); // end Observable 
@@ -211,7 +212,7 @@ public publishNotification(data){
   this.socket.emit('public-notification-event', data); 
 }
 public fireLastChangeEvent(data){
-  console.log(data);
+  //console.log(data);
   this.socket.emit('latest-change-event', data);
 }
 
@@ -235,7 +236,7 @@ public undoLastAction(data){
 }
 public updateAfterUndo(data){
   //console.log("update after undo");
-  console.log(data);
+  //console.log(data);
   this.socket.emit('update-after-undo', data);
 }
 //---------------------------------------------------------------------------------------

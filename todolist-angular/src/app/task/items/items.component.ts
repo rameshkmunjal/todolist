@@ -43,11 +43,10 @@ export class ItemsComponent implements OnInit {
     this.updateAfterUndoResponse();
   }
   //----------------------------------------------------------------
-public listClickResponse(){
-  
+public listClickResponse(){  
   this.SocketService.listClickResponse().subscribe(
     data=>{
-      //console.log(data);
+      console.log(data);
       this.userId=data.userId;
       this.fullName=data.fullName;
       this.listId=data.listId;
@@ -58,16 +57,18 @@ public listClickResponse(){
   )
 }
 
-public getItemsByListId(userId, listId){
-  
+public getItemsByListId(userId, listId){ 
+  console.log(userId);
+  console.log(listId); 
   this.TaskService.getItemsByListId(this.authToken, userId, listId).subscribe(
     apiResponse=>{
       console.log(apiResponse);
       if(apiResponse.data !==null && apiResponse.data !==undefined){
         this.items=apiResponse.data;
+        //console.log(this.items);
       } else {
         this.items="";
-        console.log(apiResponse.message);
+        //console.log(apiResponse.message);
       }     
     }, (error)=>{
       console.log(error);
@@ -83,10 +84,12 @@ public createItem(){
     let data={      
       itemName:this.newItem,
       listId:this.listId,
+      listName:this.listName,
       createdBy:this.fullName,
       creatorId:this.userId,
       type:"item"
-    }        
+    } 
+    console.log(data);       
     this.createNewItem(data);
   }    
 }
@@ -98,6 +101,7 @@ public createItemUsingKeypress: any = (event: any) => {
 }
 
 public createNewItem(data){
+  console.log(data);
   this.TaskService.createItem(this.authToken, this.userId, data).subscribe(
     apiResponse=>{
       console.log(apiResponse);
@@ -117,7 +121,7 @@ public createNewItem(data){
 }
 
 public deleteItem=(itemId)=>{
-  console.log(itemId);
+  //console.log(itemId);
   let data={
     itemId:itemId,
     changeBy:this.fullName,
@@ -127,7 +131,7 @@ public deleteItem=(itemId)=>{
   }
   this.TaskService.deleteItem(this.authToken, this.userId, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
+      //console.log(apiResponse);
       let data={
         type:"item",
         userId:this.userId,        
@@ -146,7 +150,7 @@ public showEditModal(itemId, itemName){
   //this.vacateItemBox();    
   this.itemName=itemName;
   this.itemId=itemId;
-  console.log(this.itemId, this.itemName);
+  //(this.itemId, this.itemName);
   $("#editItemModal").show();    
 }
 
@@ -158,7 +162,7 @@ public editItem(itemId){
   $("#editItemModal").hide(2000);    
   
   let data={            
-    itemId:this.itemId,
+    itemId:itemId,
     itemName:this.itemName,
     changeId:this.userId,
     changeName:this.fullName, 
@@ -196,7 +200,7 @@ public changeStatus(itemId){
 public changeItemStatus(data){
   this.TaskService.changeItemStatus(this.authToken, this.userId, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
+    console.log(apiResponse);
       let data={
         type:"item",
         userId:this.userId,        
@@ -213,12 +217,15 @@ public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
     .subscribe((data)=>{
       console.log(data);          
-      if(this.userId===data.userId && data.type==="item"){ 
-        console.log("userId matched"); 
-        console.log(this.userId);
-        console.log(data.list.listId);          
+      if(this.userId===data.userId && data.type==="item"){
+        console.log(data); 
+        console.log("items component");                 
         this.getItemsByListId(this.userId, data.list.listId);                   
-      }      
+      } else if(this.userId===data.userId && data.type==="list"){ 
+        console.log(data);
+        this.listName=data.list.name; 
+        this.getItemsByListId(this.userId, data.list.originId);
+      }     
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
@@ -228,7 +235,7 @@ public updateListPageResponse=():any=>{
     //console.log(data);
     this.TaskService.undoCreateItem(this.authToken, data).subscribe(
       apiResponse=>{
-        console.log(apiResponse);
+        //console.log(apiResponse);
         let data={
           userId:apiResponse.data.creatorId,        
           list:apiResponse.data
@@ -278,7 +285,7 @@ public updateListPageResponse=():any=>{
     this.SocketService.updateAfterUndoResponse().subscribe(
       data=>{
         //console.log("inside updateAfterUndoResponse");
-        //console.log(data);      
+        console.log(data);      
         if(this.userId===data.list.creatorId){        
           this.getItemsByListId(this.authToken, data.list.listId);      
         }          

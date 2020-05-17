@@ -5,6 +5,7 @@ const ItemSchema=new Schema({
     itemId:{type:String, unique:true},
     itemName:{type:String, default:''},//user input 
     listId:{type:String, default:''}, //parentId
+    listName:{type:String, default:''},
     //only on create
     createdOn:{type:Date, default:''},//only on create - current date and time
     creatorId:{type:String, default:''},//only on create - login id

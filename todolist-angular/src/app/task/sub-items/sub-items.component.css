@@ -2,7 +2,7 @@
 /*--------------------------------------------------------------*/
 @media screen and (max-width:768px){
     
-    #subItemEditModal{
+    #editSubItemModal{
         display:none; 
         width:100vw;
         height:auto;   

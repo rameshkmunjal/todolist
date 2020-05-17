@@ -8,7 +8,7 @@
     </div>
 <!--(click)="showSubItems(item.itemId, item.itemName)"-->
     <div *ngIf="items.length > 0 ; else infoText " >
-        <div  *ngFor="let item of items"  class="list-btn" (click)="itemClicked(item.itemId, item.itemName)">            
+        <div  *ngFor="let item of items"  class="list-btn" (click)="itemClicked(item.originId, item.itemName)">            
             <span class="ml-3 light-color-text" >{{item.itemName}}</span>
 
             <span class="pull-right mr-3">

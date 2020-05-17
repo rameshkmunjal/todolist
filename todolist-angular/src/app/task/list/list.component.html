@@ -9,7 +9,7 @@
   <!--(click)="getItemsByListId(list.originId, userId, list.listName)"-->
 <div class="container-fluid" >
   <div class="row" *ngIf="allLists.length > 0 ; else infoText">
-      <div  *ngFor="let list of allLists"  class="list-btn" (click)="listClicked(list.listId, list.listName)" >
+      <div  *ngFor="let list of allLists"  class="list-btn" (click)="listClicked(list.originId, list.listName)" >
           <span class="ml-3"></span>
           <span class="ml-3 light-color-text" >{{list.listName}}</span>              
           <span class="pull-right mr-3">

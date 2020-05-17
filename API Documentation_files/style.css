@@ -6,6 +6,10 @@ header{
     display:flex;
     flex-direction: row;    
 }
+#contents{
+    display:flex;
+    flex-direction: column;
+}
 #sidebar{
     width:20%;
     border-right:1px solid #ddd;
@@ -37,10 +41,16 @@ header{
 #listenerDiv{
     width:80%;
     height:auto;    
-    padding:10px 20px;
+    padding:5px 10px;
     font-size: 20px;
-
 }
+#emitterDiv{
+    width:80%;
+    height:auto;    
+    padding:5px 10px;
+    font-size: 20px;
+}
+
 table{
     border-collapse: collapse;
     margin-top:20px;
@@ -52,7 +62,8 @@ td, th{
     text-align:left;
 }
 .box{
-    padding:20px;
+    width:80%;
+    padding:5px;
     border-bottom: 1px solid #ddd;
 }
 .reqMode{

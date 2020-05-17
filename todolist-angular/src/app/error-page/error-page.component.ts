@@ -1,5 +1,6 @@
+/* This component created to display - Error Page */
 import { Component, OnInit } from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-error-page',
@@ -7,18 +8,17 @@ import {ActivatedRoute, Router} from '@angular/router';
   styleUrls: ['./error-page.component.css']
 })
 export class ErrorPageComponent implements OnInit {
-  public errorCode:string;
-  public errorMessage:string;
+  public errorCode:string; //status code of reponse
+  public errorMessage:string; //message of response
 
 
   constructor(
-    private _route:ActivatedRoute,
-    private router:Router
+    private _route:ActivatedRoute
   ) { }
 
   ngOnInit() {
     this.errorCode=this._route.snapshot.paramMap.get('errorCode');
     this.errorMessage=this._route.snapshot.paramMap.get('errorMessage');
   }
-
+//end of class defintion
 }

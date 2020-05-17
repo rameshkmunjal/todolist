@@ -13,19 +13,28 @@ let listenerArray=[
         "description":"This event (online-user-list) has to be listened on the user's end to get list of "+
         "online users."        
     },
-    {  
+    {  //Ok
         "name":"getHomePageLoad",
         "event":"get-home-page-load",
         "mode":"listener",        
         "description":"This event (get-home-page-load) will be listened by default on successful login of " +
-            "with nagigation to Home Page and will trigger further some api calls like get list of user etc."        
+            "with navigation to Home Page . While listening 1) in home component - api call to fetch contact list "+
+            "notification list is made  2) in friend list component - api call to fetch list of friends is made. "        
     },
-    {
+    {//ok
         "name":"getFriendPageLoad",
         "event":"get-friend-page-load",
         "mode":"listener",        
-        "description":"This event (get-friend-page-load) will be listened when use will select a friend from friend list " +
-            "Friend Page will be loaded . Consequently list of friend will be shown on the page"         
+        "description":"This event (get-friend-page-load) is listened when uses selects a friend from friend list " +
+            "Friend Page is loaded . Consequently list related friend is displayed. "         
+    },
+    {//Ok
+        "name":"getFriendsUpdated",
+        "event":"update-friend-response",
+        "mode":"listener",        
+        "description":"This event is listened both at user and friend level - when friend request is accepted " +
+            "and friend list in pages of both users is updated by making an api call . "        
+
     },
     {
         "name":"getFriendRequestResponse",
@@ -123,46 +132,54 @@ let emitterArray=[
         "user will only be set as online user after verification of authentication token."        
     },
     {
-        "name":"set-user",
+        "name":"send-friend-request-event",
         "mode":"emitter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+        "user will only be set as online user after verification of authentication token." +
+        `let data={
+            senderId:this.userId,
+            senderName:this.pageOwnerName,
+            receiverId:id,
+            receiverName:fullName,
+            event:"friend-request",
+            message:this.pageOwnerName+" has sent you a friend request"
+          }`      
     },
     {
         "name":"set-user",
         "mode":"emiter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."        
     },
     {
         "name":"set-user",
         "mode":"emitter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."        
     },
     {
         "name":"set-user",
         "mode":"emitter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."        
     },
     {
         "name":"set-user",
         "mode":"emitter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."        
     },
     {
         "name":"set-user",
         "mode":"emitter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."        
     },
     {
         "name":"set-user",
         "mode":"emitter",        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."        
     }
 
 ]

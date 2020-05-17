@@ -110,14 +110,15 @@ export class TaskService {
   }
   //-----------------------------------------------------------------------
   public getItemsByListId(authToken, userId, listId):Observable<any>{
-    //console.log(userId);
-    //console.log(listId);
+    console.log(userId);
+    console.log(listId);
     return this.http.get(`${this.url}/${authToken}/items-by-listId/${userId}/${listId}`); 
   }
   public createItem(authToken, userId, data):Observable<any>{
     let params=new HttpParams()
       .set('itemName', data.itemName)
       .set('listId', data.listId)
+      .set('listName', data.listName)
       .set('createdBy', data.createdBy)
       .set('creatorId', data.creatorId)
       .set('type', data.type);

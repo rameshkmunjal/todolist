@@ -87,9 +87,11 @@ public getFriendPageLoad=():any=>{
 public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
     .subscribe((data)=>{          
-      if(this.userId===data.userId){ 
-        //console.log("userId matched");           
-        this.getAllListsOfAUser(this.authToken, this.userId);                   
+      if(this.userId===data.userId && data.type==="list"){ 
+        //console.log("userId matched");
+        //console.log(data);           
+        this.getAllListsOfAUser(this.authToken, this.userId); 
+        //this.listClicked(data.list.typeId, data.list.listName)                  
       }      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
@@ -108,16 +110,15 @@ public changeStatus(listId){
     apiResponse=>{
       //console.log(apiResponse);
       let data={
-        userId:this.userId,
-        //event:'update-list',
-        //subEvent:'show-notif', 
+        type:apiResponse.data.type,
+        userId:this.userId,         
         list:apiResponse.data
       }
       //console.log(data);
       this.SocketService.updateListPage(data);
       
     }, (error)=>{
-      //console.log(error);
+      console.log(error);
     }
   )
 }
@@ -126,7 +127,7 @@ public getAllListsOfAUser(authToken, userId){
   this.TaskService.getAllListsOfAUser(authToken, userId).subscribe(
     apiResponse=>{
       if(apiResponse.status===200 && apiResponse.data !== null){
-        //console.log(apiResponse);
+        console.log(apiResponse.data);
         this.allLists=apiResponse.data;
         this.Utility.arrangeListsByDescendingOrder(this.allLists);
       } else {
@@ -158,12 +159,13 @@ public createListUsingKeypress: any = (event: any) => {
 } 
 
 public sendInputToCreateList(authToken, userId, data){
-  
+  console.log(data);
   this.TaskService.createList(authToken, userId, data).subscribe(
     apiResponse=>{
-      //console.log(apiResponse.data);       
+      console.log(apiResponse.data);       
 
       let data={
+        type:apiResponse.data.type,
         userId:this.userId,        
         list:apiResponse.data
       }
@@ -189,15 +191,14 @@ public editList(){
   } 
   this.TaskService.editList(this.authToken, data).subscribe(
     apiResponse=>{
-      //console.log(apiResponse);
+      console.log(apiResponse);
       if(apiResponse.status===200 && apiResponse.data !==null){
         let data={
-          userId:this.userId,
-          //event:'update-list',
-          //subEvent:'show-notif',
+          type:apiResponse.data.type,
+          userId:this.userId,          
           list:apiResponse.data
         }
-        //console.log(data);
+        console.log(data);
         this.SocketService.updateListPage(data);
       }      
     }, (error)=>{
@@ -229,8 +230,8 @@ public deleteList(id){
     apiResponse=>{
       console.log(apiResponse);
       let data={
-        userId:this.userId, 
-        type:"list",       
+        type:apiResponse.data.type,
+        userId:this.userId,               
         list:apiResponse.data
       }
       this.SocketService.updateListPage(data);
@@ -314,7 +315,7 @@ public updateAfterUndoResponse(){
   this.SocketService.updateAfterUndoResponse().subscribe(
     data=>{
       //console.log("inside updateAfterUndoResponse");
-      console.log(data);      
+      //console.log(data);      
       if(this.userId===data.list.creatorId){        
         this.getAllListsOfAUser(this.authToken, this.userId);      
       }          
@@ -323,7 +324,7 @@ public updateAfterUndoResponse(){
 }
 //-------------------------------------------------------------------------
 public listClicked(id, listName){
-  console.log("id of list clicked "+id);
+  console.log("id of list clicked " + id);
   let data={
     userId:this.userId,
     fullName:this.fullName,

@@ -1,11 +1,8 @@
-<!--------------->
+<!-------This div shows list of friends-------->
 <div class="sidebar"  *ngIf="friendList.length > 0">
   <h5 class="text-center">Friend List</h5>
-  <div class="frndName" *ngFor="let friend of friendList" >
-    
-        <span class="pointer"  (click)="moveToFriendPage(friend.friendId, friend.friendName)">{{friend.friendName}}</span>              
-        
-      
+  <div class="frndName" *ngFor="let friend of friendList" >    
+        <span class="pointer"  (click)="moveToFriendPage(friend.friendId, friend.friendName)">{{friend.friendName}}</span>             
   </div>      
 </div>
 

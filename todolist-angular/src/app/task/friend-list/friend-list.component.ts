@@ -12,11 +12,11 @@ import { SocketService } from './../../socket.service';
 })
 
 export class FriendListComponent implements OnInit {
-  @Input() userId:string;
-  public pageOwnerId:string;
-  public pageOwnerName:string;
+  @Input() userId:string;  
+  public pageOwnerId:string; //logged in user id
+  public pageOwnerName:string;//logged in user Name
   public authToken:string; 
-  public friendList:any=[];  
+  public friendList:any=[];  //to stroe list of friends
   
   constructor(
     private router:Router,
@@ -32,27 +32,9 @@ export class FriendListComponent implements OnInit {
     this.getHomePageLoad();    
     this.getFriendsUpdated();    
   }
-
-  public getHomePageLoad=():any=>{
-    this.SocketService.getHomePageLoad()
-      .subscribe((data)=>{
-        if(this.pageOwnerId===data.pageOwnerId){          
-          this.getFriendList(this.authToken, this.pageOwnerId);                                        
-        }
-      }, (error)=>{
-        this.router.navigate(['/error-page', error.error.status, error.error.message]);
-      })
-  }
-//----------------------------------------------------------------------------------------------
-  public getFriendsUpdated=():any=>{   
-    this.SocketService.getFriendsUpdated()
-    .subscribe((data)=>{      
-      if(this.userId===data.userId || this.userId===data.friendId){ 
-          this.getFriendList(this.authToken, this.userId); 
-      }    
-    });//end subscribe
-  }// end get message from a user 
+  //-------------------------------------------------------------------------------------------
   
+//--------------api call to get friend list from DB 
   public getFriendList(authToken, userId):any{    
     this.UserService.getFriendList(authToken, userId).subscribe(
       apiResponse=>{ 
@@ -65,8 +47,8 @@ export class FriendListComponent implements OnInit {
       }
     )
   }
-
 //------------------------------------------------------------------------------------
+//---When user selects a friend - emit socket event to switch to friend page
 public moveToFriendPage(friendId, friendFullName){
   let data={ 
     pageOwnerId:this.pageOwnerId,   
@@ -77,5 +59,26 @@ public moveToFriendPage(friendId, friendFullName){
   }  
   this.SocketService.loadFriendPage(data);  
 }
-//--------------------------------------------------------------------------------------
+//-------event listener to update friend list - when a new friend added to list - on acceptance
+public getFriendsUpdated=():any=>{   
+  this.SocketService.getFriendsUpdated()
+  .subscribe((data)=>{      
+    if(this.userId===data.userId || this.userId===data.friendId){ 
+        this.getFriendList(this.authToken, this.userId); 
+    }    
+  });//end subscribe
+}// end get message from a user
+//----------------------------------------------------------------------------------------------
+//when page is loaded after log in or go to home button clicked
+public getHomePageLoad=():any=>{
+  this.SocketService.getHomePageLoad()
+    .subscribe((data)=>{
+      if(this.pageOwnerId===data.pageOwnerId){          
+        this.getFriendList(this.authToken, this.pageOwnerId);                                        
+      }
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
+//---------------------------------------------------------------------------------------------
 }
