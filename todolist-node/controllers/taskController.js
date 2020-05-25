@@ -4,7 +4,7 @@ const shortId=require('shortid');
 //including files
 const response=require('./../libs/responseLib');
 const check=require('./../libs/checkLib');
-const utility=require('./../libs/utilityLib');
+
 
 //including model
 require('./../models/user');
@@ -17,9 +17,11 @@ require('./../models/subitem');
 const SubItemModel=mongoose.model('subItem');
 require('./../models/notification');
 const NotificationModel=mongoose.model('notification');
-
+//including function file
 const task=require('./taskFunctions');
 
+//-----------------------api calls - to get all lists/items/sub-items---------------------
+//to get all active lists of a user
 let getAllListsByUserId=(req, res)=>{
     ListModel.find({'creatorId':req.params.userId, 'isActive':true})
         .exec((err, allLists)=>{
@@ -35,8 +37,8 @@ let getAllListsByUserId=(req, res)=>{
             }
         })
 }
-//-------------------------
-//----------------------------------------------------------------------------------------
+
+//to get all active items of a list
 let getItemsByListId=(req, res)=>{
     console.log("---------------req.body---------------");
     console.log(req.body);
@@ -57,7 +59,8 @@ let getItemsByListId=(req, res)=>{
             }
         })
 }
-//-----------------------------------------------------
+
+//to get all active sub items of a item
 let getSubItemsByItemId=(req, res)=>{
     console.log("inside getSubItemsByItemId......");
     console.log(req.params.userId);
@@ -79,7 +82,8 @@ let getSubItemsByItemId=(req, res)=>{
             }
         })
 }
-//---------------------------------------create - api -----------------------------------
+//----------------------------create - list/item/sub-item-----------------------------------
+//to create a list
 let createList=(req, res)=>{   
   task.create_list(req, res)
     .then(task.create_Notification)
@@ -92,7 +96,7 @@ let createList=(req, res)=>{
         res.send(err);
     })
 }
-
+//to create an item
 let createItem=(req, res)=>{
     task.create_item(req)
     .then(task.create_Notification)
@@ -104,7 +108,7 @@ let createItem=(req, res)=>{
         res.send(err);
     })
 }
-
+//to create a sub item
 let createSubItem=(req, res)=>{    
     task.create_sub_item(req)
     .then(task.create_Notification)
@@ -116,7 +120,8 @@ let createSubItem=(req, res)=>{
         res.send(err);
     })
 }
-//----------------------------edit - api ----------------------------------------------
+//----------------------------edit - list/item/sub-item ----------------------------------------------
+//to edit a list
 let editList=(req, res)=>{    
     task.saveOldList(req, res)
         .then(task.createNewList)
@@ -129,7 +134,8 @@ let editList=(req, res)=>{
             res.send(err);
         })
 }
-//-------------------------------------------------------------------------------
+
+//to edit an item
 let editItem=(req, res)=>{    
     task.saveOldItem(req, res)
         .then(task.createNewItem)
@@ -142,7 +148,8 @@ let editItem=(req, res)=>{
             res.send(err);
         })
 }
-//-----------------------------------------------------------------------------
+
+//to edit a sub item
 let editSubItem=(req, res)=>{        
     task.saveOldSubItem(req, res)
         .then(task.createNewSubItem)
@@ -155,7 +162,8 @@ let editSubItem=(req, res)=>{
             res.send(err);
         })
 }
-//--------------------------delete - api---------------------------------------------
+//--------------------------api calls - to delete list/item/sub-item------------------------
+//to delete a list
 let deleteList=(req, res)=>{
     task.delete_list(req, res)
     .then(task.create_Notification)
@@ -167,7 +175,7 @@ let deleteList=(req, res)=>{
         res.send(err);
     })    
 }
-
+//to delete an item
 let deleteItem=(req, res)=>{ 
     task.delete_item(req, res)
         .then(task.create_Notification)
@@ -179,7 +187,7 @@ let deleteItem=(req, res)=>{
             console.log(err);
         })
 }
-
+//to delete a sub item
 let deleteSubItem=(req, res)=>{ 
     task.delete_sub_item(req, res)
         .then(task.create_Notification)
@@ -191,9 +199,10 @@ let deleteSubItem=(req, res)=>{
             console.log(err);
         })
 }
-//----------------------------------change status - api ------------------------------------------------
+//------------------api calls - to change status of list/item/sub-item----------------------
+//to change status of list
 let changeStatusList=(req, res)=>{
-    task.change_status_list(req, res)
+    task.change_status_list(req)
         .then(task.create_Notification)
         .then((resolve)=>{
             let apiResponse=response.generate(false, "List Status Changed Successfully", 200, resolve);
@@ -203,7 +212,7 @@ let changeStatusList=(req, res)=>{
             res.send(err);
         })    
 }
-
+//to change status of item
 let changeItemStatus=(req, res)=>{
     task.change_item_status(req, res)
         .then(task.create_Notification)
@@ -215,7 +224,7 @@ let changeItemStatus=(req, res)=>{
             res.send(err);
         })    
 }
-
+//to change status of sub item
 let changeSubItemStatus=(req, res)=>{
     task.change_sub_item_status(req, res)
         .then(task.create_Notification)
@@ -227,7 +236,8 @@ let changeSubItemStatus=(req, res)=>{
             res.send(err);
         })        
 }    
-//-----------------------------undoCreate - api ------------------------------------------------------------
+//----------------------api call to undoCreate - list/item/sub-item ---------------------------------
+//to undo create list
 let undoCreateList=(req, res)=>{    
     task.deactivateNotification(req, res)
         .then(task.deactivateList)        
@@ -240,7 +250,7 @@ let undoCreateList=(req, res)=>{
             res.send(err);
         })          
 }
-
+//to undo create item
 let undoCreateItem=(req, res)=>{    
     task.deactivateNotification(req, res)
         .then(task.deactivateItem)        
@@ -253,6 +263,7 @@ let undoCreateItem=(req, res)=>{
             res.send(err);
         })          
 }
+//to undo create sub item
 let undoCreateSubItem=(req, res)=>{    
     task.deactivateNotification(req, res)
         .then(task.deactivateSubItem)        
@@ -265,7 +276,8 @@ let undoCreateSubItem=(req, res)=>{
             res.send(err);
         })              
 }
-//--------------------------undoEdit - api-------------------------------------------
+//--------------api calls - undo edit list/item/sub-item----------------------------
+//to undo edit list
 let undoEditList=(req, res)=>{
     console.log("undoEditList api function");
     task.deactivateNotification(req, res)
@@ -277,6 +289,7 @@ let undoEditList=(req, res)=>{
         })
         .catch((err)=>{ res.send(err);})
 }
+//to undo edit item
 let undoEditItem=(req, res)=>{
     console.log("undoEditItem api function");
     task.deactivateNotification(req, res)
@@ -288,6 +301,7 @@ let undoEditItem=(req, res)=>{
         })
         .catch((err)=>{ res.send(err);})
 }
+//to undo edit sub item
 let undoEditSubItem=(req, res)=>{
     console.log("undoEditSubItem api function");
     task.deactivateNotification(req, res)
@@ -299,7 +313,8 @@ let undoEditSubItem=(req, res)=>{
         })
         .catch((err)=>{ res.send(err);})
 }
-//-----------------------------undo delete - api--------------------------------------------
+//-----------------api calls - to undo delete list/item/sub-item-----------------
+//undo delete list
 let undoDeleteList=(req, res)=>{
     task.deactivateNotification(req, res)
         .then(task.activateList)
@@ -311,6 +326,7 @@ let undoDeleteList=(req, res)=>{
             res.send(err);
         })    
 }
+//undo delete item
 let undoDeleteItem=(req, res)=>{
     task.deactivateNotification(req, res)
         .then(task.activateItem)
@@ -322,6 +338,7 @@ let undoDeleteItem=(req, res)=>{
             res.send(err);
         })    
 }
+//undo delete sub item
 let undoDeleteSubItem=(req, res)=>{
     task.deactivateNotification(req, res)
         .then(task.activateSubItem)
@@ -333,10 +350,11 @@ let undoDeleteSubItem=(req, res)=>{
             res.send(err);
         })    
 }
-//------------------------------------------------------------------------------------
+//---------------------api calls - notification realted-----------------------------------------------
+//get all notifications of changes made by user's friends 
 let getAllNotifications=(req, res)=>{       
-    get_Friend_List(req, res)
-        .then(getNotifications)
+    task.get_Friend_List(req, res)
+        .then(task.getNotifications)
         .then((resolve)=>{            
             let apiResponse=response.generate(false, "All Notifications fetched successfully", 200, resolve);            
             res.send(apiResponse);
@@ -345,10 +363,10 @@ let getAllNotifications=(req, res)=>{
             res.send(err);
         })    
 }
-//---------------------------------------------------------------------------------------------------
+//to get latest notification of change made by user friend
 let getLatestNotification=(req, res)=>{       
-    get_Friend_List(req, res)
-        .then(getNotifications)
+    task.get_Friend_List(req, res)
+        .then(task.getNotifications)
         .then((resolve)=>{            
             let latestNotification=resolve[0];            
             let apiResponse=response.generate(false, "Latest Notifications fetched successfully", 200, latestNotification);            
@@ -359,61 +377,44 @@ let getLatestNotification=(req, res)=>{
         })    
 }
 //---------------------------------------------------------------------------------------------------
-
-let get_Friend_List=(req, res)=>{
-    return new Promise((resolve, reject)=>{
-        UserModel.findOne({'userId':req.params.userId})
-            .exec((err, result)=>{
-                if(err){
-                    //console.log(err);
-                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
-                    reject(apiResponse);
-                } else if(check.isEmpty(result)){
-                    //console.log("No Data found");
-                    let apiResponse=response.generate(true, "No Data Found", 404, null);
-                    reject(apiResponse);
-                } else {
-                    //console.log("88888888888888");
-                    //console.log(result);
-                    //console.log("88888888888888");
-                    req.friendList=result.friends;
-                    resolve(req);
-                }
-
+let undoChangeStatusList=(req, res)=>{
+    task.deactivateNotification(req, res)
+        .then(task.change_status_list)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "List status Change undone successfully", 200, resolve);
+            res.send(apiResponse);
         })
-    })
-}
-let getNotifications=(req)=>{    
-    return new Promise((resolve, reject)=>{
-        NotificationModel.find({'isActive':true})
-            .exec((err, notifications)=>{
-        if(err){
-            //console.log("getNotificationList:Some Error Occurred");
-            let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
-            reject(apiResponse);
-        } else if(check.isEmpty(notifications)){
-            //console.log("getNotificationList:No Data found");
-            let apiResponse=response.generate(true, "No Data found", 404, null);
-            reject(apiResponse);
-        } else {
-            //console.log("getNotificationList: api success");
-            let allNotifications=[];
+        .catch((err)=>{
+            res.send(err);
+        })
 
-            let friendList=req.friendList;
-            for(let i=0; i<friendList.length; i++){
-                for(let j=0; j<notifications.length; j++){
-                    if(friendList[i].friendId===notifications[j].sendId){
-                        allNotifications.push(notifications[j]);                        
-                    }
-                }
-            }
-            allNotifications=utility.getSortedDescending(allNotifications);            
-            //console.log("^^^^^^^^^^^^^^^^^^^");
-            resolve(allNotifications);
-        }
-      })
-    })
 }
+ 
+let undoChangeStatusItem=(req, res)=>{
+    task.deactivateNotification(req, res)
+        .then(task.change_item_status)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "Item status Change undone successfully", 200, resolve);
+            res.send(apiResponse);
+        })
+        .catch((err)=>{
+            res.send(err);
+        })
+}
+
+let undoChangeStatusSubItem=(req, res)=>{
+    task.deactivateNotification(req, res)
+        .then(task.change_sub_item_status)
+        .then((resolve)=>{
+            let apiResponse=response.generate(false, "Item status Change undone successfully", 200, resolve);
+            res.send(apiResponse);
+        })
+        .catch((err)=>{
+            res.send(err);
+        })
+}
+
+
 //----------------------------------------------------------------------------------------------------------    
 module.exports={
     createList:createList,
@@ -422,12 +423,14 @@ module.exports={
     changeStatusList:changeStatusList,
     undoCreateList:undoCreateList, 
     undoDeleteList:undoDeleteList,
-    undoEditList:undoEditList,  
+    undoEditList:undoEditList, 
+    undoChangeStatusList:undoChangeStatusList,
+
     getAllListsByUserId:getAllListsByUserId,
     getAllNotifications:getAllNotifications,
     getLatestNotification:getLatestNotification,
-
     getItemsByListId:getItemsByListId,
+
     createItem:createItem,
     editItem:editItem,
     deleteItem:deleteItem,
@@ -435,13 +438,16 @@ module.exports={
     undoCreateItem:undoCreateItem,
     undoDeleteItem:undoDeleteItem,
     undoEditItem:undoEditItem,
+    undoChangeStatusItem:undoChangeStatusItem,    
     
     getSubItemsByItemId:getSubItemsByItemId,
+
     createSubItem:createSubItem,
     editSubItem:editSubItem,
     deleteSubItem:deleteSubItem,
     changeSubItemStatus:changeSubItemStatus,
     undoCreateSubItem:undoCreateSubItem,
     undoDeleteSubItem:undoDeleteSubItem,
-    undoEditSubItem:undoEditSubItem
+    undoEditSubItem:undoEditSubItem,
+    undoChangeStatusSubItem:undoChangeStatusSubItem
 }

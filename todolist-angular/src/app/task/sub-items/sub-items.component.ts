@@ -43,6 +43,8 @@ export class SubItemsComponent implements OnInit {
 
   ngOnInit() { 
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
+    this.getHomePageLoad();
+    this.getFriendPageLoad();
     this.itemClickResponse();  
     this.updateListPageResponse();
     this.undoResponse();  
@@ -50,6 +52,25 @@ export class SubItemsComponent implements OnInit {
     this.vacateSubItemBox();
   }
   //----------------------------------------------------------------
+public getHomePageLoad=():any=>{
+    this.SocketService.getHomePageLoad()
+      .subscribe((data)=>{
+        this.itemName="";
+        this.subItems=[]; 
+      }, (error)=>{
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      })
+}
+
+public getFriendPageLoad=():any=>{
+  this.SocketService.getFriendPageLoad()
+    .subscribe((data)=>{
+      this.itemName="";
+      this.subItems=[];
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
 public itemClickResponse(){  
   this.itemName="";
   this.SocketService.itemClickResponse().subscribe(
@@ -220,7 +241,7 @@ public changeSubItemStatus(data){
 public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
     .subscribe((data)=>{
-      console.log(data);          
+      //console.log(data);          
       if(this.userId===data.userId && data.type==="subItem"){ 
         console.log("userId matched"); 
         console.log(this.userId);
@@ -274,7 +295,7 @@ public updateListPageResponse=():any=>{
   public undoResponse(){
     this.SocketService.undoResponse().subscribe(
       data=>{ 
-        console.log(data);   
+        //console.log(data);   
           if(data.type==="subItem"){
             if(data.action==="create"){
               this.undoCreateSubItem(data);
@@ -282,6 +303,8 @@ public updateListPageResponse=():any=>{
               this.undoDeleteSubItem(data);
             } else if(data.action==="edit"){
               this.undoEditSubItem(data);
+            } else if(data.action==="status-change"){
+              this.undoStatusChangeSubItem(data);
             }
           }         
       }
@@ -319,7 +342,25 @@ public updateListPageResponse=():any=>{
       }
     )
   }
-  
+  public undoStatusChangeSubItem(data){
+    console.log(data);
+    
+    this.TaskService.undoChangeStatusSubItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        console.log(apiResponse);
+        if(apiResponse.status===200){
+          let data={
+            userId:apiResponse.data.creatorId,          
+            list:apiResponse.data
+          }
+          this.SocketService.updateAfterUndo(data);
+        }       
+      }, (error)=>{
+        //console.log(error);
+      }
+    )
+    
+  }
   public vacateSubItemBox(){
     this.SocketService.vacateSubItemBox().subscribe(
       data=>{ 

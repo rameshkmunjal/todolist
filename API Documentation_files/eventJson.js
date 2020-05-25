@@ -27,21 +27,58 @@ let listenerArray=[
         "mode":"listener",        
         "description":"This event (get-friend-page-load) is listened when uses selects a friend from friend list " +
             "Friend Page is loaded . Consequently list related friend is displayed. "         
-    },
-    {//Ok
-        "name":"getFriendsUpdated",
-        "event":"update-friend-response",
+    }, 
+    {
+        "name":"getContactListResponse",
+        "event":"get-contact-list-response",
         "mode":"listener",        
-        "description":"This event is listened both at user and friend level - when friend request is accepted " +
-            "and friend list in pages of both users is updated by making an api call . "        
-
+        "description":"Socket event response relating contact icon click is handled and an api call"+
+            "is made to fetch contact list from backend DB and contact modal is shown."           
     },
     {
-        "name":"getFriendRequestResponse",
-        "event":"get-friend-request-response",
+        "name":"getNotificationListResponse",
+        "event":"get-notification-list-response",
         "mode":"listener",        
-        "description":"When a friend request is sent by user by selecting a contact from contact list , an event is emitted"+
-            "and request is sent to the friend. In response from socket , friend page listens this event (get-friend-request-response)."
+        "description":"Socket event response relating notification icon click is handled and an api call"+
+             "is made to fetch notification list from backend DB and notification modal is shown."           
+    },
+     
+    {
+        "name":"getFriendRequest",
+        "event":"get-friend-request",
+        "mode":"listener",        
+        "description":"When a user sends a friend request , listener handles the event at friend user end"+
+                "and displays the friend request as a modal with options to reject or accept."        
+    },
+    {
+        "name":"getPublishNotification",
+        "event":"publish-notification-response",
+        "mode":"listener",        
+        "description":"This event (publish-notification-response) listener is used to publish notification"+
+            "as socket emits response to the event (publish-notification-event)."        
+    }, 
+    {
+        "name":"getLastChangeObject",
+        "event":"get-last-change-object",
+        "mode":"listener",        
+        "description":"This handler listens (get-last-change-object) event and makes api call to get last change object."
+                    
+    },    
+    {
+        "name":"updateListPageResponse",
+        "event":"update-list-page-response",
+        "mode":"listener",        
+        "description":"When a user creates/deletes/edits/changes list/item/sub-item. An event (update-list-page) is emitted "+
+        "to update user page. In response to socket - this handler listens the event and updates two components. In respective"+
+        "list/item/sub-item component it updates the page and in home component - it send notification to friends of user and fetches"+
+        "last change object to display in info bar."        
+    },
+    {
+        "name":"updateAfterUndoResponse",
+        "event":"update-after-undo-response",
+        "mode":"listener",        
+        "description":"This event listener (update-after-undo-response) after getting response from socket updates "+
+            "user page."        
     },    
     {
         "name":"listClickResponse",
@@ -59,50 +96,6 @@ let listenerArray=[
         "(item-click-response) is listened and consequently an api call to fetch sub-items relating item is made."
     },
     {
-        "name":"updateListPageResponse",
-        "event":"update-list-page-response",
-        "mode":"listener",        
-        "description":"When a user creates/deletes/edits/changes list/item/sub-item. An event (update-list-page) is emitted "+
-        "to update user page. In response to socket - this handler listens the event and updates two components. In respective"+
-        "list/item/sub-item component it updates the page and in home component - it send notification to friends of user and fetches"+
-        "last change object to display in info bar."        
-    },
-    {
-        "name":"getFriendRequest",
-        "event":"get-friend-request",
-        "mode":"listener",        
-        "description":"When a user sends a friend request , listener handles the event at friend user end"+
-                "and displays the friend request as a modal with options to reject or accept."        
-    },    
-    {
-        "name":"publishNotificationResponse",
-        "event":"publish-notification-response",
-        "mode":"listener",        
-        "description":"This event (publish-notification-response) listener is used to publish notification"+
-            "as socket emits response to the event (publish-notification-event)."        
-    },
-    {
-        "name":"getLastChangeObject",
-        "event":"get-last-change-object",
-        "mode":"listener",        
-        "description":"This handler listens (get-last-change-object) event and makes api call to get last change object."
-                    
-    },
-    {
-        "name":"undoLastActionResponse",
-        "event":"undo-last-action-response",
-        "mode":"listener",        
-        "description":"This event (undo-last-action-response) is emitted from socket in response to pressing undo button"+
-            "and this handler further diverts to respective api calls."        
-    },
-    {
-        "name":"updateAfterUndoResponse",
-        "event":"update-after-undo-response",
-        "mode":"listener",        
-        "description":"This event listener (update-after-undo-response) after getting response from socket updates "+
-            "user page."        
-    },
-    {
         "name":"vacateSubItemBox",
         "event":"vacate-sub-item-box",
         "mode":"listener",        
@@ -110,6 +103,40 @@ let listenerArray=[
         "item is created or user switches to another item from the present one."        
     }    
 ]
+
+/*
+    {//Ok
+        "name":"getFriendsUpdated",
+        "event":"update-friend-response",
+        "mode":"listener",        
+        "description":"This event is listened both at user and friend level - when friend request is accepted " +
+            "and friend list in pages of both users is updated by making an api call . "        
+
+    },
+    
+    {//ok
+        "name":"getFriendRequest",
+        "event":"send-friend-request-response",
+        "mode":"listener",        
+        "description":"When a friend request is sent by user by selecting a contact from contact list , an event is emitted"+
+            "and request is sent to the friend. In response from socket , friend page listens this event (get-friend-request-response)."
+    },
+
+        {
+        "name":"undoLastActionResponse",
+        "event":"undo-last-action-response",
+        "mode":"listener",        
+        "description":"This event (undo-last-action-response) is emitted from socket in response to pressing undo button"+
+            "and this handler further diverts to respective api calls."           
+    },
+    {
+        "name":"undoLastActionResponse",
+        "event":"undo-last-action-response",
+        "mode":"listener",        
+        "description":"This event (undo-last-action-response) is emitted from socket in response to pressing undo button"+
+            "and this handler further diverts to respective api calls."           
+    },
+    */ 
 //---------------------------------------------------------------------------------------------------
 
 let emitterArray=[    
@@ -121,7 +148,14 @@ let emitterArray=[
     },
     {
         "name":"load-home-page-event",
-        "mode":"emitter",        
+        "mode":"emitter", 
+        "payload":[
+            {"field":"fullName", "type":"String", "description":"full name of user"},
+            {"field":"pageType", "type":"String", "description":"pageType - Home"},
+            {"field":"event", "type":"String", "description":"home-page-load"},
+            {"field":"pageOwnerId", "type":"String", "description":"id of pageOwner"},
+            {"field":"userId", "type":"String", "description":"id of user"}
+        ],       
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
         "user will only be set as online user after verification of authentication token."        
     },
@@ -133,23 +167,31 @@ let emitterArray=[
     },
     {
         "name":"send-friend-request-event",
-        "mode":"emitter",        
+        "mode":"emitter",
+        "payload":[
+            {"field":"senderId", "type":"String", "description":"id of friend request sender "},
+            {"field":"senderName", "type":"String", "description":"name of friend request sender"},
+            {"field":"receiverId", "type":"String", "description":"id of friend request receiver"},
+            {"field":"receiverName", "type":"String", "description":"name of friend request receiver"},
+            {"field":"event", "type":"String", "description":"event - friend-request"},
+            {"field":"message", "type":"String", "description":"message of friend request"}
+        ],        
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-        "user will only be set as online user after verification of authentication token." +
-        `let data={
-            senderId:this.userId,
-            senderName:this.pageOwnerName,
-            receiverId:id,
-            receiverName:fullName,
-            event:"friend-request",
-            message:this.pageOwnerName+" has sent you a friend request"
-          }`      
+        "user will only be set as online user after verification of authentication token."               
     },
     {
-        "name":"set-user",
-        "mode":"emiter",        
+        "name":"undo-last-action",
+        "mode":"emiter", 
+        "payload":[
+            {"field":"userId", "type":"String", "description":"id of pageOwner "},
+            {"field":"notificationId", "type":"String", "description":"id of notification "},
+            {"field":"type", "type":"String", "description":"type of notification data like list or item"},
+            {"field":"action", "type":"String", "description":"action - notification is about- like create or delete"},
+            {"field":"id", "type":"String", "description":"id of type like list or item "}, 
+            {"field":"refkey", "type":"String", "description":"refkey i.e. previous list or item of current"}
+        ],       
         "description":"This event (verifyUser) has to be listened on the user's end to verify user authentication"+
-            "user will only be set as online user after verification of authentication token."        
+            "user will only be set as online user after verification of authentication token."            
     },
     {
         "name":"set-user",

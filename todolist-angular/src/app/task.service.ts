@@ -70,7 +70,7 @@ export class TaskService {
       .set('type', data.type)
       .set('action', data.action)
       .set('changeName', data.changeName)
-      .set('userId', data.userId);
+      .set('userId', data.changeId);
 
       return this.http.post(`${this.url}/${authToken}/change-status-list`, params);
   }
@@ -110,8 +110,8 @@ export class TaskService {
   }
   //-----------------------------------------------------------------------
   public getItemsByListId(authToken, userId, listId):Observable<any>{
-    console.log(userId);
-    console.log(listId);
+    //console.log(userId);
+    //console.log(listId);
     return this.http.get(`${this.url}/${authToken}/items-by-listId/${userId}/${listId}`); 
   }
   public createItem(authToken, userId, data):Observable<any>{
@@ -157,6 +157,17 @@ export class TaskService {
     return this.http.post(`${this.url}/${authToken}/change-item-status/${userId}`, params);
 
   }
+  public undoChangeStatusItem(authToken, data):Observable<any>{
+    let params=new HttpParams()
+      .set('userId', data.userId)
+      .set('itemId', data.id)
+      .set('refkey', data.refkey)
+      .set('type', data.type)
+      .set('notificationId', data.notificationId);
+
+    return this.http.post(`${this.url}/${authToken}/undo-change-status-item`, params); 
+
+  }
 
   public undoCreateItem(authToken, data):Observable<any>{
     //console.log(data);
@@ -190,6 +201,18 @@ export class TaskService {
       .set('notificationId', data.notificationId);
 
     return this.http.post(`${this.url}/${authToken}/undo-edit-item`, params); 
+  }
+
+  public undoChangeStatusList(authToken, data):Observable<any>{
+    let params=new HttpParams()
+      .set('userId', data.userId)
+      .set('listId', data.id)
+      .set('refkey', data.refkey)
+      .set('type', data.type)
+      .set('notificationId', data.notificationId);
+
+    return this.http.post(`${this.url}/${authToken}/undo-change-status-list`, params); 
+
   }
   //---------------------------------------------------------------------------
   //-----------------------------------------------------------------------
@@ -232,12 +255,25 @@ export class TaskService {
       
     return this.http.post(`${this.url}/${authToken}/delete-sub-item/${userId}`, params);
   }
+
+
   
   public changeSubItemStatus(authToken, userId, data):Observable<any>{
     let params=new HttpParams()
       .set('subItemId', data.subItemId);
       
     return this.http.post(`${this.url}/${authToken}/change-sub-item-status/${userId}`, params);
+
+  }
+  public undoChangeStatusSubItem(authToken, data):Observable<any>{
+    let params=new HttpParams()
+      .set('userId', data.userId)
+      .set('subItemId', data.id)
+      .set('refkey', data.refkey)
+      .set('type', data.type)
+      .set('notificationId', data.notificationId);
+
+    return this.http.post(`${this.url}/${authToken}/undo-change-status-sub-item`, params); 
 
   }
 

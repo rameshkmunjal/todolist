@@ -29,8 +29,7 @@ export class ListComponent implements OnInit {
   public listName:string;
   public pageType:string="self";
 
-  public newList:string;
-  
+  public newList:string;  
 
   constructor(
     private UserService:UserService,        
@@ -54,31 +53,31 @@ export class ListComponent implements OnInit {
   }
   //-------------------------------------------------------------------------------------------
   
-  public getHomePageLoad=():any=>{
+public getHomePageLoad=():any=>{
     this.SocketService.getHomePageLoad()
       .subscribe((data)=>{
-        if(this.pageOwnerId===data.pageOwnerId){
+        
           this.userId=data.userId;
           this.fullName=data.fullName;
           this.pageType=data.pageType;
           this.getAllListsOfAUser(this.authToken, this.pageOwnerId);
-        } 
+         
       }, (error)=>{
         this.router.navigate(['/error-page', error.error.status, error.error.message]);
       })
-  }
+}
   //-----------------------------------------------------------------------------------------
 public getFriendPageLoad=():any=>{
   this.SocketService.getFriendPageLoad()
     .subscribe((data)=>{
-      if(this.pageOwnerId===data.pageOwnerId){
+      
         this.userId=data.userId;
         this.fullName=data.fullName;
         this.pageType=data.pageType;
         //console.log(data); 
         //console.log(this.userId); 
         this.getAllListsOfAUser(this.authToken, data.userId);
-      }
+      
     }, (error)=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
@@ -87,9 +86,11 @@ public getFriendPageLoad=():any=>{
 public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
     .subscribe((data)=>{          
+      console.log(this.userId);
+      console.log(data.userId);
       if(this.userId===data.userId && data.type==="list"){ 
-        //console.log("userId matched");
-        //console.log(data);           
+        console.log("userId matched");
+        console.log(data);           
         this.getAllListsOfAUser(this.authToken, this.userId); 
         //this.listClicked(data.list.typeId, data.list.listName)                  
       }      
@@ -103,9 +104,10 @@ public changeStatus(listId){
     listId:listId,
     type:"list",
     action:"change-status",
-    userId:this.pageOwnerId,
+    changeId:this.pageOwnerId,
     changeName:this.pageOwnerName
   }
+  console.log(data);
   this.TaskService.changeListStatus(this.authToken, data).subscribe(
     apiResponse=>{
       //console.log(apiResponse);
@@ -127,7 +129,7 @@ public getAllListsOfAUser(authToken, userId){
   this.TaskService.getAllListsOfAUser(authToken, userId).subscribe(
     apiResponse=>{
       if(apiResponse.status===200 && apiResponse.data !== null){
-        console.log(apiResponse.data);
+        //console.log(apiResponse.data);
         this.allLists=apiResponse.data;
         this.Utility.arrangeListsByDescendingOrder(this.allLists);
       } else {
@@ -144,7 +146,7 @@ public createList=()=>{
   ////console.log(this.newList);
   let data={
     listName:this.newList,    
-    creatorId:this.userId,
+    creatorId:this.pageOwnerId,
     createdBy:this.pageOwnerName,
     type:"list"
   }
@@ -159,11 +161,10 @@ public createListUsingKeypress: any = (event: any) => {
 } 
 
 public sendInputToCreateList(authToken, userId, data){
-  console.log(data);
+  //console.log(data);
   this.TaskService.createList(authToken, userId, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse.data);       
-
+      //console.log(apiResponse.data);
       let data={
         type:apiResponse.data.type,
         userId:this.userId,        
@@ -184,21 +185,21 @@ public editList(){
   let data={
     listId:this.listId,
     listName:this.listName,      
-    changeId:this.pageOwnerId,
-    changeName:this.pageOwnerName,
+    changeId: this.pageOwnerId,
+    changeName: this.pageOwnerName,
     type:"list",
     action:"edit"     
   } 
   this.TaskService.editList(this.authToken, data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
+      //console.log(apiResponse);
       if(apiResponse.status===200 && apiResponse.data !==null){
         let data={
           type:apiResponse.data.type,
           userId:this.userId,          
           list:apiResponse.data
         }
-        console.log(data);
+        //console.log(data);
         this.SocketService.updateListPage(data);
       }      
     }, (error)=>{
@@ -225,10 +226,11 @@ public deleteList(id){
     changeId:this.pageOwnerId,
     type:"list",
     action:"delete"
-  }   
+  }
+  //console.log(data);   
   this.TaskService.deleteList(this.authToken,  data).subscribe(
     apiResponse=>{
-      console.log(apiResponse);
+      //console.log(apiResponse);
       let data={
         type:apiResponse.data.type,
         userId:this.userId,               
@@ -253,6 +255,8 @@ public undoResponse(){
             this.undoDeleteList(data);
           } else if(data.action==="edit"){
             this.undoEditList(data);
+          } else if(data.action==="status-change"){
+            this.undoStatusChangeList(data);
           }
         }         
     }
@@ -310,6 +314,25 @@ public undoDeleteList(data){
     }
   )
 }
+public undoStatusChangeList(data){
+  console.log(data);
+  
+  this.TaskService.undoChangeStatusList(this.authToken, data).subscribe(
+    apiResponse=>{
+      console.log(apiResponse);
+      if(apiResponse.status===200){
+        let data={
+          userId:apiResponse.data.creatorId,          
+          list:apiResponse.data
+        }
+        this.SocketService.updateAfterUndo(data);
+      }       
+    }, (error)=>{
+      //console.log(error);
+    }
+  )
+  
+}
 //---------------------------------------------------------------------
 public updateAfterUndoResponse(){
   this.SocketService.updateAfterUndoResponse().subscribe(
@@ -324,7 +347,7 @@ public updateAfterUndoResponse(){
 }
 //-------------------------------------------------------------------------
 public listClicked(id, listName){
-  console.log("id of list clicked " + id);
+  //console.log("id of list clicked " + id);
   let data={
     userId:this.userId,
     fullName:this.fullName,
@@ -334,6 +357,21 @@ public listClicked(id, listName){
   this.SocketService.listClicked(data);
 }
 //---------------------------------------------------------------------------------
+public findChangeId(userId, pageOwnerId){
+  if(userId===pageOwnerId){
+    return pageOwnerId;
+  } else {
+    return userId;
+  }
+}
+
+public findChangeName(fullName, pageOwnerName){
+  if(fullName===pageOwnerName){
+    return pageOwnerName;
+  } else {
+    return fullName;
+  }
+}
 //end of class definition
 }
 

@@ -68,23 +68,23 @@ let setServer=(server)=>{
 			socket.emit('get-home-page-load', data);
         })
         socket.on('load-friend-page-event', (data)=>{
-            console.log(data);
+            //console.log(data);
             socket.emit('get-friend-page-load', data);
         })
         socket.on('show-contact-list-event', (data)=>{
-            console.log(data);
+            //console.log(data);
             socket.emit('get-contact-list-response', data);
         })
         socket.on('send-friend-request-event', (data)=>{
-            console.log(data);
+            //console.log(data);
             myIo.emit('send-friend-request-response', data);
         })
         socket.on('accept-friend-request-event', (data)=>{
-            console.log(data);
+            //console.log(data);
             myIo.emit('accept-friend-request-response', data);
         })
         socket.on('update-friend-event', (data)=>{
-            console.log(data);
+            //console.log(data);
             myIo.emit('update-friend-response', data);
             
         })

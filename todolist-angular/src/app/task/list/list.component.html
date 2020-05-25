@@ -9,9 +9,9 @@
   <!--(click)="getItemsByListId(list.originId, userId, list.listName)"-->
 <div class="container-fluid" >
   <div class="row" *ngIf="allLists.length > 0 ; else infoText">
-      <div  *ngFor="let list of allLists"  class="list-btn" (click)="listClicked(list.originId, list.listName)" >
+      <div  *ngFor="let list of allLists"  class="list-btn"  >
           <span class="ml-3"></span>
-          <span class="ml-3 light-color-text" >{{list.listName}}</span>              
+          <span class="ml-3 light-color-text" (click)="listClicked(list.originId, list.listName)">{{list.listName}}</span>              
           <span class="pull-right mr-3">
             <i class="fa fa-times-circle-o" aria-hidden="true" (click)="deleteList(list.listId)"></i>        
           </span>

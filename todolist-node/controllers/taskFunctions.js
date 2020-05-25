@@ -4,6 +4,7 @@ const shortId=require('shortid');
 //including files
 const response=require('./../libs/responseLib');
 const check=require('./../libs/checkLib');
+const utility=require('./../libs/utilityLib');
 
 //including model
 require('./../models/list');
@@ -14,94 +15,12 @@ require('./../models/subitem');
 const SubItemModel=mongoose.model('subItem');
 require('./../models/notification');
 const NotificationModel=mongoose.model('notification');
+require('./../models/user');
+const UserModel=mongoose.model('User');
 
 
 
-let create_Notification=(obj)=>{
-    console.log(NotificationModel);
-    console.log("inside create notification function ");
-    console.log(obj);
-    return new Promise((resolve, reject)=>{
-        console.log("******** inside Promise create_Notification ");
-        let newNotice = new NotificationModel({
-            id:shortId.generate(),
-            type:obj.type,
-            action:obj.action,
-            typeId:obj.typeId,
-            originId:obj.originId,
-            name:obj.name,
-            refkey:obj.refkey,            
-            message:obj.message,
-            sendId:obj.creatorId,
-            sendName:obj.createdBy, 
-            createdOn:new Date()
-        });
-        console.log("************** New Notice ********* ");
-        console.log(newNotice);
-        newNotice.save((err, saveNotice)=>{
-            if(err){
-                console.log("error in saving notification : "+ err);            
-                let apiResponse=response.generate(true, "Notification creation failed", 500, null);
-                reject(apiResponse);
-            } else { 
-                console.log("********************");
-                console.log(saveNotice);           
-                let notice=saveNotice.toObject();
-                delete notice._id;
-                delete notice.__v; 
-                
-                if(notice.type==="item"){
-                    notice.listId=obj.listId;
-                    notice.itemName=obj.itemName;
-                } else if(notice.type==="subItem"){
-                    notice.listId=obj.itemId;
-                    //notice.parentName=obj.listName;
-                }
-                console.log(notice);
-                resolve(notice);                
-            }
-        })
-    })    
-  }
-  //--------------------------deactivate notification----------------------------------------------
-let deactivateNotification=(req, res)=>{    
-    return new Promise((resolve, reject)=>{   
-        //console.log(req.body.notificationId);
-        NotificationModel.findOne({'id': req.body.notificationId})
-            .exec((err, result)=>{
-                if(err){
-                    //console.log(err);
-                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
-                    reject(apiResponse);
-                    //res.send(apiResponse);
-                } else if(check.isEmpty(result)){
-                    //console.log("No Data found");
-                    let apiResponse=response.generate(true, "No Notif Data found", 404, null);
-                    reject(apiResponse);
-                    //res.send(apiResponse);
-                } else {
-                    result.isActive=false;
-                    result.save((err, editedNotif)=>{
-                        if(err){
-                            //console.log(err);
-                            let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
-                            reject(apiResponse);
-                            //res.send(apiResponse);
-                        } else{ 
-                            console.log(editedNotif); 
-                            //let obj=editedNotif.toObject();
-                            req.refId=req.body.id;
-                            req.action=editedNotif.action;
-                            console.log("refId : "+req.refId);
-                            console.log("req.action : "+req.action);                                                      
-                            resolve(req);
-                        }
-                    })
-                }
-            })
-    })
-}
-//------------------------------------------------------------------------
+//function - to create list
 let create_list=(req)=>{
     return new Promise((resolve, reject)=>{
         let randomId=shortId.generate();
@@ -140,9 +59,9 @@ let create_list=(req)=>{
             }
         })
     })
-  } 
-
-  let create_item=(req)=>{
+} 
+//function - to create item
+let create_item=(req)=>{
     return new Promise((resolve, reject)=>{
         let randomId=shortId.generate();
         let newItem=new ItemModel({
@@ -184,7 +103,7 @@ let create_list=(req)=>{
         })
     })
 }
-
+//function - to create sub item
 let create_sub_item=(req)=>{
     return new Promise((resolve, reject)=>{
         let randomId=shortId.generate();
@@ -225,7 +144,7 @@ let create_sub_item=(req)=>{
         })
     })
 }
-  //----------------------------------------------------------------------------------
+//function - to save old list 
   let saveOldList=(req, res)=>{
     //console.log("*************Save Old List****************");
     return new Promise((resolve, reject)=>{
@@ -261,7 +180,7 @@ let create_sub_item=(req)=>{
     })//exec method ended
 })//Promise ended
 }
-//-----------------------------------------------------------------------------------------------
+//function - to create new list
 let createNewList=(obj)=>{
     return new Promise((resolve, reject)=>{
         let newList=new ListModel({ 
@@ -302,7 +221,7 @@ let createNewList=(obj)=>{
         })
     })        
 }
-//-----------------------------------------------------------------
+//function - to save old item 
 let saveOldItem=(req, res)=>{
     //console.log("*************Save Old List****************");
     return new Promise((resolve, reject)=>{
@@ -338,7 +257,7 @@ let saveOldItem=(req, res)=>{
     })//exec method ended
 })//Promise ended
 }
-
+//function - to create new item
 let createNewItem=(obj)=>{
     console.log("inside createNewItem function");
     return new Promise((resolve, reject)=>{
@@ -355,9 +274,6 @@ let createNewItem=(obj)=>{
             originId:obj.oldItemData.originId,
             refkey:obj.oldItemData.itemId
         })
-
-        
-            
 
         newItem.save((err, savedItem)=>{
             if(err){
@@ -386,7 +302,7 @@ let createNewItem=(obj)=>{
         })
     })
 }
-//------------------------------------------------------------------------------------------
+//function - to save old sub item
 let saveOldSubItem=(req, res)=>{
     console.log("*************Save Old sub item****************");
     console.log(req.body.subItemId);
@@ -423,7 +339,7 @@ let saveOldSubItem=(req, res)=>{
     })//exec method ended
 })//Promise ended
 }
-
+//function - to create new sub item
 let createNewSubItem=(obj)=>{
     console.log("inside createNewSubItem function");
     return new Promise((resolve, reject)=>{
@@ -467,7 +383,7 @@ let createNewSubItem=(obj)=>{
         })
     })
 }
-//--------------------------------------------------------------------------------------------------
+//function - to delete list 
 let delete_list=(req, res)=>{
     return new Promise((resolve, reject)=>{
         ListModel.findOne({'listId':req.body.listId})
@@ -498,6 +414,8 @@ let delete_list=(req, res)=>{
                                 type:"list",
                                 action:"delete",
                                 typeId:listObj.listId,
+                                originId:listObj.originId,
+                                name:listObj.listName,
                                 refkey:listObj.refkey,
                                 message:"List "+listObj.listName+"  deleted by "+listObj.changeBy,
                                 creatorId:listObj.personId,
@@ -510,9 +428,10 @@ let delete_list=(req, res)=>{
                 }//else block ended
             })//exec method ended
         })//Promise ended
-    }//delete_list ended  
+}//delete_list ended  
 
-    let delete_item=(req, res)=>{
+//function - to delete item
+let delete_item=(req, res)=>{
         console.log("*********************");
         console.log(req.body.changeBy);
         return new Promise((resolve, reject)=>{
@@ -544,6 +463,8 @@ let delete_list=(req, res)=>{
                                     type:"item",
                                     action:"delete",
                                     typeId:itemObj.itemId,
+                                    originId:itemObj.originId,
+                                    name:itemObj.itemName,
                                     listId:itemObj.listId,
                                     refkey:itemObj.refkey,
                                     message:"Item "+itemObj.itemName+"  deleted by "+itemObj.changeBy,
@@ -553,18 +474,19 @@ let delete_list=(req, res)=>{
                                
                                 resolve(obj);
                             }
-                        })  //save method ended              
-                    }//else block ended
-                })//exec method ended
-            })//Promise ended
-        }//delete_list ended 
+                })  //save method ended              
+            }//else block ended
+        })//exec method ended
+    })//Promise ended
+}//delete_list ended 
 
-        let delete_sub_item=(req, res)=>{
-            console.log("*********************");
-            console.log(req.body);
-            console.log(req.body.changeBy);
-            return new Promise((resolve, reject)=>{
-               SubItemModel.findOne({'subItemId':req.body.subItemId})
+//function - to delete sub item
+let delete_sub_item=(req, res)=>{
+    console.log("*********************");
+    console.log(req.body);
+    console.log(req.body.changeBy);
+    return new Promise((resolve, reject)=>{
+        SubItemModel.findOne({'subItemId':req.body.subItemId})
                     .exec((err, result)=>{
                         if(err){
                             let apiResponse=response.generate(true, "delete_item function::Some Error Occurred", 500, null);
@@ -601,23 +523,23 @@ let delete_list=(req, res)=>{
                                    
                                     resolve(obj);
                                 }
-                            })  //save method ended              
-                        }//else block ended
-                    })//exec method ended
-                })//Promise ended
-            }//delete_list ended  
+                })  //save method ended              
+            }//else block ended
+        })//exec method ended
+    })//Promise ended
+}//delete_list ended  
 
-
-            let change_status_list=(req, res)=>{
-                return new Promise((resolve, reject)=>{
-                    ListModel.findOne({'listId':req.body.listId})
-                .exec((err, result)=>{
-                    if(err){
-                        //console.log(err);
+//function - to change status of list
+let change_status_list=(req, res)=>{
+    return new Promise((resolve, reject)=>{
+        ListModel.findOne({'listId':req.body.listId})
+            .exec((err, result)=>{
+                if(err){
+                        console.log(err);
                         let apiResponse=response.generate(true, "Some error occured", 500, null);
                         reject(apiResponse);
                     } else if(check.isEmpty(result)){
-                        //console.log("No Data found");
+                        console.log("No Data found");
                         let apiResponse=response.generate(true, "No Data found", 404, null);
                         reject(apiResponse);
                     } else {
@@ -643,24 +565,26 @@ let delete_list=(req, res)=>{
                                     type:"list",
                                     action:"status-change",
                                     typeId:listObj.listId,
-                                    //refkey:refkey, //due to this error in server
-                                    message:"List "+listObj.listName+"  status changed by "+listObj.createdBy,
-                                    creatorId:listObj.creatorId,
-                                    createdBy:listObj.createdBy
+                                    originId:listObj.originId,
+                                    name:listObj.listName,
+                                    refkey:listObj.refkey, //due to this error in server
+                                    message:"List "+listObj.listName+"  status changed by "+listObj.changeBy,
+                                    creatorId:listObj.personId,
+                                    createdBy:listObj.changeBy
                                 }                        
                                 resolve(obj);
                             }
-                        })
-                    }
-                })
-            
                 })
             }
-
-            let change_item_status=(req, res)=>{
-                return new Promise((resolve, reject)=>{
-                    ItemModel.findOne({'itemId':req.body.itemId})
-                .exec((err, result)=>{
+        })
+            
+    })
+}
+//function - change status of item
+let change_item_status=(req, res)=>{
+    return new Promise((resolve, reject)=>{
+        ItemModel.findOne({'itemId':req.body.itemId})
+           .exec((err, result)=>{
                     if(err){
                         //console.log(err);
                         let apiResponse=response.generate(true, "Some error occured", 500, null);
@@ -707,13 +631,13 @@ let delete_list=(req, res)=>{
                     }
                 })
             
-                })
-            }
-
-            let change_sub_item_status=(req, res)=>{
-                console.log("^^^^^^^^^^^^^^^^^^^");
-                console.log(req.body.subItemId);
-                return new Promise((resolve, reject)=>{
+    })
+}
+//function - to change status of sub item
+let  change_sub_item_status=(req)=>{
+        console.log("^^^^^^^^^^^^^^^^^^^");
+        console.log(req.body.subItemId);
+            return new Promise((resolve, reject)=>{
                 SubItemModel.findOne({'subItemId':req.body.subItemId, 'isActive':true})
                 .exec((err, result)=>{
                     if(err){
@@ -757,12 +681,11 @@ let delete_list=(req, res)=>{
                                 resolve(obj);
                             }
                         })
-                    }
-                })
-            
-                })
+            }
+        })            
+    })
 }
-
+//function - to deactivate list 
 let deactivateList=(req)=>{
     console.log("refId in deactivateList : "+req.refId);
     return new Promise(function(resolve, reject){
@@ -796,6 +719,7 @@ let deactivateList=(req)=>{
     });//Promise ended    
 }//function deactivateList ended
 
+//function - to deactivate item 
 let deactivateItem=(req)=>{       
     return new Promise((resolve, reject)=>{
         ItemModel.findOne({'itemId':req.body.id})
@@ -828,7 +752,7 @@ let deactivateItem=(req)=>{
 
     })    
 }
-
+//function - to deactivate sub item
 let deactivateSubItem=(req)=>{       
     return new Promise((resolve, reject)=>{
         SubItemModel.findOne({'subItemId':req.body.id})
@@ -873,8 +797,7 @@ let deactivateSubItem=(req)=>{
 
     })    
 }
-
-
+//function - to activate list
 let activateList=(obj)=>{
     console.log("refId in activateList : " + obj.refId);
     return new Promise((resolve, reject)=>{
@@ -906,6 +829,7 @@ let activateList=(obj)=>{
     })//Promise ended
 }//function deactivateList ended
 
+//function - to activate item
 let activateItem=(obj)=>{
     console.log("refId in activateItem : " + obj.refkey);
     return new Promise((resolve, reject)=>{
@@ -937,6 +861,7 @@ let activateItem=(obj)=>{
     })//Promise ended
 }//function activateItem ended
 
+//function - activate sub item
 let activateSubItem=(obj)=>{
     console.log("refId in activateSubItem : " + obj.refId);
     return new Promise((resolve, reject)=>{
@@ -967,6 +892,146 @@ let activateSubItem=(obj)=>{
             })//exec method ended
     })//Promise ended
 }//function activateItem ended
+//-------------------------functions relating friends info---------------------------------
+let get_Friend_List=(req, res)=>{
+    return new Promise((resolve, reject)=>{
+        UserModel.findOne({'userId':req.params.userId})
+            .exec((err, result)=>{
+                if(err){
+                    //console.log(err);
+                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                    reject(apiResponse);
+                } else if(check.isEmpty(result)){
+                    //console.log("No Data found");
+                    let apiResponse=response.generate(true, "No Data Found", 404, null);
+                    reject(apiResponse);
+                } else {                    
+                    req.friendList=result.friends;
+                    resolve(req);
+                }
+
+        })
+    })
+}
+//-------------------------function relating notifications--------------------------------------
+//function - to get notifications
+let getNotifications=(req)=>{    
+    return new Promise((resolve, reject)=>{
+        NotificationModel.find({'isActive':true})
+            .exec((err, notifications)=>{
+        if(err){
+            //console.log("getNotificationList:Some Error Occurred");
+            let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+            reject(apiResponse);
+        } else if(check.isEmpty(notifications)){
+            //console.log("getNotificationList:No Data found");
+            let apiResponse=response.generate(true, "No Data found", 404, null);
+            reject(apiResponse);
+        } else {
+            //console.log("getNotificationList: api success");
+            let allNotifications=[];
+
+            let friendList=req.friendList;
+            for(let i=0; i<friendList.length; i++){
+                for(let j=0; j<notifications.length; j++){
+                    if(friendList[i].friendId===notifications[j].sendId){
+                        allNotifications.push(notifications[j]);                        
+                    }
+                }
+            }
+            allNotifications=utility.getSortedDescending(allNotifications);            
+            //console.log("^^^^^^^^^^^^^^^^^^^");
+            resolve(allNotifications);
+        }
+      })
+    })
+}
+
+//function - to create notification
+let create_Notification=(obj)=>{
+    console.log(NotificationModel);
+    console.log("inside create notification function ");
+    console.log(obj);
+    return new Promise((resolve, reject)=>{
+        console.log("******** inside Promise create_Notification ");
+        let newNotice = new NotificationModel({
+            id:shortId.generate(),
+            type:obj.type,
+            action:obj.action,
+            typeId:obj.typeId,
+            originId:obj.originId,
+            name:obj.name,
+            refkey:obj.refkey,            
+            message:obj.message,
+            sendId:obj.creatorId,
+            sendName:obj.createdBy, 
+            createdOn:new Date()
+        });
+        console.log("************** New Notice ********* ");
+        console.log(newNotice);
+        newNotice.save((err, saveNotice)=>{
+            if(err){
+                console.log("error in saving notification : "+ err);            
+                let apiResponse=response.generate(true, "Notification creation failed", 500, null);
+                reject(apiResponse);
+            } else { 
+                console.log("********************");
+                console.log(saveNotice);           
+                let notice=saveNotice.toObject();
+                delete notice._id;
+                delete notice.__v; 
+                
+                if(notice.type==="item"){
+                    notice.listId=obj.listId;
+                    notice.itemName=obj.itemName;
+                } else if(notice.type==="subItem"){
+                    notice.listId=obj.itemId;
+                    //notice.parentName=obj.listName;
+                }
+                console.log(notice);
+                resolve(notice);                
+            }
+        })
+    })    
+  }
+  //function - to deactivate notification
+let deactivateNotification=(req)=>{    
+    return new Promise((resolve, reject)=>{   
+        //console.log(req.body.notificationId);
+        NotificationModel.findOne({'id': req.body.notificationId})
+            .exec((err, result)=>{
+                if(err){
+                    //console.log(err);
+                    let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                    reject(apiResponse);
+                    //res.send(apiResponse);
+                } else if(check.isEmpty(result)){
+                    //console.log("No Data found");
+                    let apiResponse=response.generate(true, "No Notif Data found", 404, null);
+                    reject(apiResponse);
+                    //res.send(apiResponse);
+                } else {
+                    result.isActive=false;
+                    result.save((err, editedNotif)=>{
+                        if(err){
+                            //console.log(err);
+                            let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
+                            reject(apiResponse);
+                            //res.send(apiResponse);
+                        } else{ 
+                            console.log(editedNotif); 
+                            //let obj=editedNotif.toObject();
+                            req.refId=req.body.id;
+                            req.action=editedNotif.action;
+                            console.log("refId : "+req.refId);
+                            console.log("req.action : "+req.action);                                                      
+                            resolve(req);
+                        }
+                    })
+                }
+            })
+    })
+}
 //---------------------------------------------------------------------------------------------
   module.exports={
       create_Notification:create_Notification,
@@ -991,5 +1056,7 @@ let activateSubItem=(obj)=>{
       activateSubItem:activateSubItem,
       deactivateList:deactivateList,
       deactivateItem:deactivateItem,
-      deactivateSubItem:deactivateSubItem
+      deactivateSubItem:deactivateSubItem,
+      get_Friend_List:get_Friend_List,
+      getNotifications:getNotifications
   }

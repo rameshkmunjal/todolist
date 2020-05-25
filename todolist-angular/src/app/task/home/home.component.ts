@@ -35,7 +35,7 @@ export class HomeComponent implements OnInit {
   public lastChangeMessage="";//latest notification from any friend
   public lastChangeObject:any;//details of last change by any friend  
 
-  constructor(
+  constructor(//creating instances
     private UserService:UserService,
     private SocketService:SocketService,
     private TaskService:TaskService,    
@@ -43,6 +43,7 @@ export class HomeComponent implements OnInit {
   ){}
 
   ngOnInit(){
+    //getting user info from local storage
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
     this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;    
     this.pageOwnerName=this.UserService.getUserFromLocalStorage().fullName;
@@ -63,9 +64,10 @@ export class HomeComponent implements OnInit {
     this.getPublishNotification();//to flash notification on friend page
     this.getLastChangeObject();//to get last change object
     this.updateListPageResponse();//when list is updated -
-    this.updateAfterUndoResponse(); 
+    this.updateAfterUndoResponse();//updation after undo action
   }
 //------------------------------------------------------------------------------------------------
+//proceed further only when authToken is present
 public checkStatus=():any=> {
   if (this.authToken === undefined || 
        this.authToken === '' || 
@@ -76,15 +78,16 @@ public checkStatus=():any=> {
     return true;
   }
 } // end checkStatus
-
+//to test socket connection 
+//and then set user if authToke is valid
 public verifyUserConfirmation():any{
   this.SocketService.verifyUser()
       .subscribe(
         (data)=>{
-          ////console.log(data);
+          console.log(data);
           this.SocketService.setUser(this.authToken);
         }, (err)=>{
-          //console.log(err);
+          console.log(err);
         }
       )
 }
@@ -111,7 +114,8 @@ public loadHomePage=():any=>{
 //-----HOme Page Load --- Socket Event Handler----
 public getHomePageLoad=():any=>{
   this.SocketService.getHomePageLoad()
-    .subscribe((data)=>{                    
+    .subscribe((data)=>{ 
+      console.log(data);                   
       this.getContactList(this.authToken, this.userId);
       this.getLatestNotification(this.authToken, this.userId);      
     }, (error)=>{
@@ -170,6 +174,9 @@ public getFriendRequest=():any=>{
 }
 //------------When freind request is accepted-----------------------------------------
 //---on click of accept button---------------
+//make api call - when friend request is accepted
+//to update contact list and friend list in DB
+//and notify sender of request about acceptance 
 public acceptFriendRequest=(senderId, senderName):any=>{
   $("#friendship-modal").fadeOut(2000);
   let data={
@@ -196,6 +203,7 @@ public declineFriendRequest=():any=>{
   $("#friendship-modal").fadeOut(2000);
 }
 //-------------------Contact Related functions , event emitters and handlers-------------------------------
+//api call to get contact list - when page loaded or friend request accepted
 public getContactList(authToken, userId){  
   this.UserService.getContactList(authToken, userId).subscribe(
     apiResponse=>{
@@ -209,6 +217,7 @@ public getContactList(authToken, userId){
   )
 }
         //------------socket event handler---------------
+//response of event - when contact icon is clicked
 public getContactListResponse=():any=>{
   this.SocketService.getContactListResponse()
     .subscribe((data)=>{
@@ -224,15 +233,16 @@ public getContactListResponse=():any=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
 }
-
+//when close button of contact modal is clicked
 public closeContactModal(){
   $("#contacts-modal").fadeOut(1000);  
 }
 //---to get friend list to send notifications---when some action with any task happens--
 
-
+//function to notify friends
 public notifyFriends=(showNotif, list):any=>{
-  this.UserService.getFriendList(this.authToken, this.userId).subscribe(
+  //console.log(this.userId);
+  this.UserService.getFriendList(this.authToken, this.pageOwnerId).subscribe(
     apiResponse=>{
       //console.log(showNotif);
       //console.log(list);
@@ -241,6 +251,7 @@ public notifyFriends=(showNotif, list):any=>{
         let data={          
           friendList:this.friendList
         }
+        console.log(data);
         this.SocketService.fireLastChangeEvent(data);
         if(showNotif){
           let obj={
@@ -257,6 +268,7 @@ public notifyFriends=(showNotif, list):any=>{
   )
 }
 //---------------------------Notification Related functions , event emitters and handlers---------------------
+//api call to get latest notification
 public getLatestNotification(authToken, userId){
   this.TaskService.getLatestNotification(authToken, userId).subscribe(
     apiResponse=>{
@@ -271,10 +283,10 @@ public getLatestNotification(authToken, userId){
     }    
   )
 }
+//event handler - when notification icon click event happens
 public getNotificationListResponse=():any=>{
   this.SocketService.getNotificationListResponse()
-    .subscribe((data)=>{
-      
+    .subscribe((data)=>{      
         if(data.showNotif){
           this.getAllNotifications(this.authToken, this.userId);
           this.showNotificationModal();
@@ -286,14 +298,15 @@ public getNotificationListResponse=():any=>{
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
     })
 }
-
+//to show all notifications modal
 public showNotificationModal(){    
   $("#all-notification-modal").slideToggle(1500); 
 }
+//to close all notifications modal
 public closeNotificationModal(){
   $("#all-notification-modal").slideUp(1000);  
 }
-
+//api call to get all notifications
 public getAllNotifications(authToken, userId){
   this.TaskService.getAllNotifications(authToken, userId).subscribe(
    apiResponse=>{
@@ -304,7 +317,7 @@ public getAllNotifications(authToken, userId){
     }
   )
 }
-
+//to show latest notification 
 public getPublishNotification(){  
   this.SocketService.getPublishNotification().subscribe(
     data=>{
@@ -315,17 +328,19 @@ public getPublishNotification(){
          }
     })
 }
-
+//to show latest notification modal
 public closeCurrentNotifModal(){
   $("#notification-modal").fadeOut(1000);  
 }
 
+//------------------------------------------------------------------------------------------------
+//to get last change object
 public getLastChangeObject=():any=>{
   this.SocketService.getLastChangeObject().subscribe(
     data=>{ 
       //console.log(data);         
       if(this.pageOwnerId===data.userId){
-        console.log(data);
+        //console.log(data);
         this.getLatestNotification(this.authToken, data.userId);        
       }       
     }, (error)=>{
@@ -337,8 +352,10 @@ public getLastChangeObject=():any=>{
 public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
     .subscribe((data)=>{ 
-      //console.log(data);         
-      if(this.userId===data.userId) {        
+      console.log(data);         
+      if(this.pageOwnerId===data.list.sendId) {
+          console.log(this.pageOwnerId);
+          console.log(data.list.sendId);
           this.notifyFriends(true, data.list);
       }             
     }, (error)=>{

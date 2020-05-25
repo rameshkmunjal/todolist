@@ -15,6 +15,8 @@ import { TaskService } from 'src/app/task.service';
 })
 export class ItemsComponent implements OnInit {
   public authToken:string;
+  public pageOwnerId:string;
+  public pageOwnerName:string;
   public userId:string;
   public fullName:string;
   public listId:string;
@@ -37,16 +39,39 @@ export class ItemsComponent implements OnInit {
 
   ngOnInit() { 
     this.authToken=this.UserService.getUserFromLocalStorage().authToken;
+    this.pageOwnerId=this.UserService.getUserFromLocalStorage().userId;
+    this.pageOwnerName=this.UserService.getUserFromLocalStorage().fullName;
+    this.getHomePageLoad();
+    this.getFriendPageLoad();
     this.listClickResponse();  
     this.updateListPageResponse();
     this.undoResponse();  
     this.updateAfterUndoResponse();
   }
   //----------------------------------------------------------------
+public getHomePageLoad=():any=>{
+    this.SocketService.getHomePageLoad()
+      .subscribe((data)=>{
+        this.listName="";
+        this.items=[]; 
+      }, (error)=>{
+        this.router.navigate(['/error-page', error.error.status, error.error.message]);
+      })
+}
+
+public getFriendPageLoad=():any=>{
+  this.SocketService.getFriendPageLoad()
+    .subscribe((data)=>{
+      this.listName="";
+      this.items=[];
+    }, (error)=>{
+      this.router.navigate(['/error-page', error.error.status, error.error.message]);
+    })
+}
 public listClickResponse(){  
   this.SocketService.listClickResponse().subscribe(
     data=>{
-      console.log(data);
+      //console.log(data);
       this.userId=data.userId;
       this.fullName=data.fullName;
       this.listId=data.listId;
@@ -58,8 +83,8 @@ public listClickResponse(){
 }
 
 public getItemsByListId(userId, listId){ 
-  console.log(userId);
-  console.log(listId); 
+  //console.log(userId);
+  //console.log(listId); 
   this.TaskService.getItemsByListId(this.authToken, userId, listId).subscribe(
     apiResponse=>{
       console.log(apiResponse);
@@ -85,8 +110,8 @@ public createItem(){
       itemName:this.newItem,
       listId:this.listId,
       listName:this.listName,
-      createdBy:this.fullName,
-      creatorId:this.userId,
+      createdBy:this.pageOwnerName,
+      creatorId:this.pageOwnerId,
       type:"item"
     } 
     console.log(data);       
@@ -102,7 +127,7 @@ public createItemUsingKeypress: any = (event: any) => {
 
 public createNewItem(data){
   console.log(data);
-  this.TaskService.createItem(this.authToken, this.userId, data).subscribe(
+  this.TaskService.createItem(this.authToken, this.pageOwnerId, data).subscribe(
     apiResponse=>{
       console.log(apiResponse);
       this.newItem="";
@@ -112,7 +137,7 @@ public createNewItem(data){
         list:apiResponse.data
       }
       this.SocketService.updateListPage(data);
-      //this.itemClicked(apiResponse.data.typeId, apiResponse.data.name);
+     
     }, (error)=>{
       console.log(error);
       this.router.navigate(['/error-page', error.error.status, error.error.message]);
@@ -164,8 +189,8 @@ public editItem(itemId){
   let data={            
     itemId:itemId,
     itemName:this.itemName,
-    changeId:this.userId,
-    changeName:this.fullName, 
+    changeId:this.pageOwnerId,
+    changeName:this.pageOwnerName, 
     listId:this.listId,
     type:"item"     
   }
@@ -216,13 +241,13 @@ public changeItemStatus(data){
 public updateListPageResponse=():any=>{
   this.SocketService.updateListPageResponse()
     .subscribe((data)=>{
-      console.log(data);          
+      //console.log(data);          
       if(this.userId===data.userId && data.type==="item"){
-        console.log(data); 
-        console.log("items component");                 
+        //console.log(data); 
+        //console.log("items component");                 
         this.getItemsByListId(this.userId, data.list.listId);                   
       } else if(this.userId===data.userId && data.type==="list"){ 
-        console.log(data);
+        //console.log(data);
         this.listName=data.list.name; 
         this.getItemsByListId(this.userId, data.list.originId);
       }     
@@ -276,6 +301,8 @@ public updateListPageResponse=():any=>{
               this.undoDeleteItem(data);
             } else if(data.action==="edit"){
               this.undoEditItem(data);
+            } else if(data.action==="status-change"){
+              this.undoStatusChangeItem(data);
             }
           }         
       }
@@ -285,7 +312,7 @@ public updateListPageResponse=():any=>{
     this.SocketService.updateAfterUndoResponse().subscribe(
       data=>{
         //console.log("inside updateAfterUndoResponse");
-        console.log(data);      
+        //console.log(data);      
         if(this.userId===data.list.creatorId){        
           this.getItemsByListId(this.authToken, data.list.listId);      
         }          
@@ -314,8 +341,28 @@ public updateListPageResponse=():any=>{
     )
   }
 
+  public undoStatusChangeItem(data){
+    console.log(data);
+    
+    this.TaskService.undoChangeStatusItem(this.authToken, data).subscribe(
+      apiResponse=>{
+        console.log(apiResponse);
+        if(apiResponse.status===200){
+          let data={
+            userId:apiResponse.data.creatorId,          
+            list:apiResponse.data
+          }
+          this.SocketService.updateAfterUndo(data);
+        }       
+      }, (error)=>{
+        //console.log(error);
+      }
+    )
+    
+  }
+
   public itemClicked(id, itemName){
-    console.log("id of item clicked "+id);
+    //console.log("id of item clicked "+id);
     let data={
       userId:this.userId,
       fullName:this.fullName,

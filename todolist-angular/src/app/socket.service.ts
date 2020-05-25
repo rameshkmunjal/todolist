@@ -73,16 +73,7 @@ public getNotificationListResponse():Observable<any>{
     }); // end Socket
   }); // end Observable
 }
-/*
-public getFriendRequestResponse():Observable<any>{  
-  return Observable.create((observer) => {      
-    this.socket.on('get-friend-request-response', (data) => {
-      //console.log(data);
-      observer.next(data);
-    }); // end Socket
-  }); // end Observable
-}
-*/
+
 public listClickResponse():Observable<any>{ 
   //console.log("update list page response"); 
   return Observable.create((observer) => {      
