@@ -1,5 +1,5 @@
 //import dependencies
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 //importing user defined services
 import { UserService } from './../../user.service';
@@ -13,7 +13,7 @@ import * as $ from 'jquery';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit { 
+export class HomeComponent implements OnInit, OnDestroy { 
   //variables for user details 
   public authToken:string;
   public pageOwnerId:string;
@@ -65,6 +65,10 @@ export class HomeComponent implements OnInit {
     this.getLastChangeObject();//to get last change object
     this.updateListPageResponse();//when list is updated -
     this.updateAfterUndoResponse();//updation after undo action
+  }
+
+  ngOnDestroy(){
+    console.log("HOme component destroyed");
   }
 //------------------------------------------------------------------------------------------------
 //proceed further only when authToken is present
@@ -126,7 +130,7 @@ public getHomePageLoad=():any=>{
 public moveToHomePage(){
   this.loadHomePage();
 }
-//-----------Friend Related Events and Handlers----------------------------------------------------
+//------------Friend Related Events and Handlers----------------------------------------------------
 
 //----------------When a friend page is loaded ----- by clicking friend name-----------
 

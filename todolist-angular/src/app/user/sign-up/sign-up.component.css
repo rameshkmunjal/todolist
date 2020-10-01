@@ -10,3 +10,20 @@
 .sixth-size{
     width:15%;
 }
+.submitBtn{
+    background:black;
+    color:white;
+}
+.submitBtn:hover{
+    background:rgb(1, 1, 44);
+    color:white;
+    font-weight:bold;
+}
+.signup-form{
+    background:rgb(68, 126, 241);
+    border-radius:5px;
+    margin-top:50px;
+}
+.help-block{
+    color:red;
+}

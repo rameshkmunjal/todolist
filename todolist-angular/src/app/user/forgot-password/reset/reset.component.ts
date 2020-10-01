@@ -30,7 +30,7 @@ export class ResetComponent implements OnInit {
 
   ngOnInit() {     
     this.code=this._route.snapshot.paramMap.get('code');
-    ////console.log(this.code);
+    console.log(this.code);
   }
 //-----------------function to reset password-----------------------------
   public resetPassword():void{    
@@ -44,10 +44,11 @@ export class ResetComponent implements OnInit {
       this.errorMessage="New Password does not match with confirm password"
     }else {
       this.errorMessage="";
-      
+      console.log(this.newPassword);
+      console.log(this.code);
       this.UserService.resetPassword(this.email, this.newPassword,   this.code).subscribe(
         apiResponse=>{
-          ////console.log(apiResponse);
+          console.log(apiResponse);
           if(apiResponse.status===200){//when response status is  200 
             this.router.navigate(['/login']);
           }else{//when response status is not 200 

@@ -51,7 +51,7 @@ export class UserService {
       return this.http.get(`${this.url}/demandOTP/${email}`);
   }
 
-//function - api call to match OTP 
+///function - api call to match OTP 
 public matchOTP(userId, otp):Observable<any>{
   let params=new HttpParams()
     .set("otp", otp);
@@ -63,7 +63,7 @@ public matchOTP(userId, otp):Observable<any>{
         .set('password', password);
       return this.http.post(`${this.url}/resetPassword/${email}/${code}`, params);
   }
-//-----------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
 //function - to get list of all users
   public getFriendList(authToken, userId):Observable<any>{
       return this.http.get(`${this.url}/${authToken}/getfriendlist/${userId}`);

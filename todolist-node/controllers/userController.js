@@ -381,7 +381,7 @@ let matchOTP=(req, res)=>{
          })       
     }
     
-//--------------------------------------reset password function--------------------------------------------------
+//----------------------------------------reset password function--------------------------------------------------
 //function - to reset password - login be allowed on success response
 let resetPassword=(req, res)=>{
     console.log(req.params.email);
@@ -408,19 +408,19 @@ let resetPassword=(req, res)=>{
             UserModel.findOne({email:req.params.email})//find user matching email
         .exec((err, userDetails)=>{
             if(err){
-                //console.log(err);
+                console.log(err);
                 let apiResponse=response.generate(true, "Some Error Occurred", 500, null);
-                res.send(apiResponse);
+                reject(apiResponse);
             } else if(check.isEmpty(userDetails)){
-                //console.log("no data found");
+                console.log("no data found -- savePassword");
                 let apiResponse=response.generate(true, "No such data found", 404, null);
-                res.send(apiResponse);
+                reject(apiResponse);
             } else {                
                 userDetails.password=passwordLib.hashPassword(req.body.password);
                 userDetails.save((err, user)=>{
                     if(err){                        
                         let apiResponse=response.generate(true, "Password could not be saved", 500, null);
-                        res.send(apiResponse);
+                        reject(apiResponse);
                     } else{
                         resolve(user);                       
                     }
@@ -436,7 +436,7 @@ let resetPassword=(req, res)=>{
             let apiResponse=response.generate(false, "Password changed successfully", 200, resolve);
             res.send(apiResponse);
         })
-        .then((err)=>{
+        .catch((err)=>{
             res.send(err);
         })
 }//function ended

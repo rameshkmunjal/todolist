@@ -33,9 +33,11 @@ export class OtpComponent implements OnInit {
     if(!this.otp){
       this.errorMessage="Enter OTP";
     } else {
+      console.log(this.otp);
+      console.log(this.userId);
       this.userService.matchOTP(this.userId, this.otp).subscribe(
         apiResponse=>{          
-          //console.log(apiResponse);
+          console.log(apiResponse);
           if(apiResponse.status===200){ 
             this.code=apiResponse.data.emailDecryptLink;                      
             this.router.navigate(['/forgot-password/reset', this.code]);

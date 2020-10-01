@@ -1,9 +1,10 @@
 //importing angular packages
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import {Router} from '@angular/router';
 //importing user defined services
 import {UserService} from './../../user.service';
 import {UtilityService} from './../../utility.service';
+import { NgForm } from '@angular/forms';
 
 
 @Component({
@@ -11,13 +12,8 @@ import {UtilityService} from './../../utility.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
-  //variables to hold form inputs
-  public email:string;
-  public password:string;
-  //variable to show error messages
-  public errorMessage:string;
-  public errorObj:any={};
+export class LoginComponent implements OnInit, OnDestroy {
+  @ViewChild('f') loginForm:NgForm; 
 
   constructor(//creating instances
     private UserService:UserService,
@@ -26,24 +22,24 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit() {}
+  ngOnDestroy(){
+    console.log("login component destroyed");
+  }
 //------------------function - to call service function - to login api call------------------
   public loginFunction():any{
-   //console.log("loginFunction clicked");
+   console.log("loginFunction clicked");
+   
       let data={
-        email:this.email,
-        password:this.password
+        email:this.loginForm.value.email,
+        password:this.loginForm.value.password
       }
-      //console.log(data);
-      //validate form inputs
-      this.errorObj=this.utility.validateLoginInputs(data);
-      //console.log(this.errorObj);
-      //if inputs are valid
-      if(!this.errorObj.flag){
+    console.log(data);
+      
         this.UserService.loginFunction(data).subscribe(
           apiResponse=>{
             //console.log(apiResponse);
             if(apiResponse.status===200){ //if response status 200 - move to dashboard
-                this.errorMessage="";
+                
                 //console.log(apiResponse);
                 let userId=apiResponse.data.userDetails.userId;
                 let data={
@@ -62,8 +58,9 @@ export class LoginComponent implements OnInit {
           //console.log(err);
           this.router.navigate(['/error-page', err.error.status, err.error.message]);
         }
-      )
-    }
+      )    
   }
+
+
 //-----------------------------class definition ended-------------------------------
 }

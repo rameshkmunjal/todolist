@@ -22,21 +22,42 @@
 
 <!---------------------login form---------------------------------------->
 <div class="row main">  
-  <div class="col-md-4 offset-md-4">
-    <p class="error text-center">{{errorMessage}}</p><!---error message shown here-->
-      <form class="input-form">
-        <h2 class="text-center text-white pt-2 pb-3 mb-3">Login</h2>
-        <div class="mt-4">
-          <input type="text"  name="email" class="form-control" [(ngModel)] ="email" placeholder="E-mail" />
+  <div class="col-md-4 offset-md-4 ">    
+      
+    <form class="login-form" (ngSubmit)="loginFunction()" #f="ngForm">
+        <h3 class="text-center pt-3 mt-3">Login Form</h3>
+        <div class="form-group">
+            <div class="pt-3 mt-3 ">                
+                <input type="email" class="form-control" id="email" 
+                    ngModel name="email" placeholder="email"  required email #email="ngModel" />
+                <span class="help-block"
+                  *ngIf="!email.valid && email.touched">
+                    Please enter a valid email address
+                </span>
+            </div>
         </div>
-        <div class="mt-4">
-          <input type="password"  name="password" class="form-control mt-3" [(ngModel)]="password" placeholder="Password" />
-        </div>
-        <div class="d-flex justify-content-center mt-4 mb-3">
-          <button class="btn my-nav-bg submitBtn" (click)="loginFunction()">Submit</button>
-        </div>
-      </form>
+
+        <div class="form-group">
+          <div class="pt-3 mt-3 ">            
+              <input type="password" class="form-control" id="password"
+                  name="password" placeholder="Password" ngModel #password="ngModel" required />
+                  <span class="help-block" *ngIf="!password.valid && password.touched">Please enter password!</span>
+          </div>
+      </div>
+
+      <div class="text-center mt-3 mb-3">
+        <button class="btn btn-login" type="submit" [disabled]="!f.valid">Login</button>
+      </div>
+
+    </form>
   </div>
 </div>
-<!---------------------------form ended---------------------------------------->
+<!---->  
+  
+  
+  
+  
+  
+  
+
 

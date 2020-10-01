@@ -3,34 +3,108 @@
 <!--------------------------div holding signup page------------------------------------>
 <div class="row main">
     <div class="col-md-4 offset-md-4">
-      <p class="error text-center">{{errorMessage}}</p><!---showing error-->
-      <!--signup form-->
-        <form class="input-form mb-4">
-          <h2 class="text-center text-white pt-2 pb-3 mb-3">Sign-Up</h2>
-          <div class="mt-4">
-              <input type="text"  name="firstName" class="form-control" [(ngModel)] ="firstName" placeholder="First Name" />
+      <p class="error text-center">{{message}}</p><!---showing error-->
+      <!--signup form--->
+        
+        <form class="signup-form mb-4" (ngSubmit)="signupFunction()" #f="ngForm">
+          <p class="text-center">{{message}}</p>
+        <h3 class="text-center">Sign Up Form</h3>
+        <div class="form-group">
+            <div class="pt-3 mt-3">                 
+                <input type="text" class="form-control" id="firstName" name="firstName" 
+                    ngModel placeholder="First Name" #firstName="ngModel" required /> 
+                <span class="help-block error" *ngIf="!firstName.valid && firstName.touched">Enter a valid input</span>               
             </div>
-            <div class="mt-4">
-                <input type="text"  name="lastName" class="form-control" [(ngModel)] ="lastName" placeholder="Last Name" />
-              </div>
-          <div class="mt-4">
-            <input type="text"  name="email" class="form-control" [(ngModel)] ="email" placeholder="E-mail" />
+        </div>
+        <div class="form-group">
+          <div class="pt-3 mt-3  ">              
+              <input type="text" class="form-control" id="lastName" name="lastName" 
+                ngModel placeholder="lastName" #lastName="ngModel" required />
+            <span class="help-block error" *ngIf="!lastName.valid && lastName.touched">Enter a valid input</span>
           </div>
-          <div class="mt-4">
-            <input type="password"  name="password" class="form-control mt-3" [(ngModel)] ="password"  placeholder="Password" required/>
+      </div>
+
+      <div class="form-group">
+      <div class="pt-3 mt-3 ">          
+          <input type="email" class="form-control" id="email" name="email" 
+            ngModel placeholder="email" #email="ngModel" required email />
+            <span class="help-block error" *ngIf="!email.valid && email.touched">Enter a valid input</span>
+      </div>
+      </div>
+
+      <div class="form-group">
+          <div class="pt-3 mt-3 ">              
+              <input type="password" class="form-control" id="password" name="password" 
+                  ngModel placeholder="Password" #password="ngModel" required />
+                  <span class="help-block error" *ngIf="!password.valid && password.touched">Enter a valid input</span>
           </div>
+      </div>
           <div class="d-flex justify-content-between mt-4 ">                    
             <select id="country-name" class="form-control third-size" name="country" [(ngModel)]="country" (change)="getCountryCode()">
-               <option>{{country}}</option>                     
+               <option >{{country}}</option>                     
               <option *ngFor="let item of countryCodeList">{{item.name}}</option>
             </select>
             <input id="country-code" type="text" name="countryCode" class="form-control sixth-size" [(ngModel)]="countryCode" placeholder="Country Code" />
-            <input id="mobile-input" type="text" name="mobile" class="form-control third-size" [(ngModel)]="mobile" placeholder="Mobile Number" />                              
+            <input id="mobile" type="number" 
+                name="mobile" class="form-control third-size"
+                [(ngModel)]="mobile" placeholder="Mobile Number"
+                pattern="^[1-9][0-9]$"  required /> 
+                                            
            </div>
+           <!--pattern="^[0][1-9]{1}[0-9]{9}$"-->
+          
           <div class="d-flex justify-content-center mt-4 mb-3">
-            <button class="btn my-nav-bg submitBtn" (click)="signupFunction()">Submit</button>
-          </div>
+            <button class="btn my-nav-bg submitBtn" 
+            [disabled]="!f.valid" type="submit">Sign Up</button>
+        </div>
         </form>
         <!--signup form ended-->
     </div>
 </div>
+
+
+<!----
+<form (ngSubmit)="onSubmit()" #f="ngForm">
+        <p class="text-center">{{message}}</p>
+        <h3 class="text-center">Sign Up Form</h3>
+        <div class="form-group">
+            <div class="pt-3 mt-3">
+                <label for="firstName">First Name</label><br/> 
+                <input type="text" class="form-control" id="firstName" name="firstName" 
+                    [(ngModel)]="firstName" placeholder="First Name"  required />                
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <div class="pt-3 mt-3  ">
+                <label for="Last Name">Last Name :</label><br/>
+                <input type="text" class="form-control" id="lastName" name="lastName" 
+                [(ngModel)]="lastName" placeholder="lastName"  required />
+            </div>
+        </div>
+
+        <div class="form-group">
+        <div class="pt-3 mt-3 ">
+            <label for="Email">Email :</label><br/>
+            <input type="text" class="form-control" id="email" name="email" 
+            [(ngModel)]="email" placeholder="email" required email />
+        </div>
+        </div>
+
+        <div class="form-group">
+            <div class="pt-3 mt-3 ">
+                <label for="password">Password :</label><br/>
+                <input type="text" class="form-control" id="password" name="password" 
+                    [(ngModel)]="password" placeholder="Password"  required />
+            </div>
+        </div>
+        
+    
+        <div class="text-center mt-3 mb-3">
+            <button class="btn bg-primary" 
+            [disabled]="!f.valid" type="submit">Sign Up</button>
+        </div>
+    </form>
+
+
+-->

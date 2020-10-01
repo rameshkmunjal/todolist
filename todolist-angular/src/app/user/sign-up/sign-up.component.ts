@@ -1,11 +1,12 @@
 //importing packages
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import {Router} from '@angular/router';
 import {ToastrService} from 'ngx-toastr';
 //importing services
 import {UserService} from './../../user.service';
 import {UtilityService} from './../../utility.service';
 import {CountryCodeService} from './../../country-code.service';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-sign-up',
@@ -13,20 +14,15 @@ import {CountryCodeService} from './../../country-code.service';
   styleUrls: ['./sign-up.component.css']
 })
 export class SignUpComponent implements OnInit, OnDestroy {
+  @ViewChild('f') signupForm:NgForm;
+  public message:String;
   //variables to hold values - sign up form 
-  public firstName:string;
-  public lastName:string;
-  public email:string;
-  public password:string;
-  public mobile:string;
+  
+  public mobile:Number;
   public country:String="India"; //default
   public countryCode:string="91";//default
 
   public countryCodeList:any=[];//to hold country codes , names etc
-  //variable to show error messages
-  public errorMessage:string;//to show error message
-  public errorObj:any={}; //to hold result of vaidation of inputs
-
 
   constructor(
     //creating instance - services
@@ -44,33 +40,31 @@ export class SignUpComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {//lifecycle hook when component destroyed
-    //console.log("Sign up component destroyed");
+    console.log("Sign up component destroyed");
   }
 //-------------------------------class functions--------------------------------------
 //signupFunction to accept form values and make a service function call
   public signupFunction():any{
     //created a object - data - inputs made in form    
     let data={
-      firstName:this.firstName,
-      lastName:this.lastName,
-      email:this.email,
-      password:this.password,      
+      firstName:this.signupForm.value.firstName,
+      lastName:this.signupForm.value.lastName,
+      email:this.signupForm.value.email,
+      password:this.signupForm.value.password,      
       country:this.country,
       countryCode:this.countryCode,
       mobile:this.mobile
     }
-    //console.log(data);
-   //validate inputs 
-    this.errorObj=this.utility.validateInput(data);
-    //if all input values are filled up
-    if(!this.errorObj.flag){
+    console.log(data);
+   
       //make a function call - for api call    
       this.UserService.signupFunction(data).subscribe(
         apiResponse=>{
           if(apiResponse.status===200){
-            this.errorMessage="";
+            
             //console.log(apiResponse);
             this.toastr.success(apiResponse.message);
+            this.signupForm=null;
             this.router.navigate(['/login']);
           } else { 
               //console.log(apiResponse);             
@@ -81,15 +75,13 @@ export class SignUpComponent implements OnInit, OnDestroy {
             this.router.navigate(['/error-page', err.error.status, err.error.message]);
           }
         )
-      }  else {//if all values are not input
-        this.errorMessage=this.errorObj.message;
-      }
+      
   }
   //----------------------------------------------------------------------------------
   //to get list from country code service
   public sendCountryObjects=()=>{
     this.countryCodeList=this.CountryCodeService.sendCountryObjects();
-    ////console.log(this.countryCodeList);
+    console.log(this.countryCodeList);
   }
 //Only when country name is selected - assign country code
   public getCountryCode=()=>{
@@ -100,7 +92,8 @@ export class SignUpComponent implements OnInit, OnDestroy {
         }
       }
     } else {
-      this.errorMessage="You should select country name first";
+      //this.errorMessage="You should select country name first";
+      console.log("You should select country name first ")
     }    
   }  
 //----------------------------------------------------------------------------------------

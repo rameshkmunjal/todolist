@@ -2,7 +2,7 @@
 @import "~bootstrap/dist/css/bootstrap.css";
 /* TOASTR BUGFIX */
 body{
-  background:rgb(190, 200, 240);
+  background:rgb(4, 36, 168);
 
 }
 #toast-container > div {
@@ -51,10 +51,10 @@ body{
   background:rgb(0, 0, 40);    
 }
 .my-bg{
-  background:lightslategray;    
+  background:blue;    
 }
 .main{  
-  min-height:85vh;
+  min-height:80vh;
 }
 .nav-link{
   color:white;
